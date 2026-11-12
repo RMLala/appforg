@@ -1,0 +1,1 @@
+const fs=require('node:fs');const path=require('node:path');const root=path.resolve(__dirname,'..');const source=path.join(root,'AppForge_Studio_V15_5_Cloud_Sync.html');const html=fs.readFileSync(source,'utf8');fs.mkdirSync(path.join(root,'dist'),{recursive:true});fs.writeFileSync(path.join(root,'dist','index.html'),html);console.log('AppForge Studio 15.5 : HTML Android prêt.');

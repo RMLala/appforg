@@ -21,9 +21,10 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-      - uses: android-actions/setup-android@v3
-      - name: Install Android SDK
-        run: sdkmanager "platforms;android-35" "build-tools;34.0.0"
+      - name: Accept licenses and install Android SDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null
+          sdkmanager "platforms;android-35" "build-tools;34.0.0"
       - run: npm ci
       - run: npm run sync
       - name: Build debug APK

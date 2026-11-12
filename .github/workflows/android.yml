@@ -1,0 +1,75 @@
+name: AppForge Studio Android
+on:
+  push:
+    branches: [appforge/studio-v15.5-cloud-sync]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+      - name: Install Android SDK
+        run: sdkmanager "platforms;android-35" "build-tools;34.0.0"
+      - run: npm ci
+      - run: npm run sync
+      - name: Build debug APK
+        run: |
+          chmod +x android/gradlew
+          cd android
+          ./gradlew --no-daemon assembleApi23Debug
+          mkdir -p ../release-output
+          cp app/build/outputs/apk/api23/debug/app-api23-debug.apk ../release-output/AppForge-Studio-15.5-Debug-API23.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AppForge-Studio-15.5-Debug-API23
+          path: release-output/AppForge-Studio-15.5-Debug-API23.apk
+          if-no-files-found: error
+          retention-days: 30
+      - name: Check release signing secrets
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          test -n "$KEYSTORE_BASE64" || (echo "Secret KEYSTORE_BASE64 absent"; exit 1)
+          test -n "$KEY_ALIAS" || (echo "Secret KEY_ALIAS absent"; exit 1)
+          test -n "$KEYSTORE_PASSWORD" || (echo "Secret KEYSTORE_PASSWORD absent"; exit 1)
+          test -n "$KEY_PASSWORD" || (echo "Secret KEY_PASSWORD absent"; exit 1)
+          echo "$KEYSTORE_BASE64" | base64 --decode > "$GITHUB_WORKSPACE/android/app/release-key.jks"
+      - name: Build signed API 23 and API 29 APKs
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ github.workspace }}/android/app/release-key.jks
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          cd android
+          ./gradlew --no-daemon assembleApi23Release assembleApi29Release
+          mkdir -p ../release-output
+          cp app/build/outputs/apk/api23/release/app-api23-release.apk ../release-output/AppForge-Studio-15.5-Release-API23.apk
+          cp app/build/outputs/apk/api29/release/app-api29-release.apk ../release-output/AppForge-Studio-15.5-Release-API29.apk
+      - name: Verify signed APKs
+        run: |
+          test -s release-output/AppForge-Studio-15.5-Release-API23.apk
+          test -s release-output/AppForge-Studio-15.5-Release-API29.apk
+          $ANDROID_HOME/build-tools/34.0.0/apksigner verify --print-certs release-output/AppForge-Studio-15.5-Release-API23.apk
+          $ANDROID_HOME/build-tools/34.0.0/apksigner verify --print-certs release-output/AppForge-Studio-15.5-Release-API29.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AppForge-Studio-15.5-Signed-Release-API23-API29
+          path: release-output/AppForge-Studio-15.5-Release-API*.apk
+          if-no-files-found: error
+          retention-days: 30

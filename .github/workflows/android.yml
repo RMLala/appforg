@@ -1,7 +1,7 @@
 name: AppForge Studio Android
 on:
   push:
-    branches: [appforge/studio-v15.7-cloud-sync, appforge/studio-v15.7-questionnaire]
+    branches: [appforge/studio-v15.5-cloud-sync, appforge/studio-v15.7-questionnaire]
   pull_request:
     branches: [main]
   workflow_dispatch:

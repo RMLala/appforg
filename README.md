@@ -1,6 +1,10 @@
 # AppForge Studio Android
 
-Application Android emballant AppForge Studio 15.8 dans Capacitor. L’interface et les données restent locales sur l’appareil ; la page Cloud utilise le Worker Cloudflare configuré dans AppForge.
+Application Android emballant AppForge Studio 15.8 dans Capacitor. PromptiPro est une application HTML autonome distincte (PromptiPro.html), accessible indépendamment. Les règles AppForge imposent que toute licence active donne automatiquement accès au Cloud client sans création obligatoire de compte e-mail/mot de passe; les applications restent offline-first. L’interface et les données restent locales sur l’appareil ; la page Cloud utilise le Worker Cloudflare configuré dans AppForge.
+
+## Licence et Cloud
+
+Le source du Worker de licences se trouve dans `cloud/license-worker/`. La migration 0005 ajoute la modification/suppression non destructive des applications et licences. Ce dépôt contient le code; un déploiement Cloudflare doit être effectué séparément pour que ces routes soient actives.
 
 ## Ouvrir dans Android Studio
 

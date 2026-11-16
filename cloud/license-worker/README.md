@@ -5,7 +5,7 @@ Cloudflare Worker + D1 API for product registration, activation, trials, signed 
 ## Deploy this source
 
 1. Use the existing `appforge-licenses` D1 database configured in `wrangler.toml`.
-2. From this folder, run `npm ci` (after creating a lockfile for this worker) and `npm run db:migrate:remote`.
+2. From this folder, run `npm install` and `npm run db:migrate:remote`.
 3. Configure `ADMIN_API_TOKEN`, `LICENSE_SIGNING_PRIVATE_JWK` and `CODE_HASH_PEPPER` as Wrangler secrets. Never put these values in the frontend or repository.
 4. Run `npm run deploy` and verify `/health` and `/v1/config`.
 

@@ -1,6 +1,6 @@
 # AppForge Studio Android
 
-Application Android emballant AppForge Studio 15.7 dans Capacitor. L’interface et les données restent locales sur l’appareil ; la page Cloud utilise le Worker Cloudflare configuré dans AppForge.
+Application Android emballant AppForge Studio 15.8 dans Capacitor. L’interface et les données restent locales sur l’appareil ; la page Cloud utilise le Worker Cloudflare configuré dans AppForge.
 
 ## Ouvrir dans Android Studio
 

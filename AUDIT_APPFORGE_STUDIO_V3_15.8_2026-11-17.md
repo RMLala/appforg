@@ -2,7 +2,7 @@
 
 Date : 17 novembre 2026  
 Base : `main` au commit `15b3b6a` et branche `work/appforge-v15.9-v3-integrations-20261117`.
-Version affichée : 15.8.0; Android `versionCode` porté à 159 pour la livraison suivante.
+Version affichée : 15.8.0; Android `versionCode` porté à 160 pour la livraison de ces corrections.
 Référentiel : `RMLala/android-template/APPFORGE-STANDARD-V3.md`.
 
 ## Implémentations ajoutées dans cette branche
@@ -18,6 +18,16 @@ Référentiel : `RMLala/android-template/APPFORGE-STANDARD-V3.md`.
 | APK | CI Android réussie sur le commit `46c79b0`: APK Debug API 23 et Releases API 23/API 29 signées, vérifiées par `apksigner`; `versionCode` 159 et `versionName` 15.8.0. Les deux Releases partagent le même certificat. | Artefacts vérifiables: run `44058255904`; Debug `14316338026`; Releases `14317167196`. Les APK compilent; les parcours de l'application restent à tester sur appareil. |
 | PWA | Aucune PWA ajoutée. | Aucun manifeste ni service worker dans les sources. |
 
+## Corrections fonctionnelles demandées le 17 novembre 2026
+
+| Demande | Correction préparée | Vérification / limite |
+|---|---|---|
+| Retirer la génération de prompts d’AppForge | Les écrans guidé et avancé sont retirés de l’interface active; la navigation ouvre PromptiPro, livré dans son propre fichier HTML/activité Android. | Assemblage `npm run build` et synchronisation Capacitor réussis; test du parcours sur Android réel restant. |
+| Navigation compacte par catégories | Volet gauche compact par catégories sur grand écran; barre basse avec 4 raccourcis et bouton `+` ouvrant les rubriques classées sur mobile. | Script de navigation passé à `node --check`; tests visuels desktop/mobile à confirmer. |
+| Ne pas ressaisir les accès | URL, jeton administrateur et identifiants propriétaire sont conservés chiffrés dans le coffre déverrouillé. Après déverrouillage au lancement, l’application tente de reconnecter les services automatiquement. | Le stockage chiffré repose sur le coffre AppForge; le test de fermeture/réouverture et de connexions valides reste à faire. |
+| Cloud inclus avec licence achetée | L’émission d’une licence payée retourne `cloudEnabled`; l’API fournit le jeton Cloud signé à l’activation de l’appareil autorisé. Aucun compte Cloud séparé n’est demandé à l’application cliente. | Worker modifié; tant que le Worker et la migration D1 ne sont pas déployés, aucune activation Cloud en production ne peut être attestée. |
+| Modifier/supprimer applications et licences | Les actions dynamiques sont marquées comme boutons explicites; les réponses sans changement sont signalées comme erreurs et les suppressions archivées sont indiquées correctement. | Routes PATCH/DELETE présentes dans le Worker; le comportement réel dépend de la version déployée et doit être confirmé avec D1. |
+
 ## Configuration Cloud requise avant production
 
 1. Vérifier le D1 indiqué dans `cloud/license-worker/wrangler.toml` et appliquer la nouvelle migration `0006_cloud_snapshots.sql`.
@@ -29,6 +39,7 @@ Référentiel : `RMLala/android-template/APPFORGE-STANDARD-V3.md`.
 
 - `npm ci` a réussi.
 - `npm run build` et `npm run sync` ont réussi; la copie Android contient le HTML AppForge, `PromptiPro.html` et le pont JavaScript Capacitor.
+- Après les corrections du 17 novembre, `npm ci`, `npm run sync`, `node --check` sur les scripts V3/natifs/navigation et le Worker, ainsi que `git diff --check` ont réussi. `versionCode` est maintenant 160; la CI pour ce nouveau commit doit produire et vérifier ses APK.
 - `node --check` sur le Worker et `git diff --check` réussissent.
 - Le build Gradle local n’a pas démarré car Gradle 8.11.1 ne pouvait pas être téléchargé dans cet environnement. La CI GitHub a ensuite compilé Debug API 23 et les deux Releases, puis vérifié les signatures; le run Android `44058255904` est réussi.
 - Workflows du commit `46c79b0` réussis : Android `44058255904`, conformité V3 `44058255950`, contrôle central `44058256701`.

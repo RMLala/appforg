@@ -260,7 +260,7 @@ async function handle(req, env) {
     const expiresAt = durationDays ? new Date(Date.now() + durationDays * 86400000).toISOString() : null;
     const dbPlan = ["lifetime","owner"].includes(plan) ? "lifetime" : "annual";
     await env.DB.prepare("INSERT INTO licenses(id,product_id,customer_name,customer_email,code_hash,status,paid_confirmed,plan,max_devices,expires_at,payment_reference,created_at,license_type) VALUES(?,?,?,?,?,'active',1,?,?,?,?,?,?)").bind(id, productId, customerName, String(d.customerEmail || "").slice(0,160), codeHash, dbPlan, maxDevices, expiresAt, paymentReference.slice(0,100), now, plan).run();
-    return json({ ok: true, id, productId, customerName, code, plan, maxDevices, expiresAt, createdAt: now }, 201);
+    return json({ ok: true, id, productId, customerName, code, plan, maxDevices, expiresAt, createdAt: now, cloudEnabled: true, cloudAvailableAfterActivation: true }, 201);
   }
   const licenseRoute = path.match(/^\/admin\/licenses\/([0-9a-f-]{36})$/i);
   if (licenseRoute && req.method === "PATCH") {
@@ -270,6 +270,8 @@ async function handle(req, env) {
     return json({ ok: true, changed: r.meta?.changes || 0 });
   }
   if (licenseRoute && req.method === "DELETE") {
+    const existing = await env.DB.prepare("SELECT id FROM licenses WHERE id=?").bind(licenseRoute[1]).first();
+    if (!existing) return json({ error: "Licence introuvable." }, 404);
     const now = new Date().toISOString();
     await env.DB.batch([env.DB.prepare("UPDATE licenses SET status='revoked',revoked_at=COALESCE(revoked_at,?) WHERE id=? AND status='active'").bind(now,licenseRoute[1]),env.DB.prepare("INSERT OR IGNORE INTO deleted_licenses(license_id,deleted_at) VALUES(?,?)").bind(licenseRoute[1],now)]);
     return json({ ok: true, changed: 1, revoked: true });

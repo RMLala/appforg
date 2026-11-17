@@ -1,6 +1,6 @@
 # AppForge Studio Android
 
-Application Android emballant AppForge Studio 15.8.2 dans Capacitor. Le générateur de cahier des charges est livré dans PromptiPro.html, application HTML autonome distincte, et les projets sélectionnés sont transmis à PromptiPro. Les applications clientes restent offline-first; une licence ou un essai valides reçoivent un accès Cloud signé sans création obligatoire de compte e-mail/mot de passe.
+Application Android emballant AppForge Studio 15.8.3 dans Capacitor. Le générateur de cahier des charges est livré dans PromptiPro.html, application HTML autonome distincte, et les projets sélectionnés sont transmis à PromptiPro. Les applications clientes restent offline-first; une licence ou un essai valides reçoivent un accès Cloud signé sans création obligatoire de compte e-mail/mot de passe.
 
 ## Licence et Cloud
 

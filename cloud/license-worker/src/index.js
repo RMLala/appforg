@@ -37,6 +37,8 @@ async function issueCloudToken(env, productId, accessId, installationHash, scope
 async function cloudToken(req, env) {
   const data = await body(req), productId = String(data.productId || "").trim().toUpperCase(), installationId = String(data.installationId || "").trim();
   if (!validId(productId) || installationId.length < 16 || installationId.length > 120) return json({ error: "Informations Cloud invalides." }, 400);
+  const product = await env.DB.prepare("SELECT status FROM products WHERE product_id=? AND product_id NOT IN (SELECT product_id FROM deleted_products)").bind(productId).first();
+  if (!product || product.status !== "active") return json({ error: "Cette application est désactivée : l’accès Cloud est suspendu." }, 403);
   let claims; try { claims = await verifySignedToken(env, data.licenseToken); } catch { return json({ error: "Preuve de licence invalide ou expirée." }, 403); }
   const install = await digest(installationId);
   if (claims.app !== productId || claims.install !== install) return json({ error: "Cette preuve ne correspond pas à cette installation." }, 403);
@@ -56,6 +58,8 @@ async function cloudToken(req, env) {
 async function cloudSnapshot(req, env, url) {
   let claims; try { claims = await verifySignedToken(env, req.headers.get("Authorization")?.replace(/^Bearer\s+/i, "")); } catch { return json({ error: "Jeton Cloud invalide ou expiré." }, 401); }
   if (claims.kind !== "cloud" || !validId(claims.product) || typeof claims.access !== "string" || typeof claims.install !== "string") return json({ error: "Jeton Cloud invalide." }, 403);
+  const product = await env.DB.prepare("SELECT status FROM products WHERE product_id=? AND product_id NOT IN (SELECT product_id FROM deleted_products)").bind(claims.product).first();
+  if (!product || product.status !== "active") return json({ error: "Cette application est désactivée : la synchronisation est suspendue." }, 403);
   if (claims.scope === "trial") {
     const trial = await env.DB.prepare("SELECT expires_at FROM trials WHERE product_id=? AND installation_hash=?").bind(claims.product, claims.install).first();
     if (!trial || Date.parse(trial.expires_at) <= Date.now() || claims.access !== `trial:${claims.install}`) return json({ error: "Essai expiré : l’accès Cloud est suspendu." }, 403);
@@ -130,6 +134,8 @@ async function activate(req, env) {
   const code = String(data.code || "").trim().toUpperCase();
   const installationId = String(data.installationId || "").trim();
   if (!validId(productId) || code.length < 12 || code.length > 80 || installationId.length < 16 || installationId.length > 120) return json({ error: "Informations d’activation invalides." }, 400);
+  const product = await env.DB.prepare("SELECT status FROM products WHERE product_id=? AND product_id NOT IN (SELECT product_id FROM deleted_products)").bind(productId).first();
+  if (!product || product.status !== "active") return json({ error: "Cette application est désactivée : les activations sont suspendues." }, 403);
   const beforeUsage = await dailyUsage(env);
   if (beforeUsage.totalRequests >= beforeUsage.softLimit) return json({ error: "Limite quotidienne d’activations atteinte. Réessayez demain.", usage: beforeUsage }, 429);
   const usage = await dailyUsage(env, true, "activation");
@@ -179,6 +185,8 @@ async function checkStatus(req, env) {
   }
   const installationHash = await digest(installationId);
   if (claims.v !== 1 || claims.app !== productId || claims.install !== installationHash) return json({ active: false, invalid: true, error: "Cette preuve ne correspond pas à cette installation." }, 403);
+  const product = await env.DB.prepare("SELECT status FROM products WHERE product_id=? AND product_id NOT IN (SELECT product_id FROM deleted_products)").bind(productId).first();
+  if (!product || product.status !== "active") return json({ active: false, revoked: true, error: "Cette application est désactivée : la licence est suspendue." }, 403);
   if (claims.kind === "trial") {
     const trial = await env.DB.prepare("SELECT expires_at FROM trials WHERE product_id=? AND installation_hash=?").bind(productId, installationHash).first();
     if (!trial || Date.parse(trial.expires_at) <= Date.now() || (claims.exp && Date.parse(claims.exp) <= Date.now())) return json({ active: false, expired: true, error: "La période d’essai est terminée." }, 403);

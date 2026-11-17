@@ -1,0 +1,1 @@
+ALTER TABLE usage_daily ADD COLUMN status_requests INTEGER NOT NULL DEFAULT 0;

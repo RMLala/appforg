@@ -1,0 +1,15 @@
+name = "appforge-license-api"
+main = "src/index.js"
+compatibility_date = "2026-11-05"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "appforge-licenses"
+database_id = "ba3b4784-fb64-4c60-818d-ec9cd086a2e2"
+migrations_dir = "migrations"
+
+[vars]
+DAILY_API_LIMIT = "50000"
+TRIAL_HOURS = "72"
+# Secrets are configured with Wrangler and never committed:
+# ADMIN_API_TOKEN, LICENSE_SIGNING_PRIVATE_JWK, CODE_HASH_PEPPER

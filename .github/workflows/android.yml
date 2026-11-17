@@ -106,4 +106,5 @@ jobs:
             adb shell dumpsys activity activities | grep -E 'ResumedActivity|topResumedActivity' | grep 'mg.appforge.studio'
             adb shell uiautomator dump /sdcard/appforge-window.xml
             adb pull /sdcard/appforge-window.xml appforge-window.xml
-            grep -F 'Déverrouiller' appforge-window.xml
+            grep -F 'Tableau de bord' appforge-window.xml
+            ! grep -F 'Le déverrouillage Android est indisponible' appforge-window.xml

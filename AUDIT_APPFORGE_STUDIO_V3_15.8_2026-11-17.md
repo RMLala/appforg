@@ -15,7 +15,7 @@ Référentiel : `RMLala/android-template/APPFORGE-STANDARD-V3.md`.
 | Synchronisation client | `GET/PUT /v1/cloud/snapshot` fournit des instantanés par licence/appareil logique, taille limitée à 450 Ko, numéro de révision et rejet 409 des écritures concurrentes. Les essais de 3 jours utilisent une portée dédiée. | Contrôle de concurrence optimiste atomique prévu par mise à jour conditionnelle SQL. Tests D1/Cloudflare et intégration d’une application cliente réelle requis avant déclaration opérationnelle. |
 | Google Drive | Android ouvre la feuille de partage native pour exporter, et le sélecteur système pour restaurer. Le chiffrement de sauvegarde par mot de passe est proposé; l’import exige confirmation avant remplacement. | Code natif et UI présents; compte Drive, permissions du fournisseur de documents et restauration sur appareil réel non testés. Navigateur standalone conserve le sélecteur HTML existant. |
 | PromptiPro | La navigation AppForge retire les destinations générateur guidé/avancé. Le flux ouvre PromptiPro, qui reçoit l’ancien projet sélectionné et inclut maintenant un concepteur de cahier des charges autonome, avec génération, copie et téléchargement. | HTML construit et contenu vérifiable; transfert de projets existants et ouverture depuis Android doivent être exercés en UI. |
-| APK | CI Android réussie sur le commit `46c79b0`: APK Debug API 23 et Releases API 23/API 29 signées, vérifiées par `apksigner`; `versionCode` 159 et `versionName` 15.8.0. Les deux Releases partagent le même certificat. | Artefacts vérifiables: run `44058255904`; Debug `14316338026`; Releases `14317167196`. Les APK compilent; les parcours de l'application restent à tester sur appareil. |
+| APK | CI Android #32 réussie sur le commit `bdee57d`: Debug API 23 et Releases API 23/API 29 signées, vérifiées par `apksigner`; `versionCode` 160 et `versionName` 15.8. | Artefacts vérifiables: run `44099712898`; Debug `14335038322`; Releases `14335877261`. Les APK compilent; les parcours restent à tester sur appareil. |
 | PWA | Aucune PWA ajoutée. | Aucun manifeste ni service worker dans les sources. |
 
 ## Corrections fonctionnelles demandées le 17 novembre 2026
@@ -39,10 +39,10 @@ Référentiel : `RMLala/android-template/APPFORGE-STANDARD-V3.md`.
 
 - `npm ci` a réussi.
 - `npm run build` et `npm run sync` ont réussi; la copie Android contient le HTML AppForge, `PromptiPro.html` et le pont JavaScript Capacitor.
-- Après les corrections du 17 novembre, `npm ci`, `npm run sync`, `node --check` sur les scripts V3/natifs/navigation et le Worker, ainsi que `git diff --check` ont réussi. `versionCode` est maintenant 160; la CI pour ce nouveau commit doit produire et vérifier ses APK.
+- Après les corrections du 17 novembre, `npm ci`, `npm run sync`, `node --check` sur les scripts V3/natifs/navigation et le Worker, ainsi que `git diff --check` ont réussi. La CI Android #32 a compilé Debug API23 et les Releases signées API23/API29; `apksigner` a réussi.
 - `node --check` sur le Worker et `git diff --check` réussissent.
 - Le build Gradle local n’a pas démarré car Gradle 8.11.1 ne pouvait pas être téléchargé dans cet environnement. La CI GitHub a ensuite compilé Debug API 23 et les deux Releases, puis vérifié les signatures; le run Android `44058255904` est réussi.
-- Workflows du commit `46c79b0` réussis : Android `44058255904`, conformité V3 `44058255950`, contrôle central `44058256701`.
+- Workflows réussis après ces corrections : Android `44099712898`, scan V3 `44099713083`, contrôle central `44099713739`.
 - Aucun test sur appareil Android réel ni déploiement Cloudflare n’a été effectué.
 
 ## Décision de statut

@@ -1,10 +1,12 @@
 # AppForge Studio Android
 
-Application Android emballant AppForge Studio 15.8 dans Capacitor. PromptiPro est une application HTML autonome distincte (PromptiPro.html), accessible indépendamment. Les règles AppForge imposent que toute licence active donne automatiquement accès au Cloud client sans création obligatoire de compte e-mail/mot de passe; les applications restent offline-first. L’interface et les données restent locales sur l’appareil ; la page Cloud utilise le Worker Cloudflare configuré dans AppForge.
+Application Android emballant AppForge Studio 15.8 dans Capacitor. Le générateur de cahier des charges est livré dans PromptiPro.html, application HTML autonome distincte, et les projets sélectionnés sont transmis à PromptiPro. Les applications clientes restent offline-first; une licence ou un essai valides reçoivent un accès Cloud signé sans création obligatoire de compte e-mail/mot de passe.
 
 ## Licence et Cloud
 
-Le source du Worker de licences se trouve dans `cloud/license-worker/`. La migration 0005 ajoute la modification/suppression non destructive des applications et licences. Ce dépôt contient le code; un déploiement Cloudflare doit être effectué séparément pour que ces routes soient actives.
+Le Worker de licences et de synchronisation se trouve dans `cloud/license-worker/`. La migration 0006 ajoute les instantanés Cloud. Après activation ou démarrage d’essai, le Worker délivre un jeton d’accès Cloud de six heures. Les routes `GET/PUT /v1/cloud/snapshot?resource=...` vérifient de nouveau la licence et l’appareil; `PUT` exige `expectedRevision`, et renvoie HTTP 409 en cas de conflit. Les instantanés sont limités à 450 Ko et ne sont pas chiffrés de bout en bout. Le code source et l’ID D1 ne prouvent pas un déploiement : appliquer la migration puis déployer le Worker séparément.
+
+L’application Android utilise biométrie forte avec code de verrouillage système en secours. Le coffre existant est chiffré par AES-GCM/PBKDF2 et son enveloppe est conservée dans Android Keystore. Le partage/restauration passe par les activités Android natives et fonctionne avec Google Drive via le sélecteur système, sans OAuth intégré. La version HTML standalone ne dispose pas du Keystore Android.
 
 ## Ouvrir dans Android Studio
 

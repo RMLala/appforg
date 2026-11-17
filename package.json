@@ -1,6 +1,6 @@
 {
   "name": "appforge-studio",
-  "version": "15.8.0",
+  "version": "15.8.1",
   "private": true,
   "description": "AppForge Studio Android",
   "scripts": {

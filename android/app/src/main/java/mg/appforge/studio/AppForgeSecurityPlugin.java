@@ -45,26 +45,31 @@ public class AppForgeSecurityPlugin extends Plugin {
 
     @PluginMethod
     public void authenticate(PluginCall call) {
-        int authenticators = BiometricManager.Authenticators.BIOMETRIC_STRONG | BiometricManager.Authenticators.DEVICE_CREDENTIAL;
-        if (BiometricManager.from(getContext()).canAuthenticate(authenticators) != BiometricManager.BIOMETRIC_SUCCESS) {
-            call.reject("Configure une empreinte ou un code de verrouillage Android pour protéger AppForge.", "AUTH_UNAVAILABLE");
-            return;
-        }
-        BiometricPrompt.PromptInfo.Builder promptBuilder = new BiometricPrompt.PromptInfo.Builder()
-            .setTitle("Déverrouiller AppForge Studio")
-            .setSubtitle("Biométrie ou code de verrouillage Android");
-        if (android.os.Build.VERSION.SDK_INT >= 30) promptBuilder.setAllowedAuthenticators(authenticators);
-        else promptBuilder.setDeviceCredentialAllowed(true);
-        BiometricPrompt.PromptInfo prompt = promptBuilder.build();
-        BiometricPrompt biometric = new BiometricPrompt(getActivity(), ContextCompat.getMainExecutor(getContext()), new BiometricPrompt.AuthenticationCallback() {
-            @Override public void onAuthenticationSucceeded(BiometricPrompt.AuthenticationResult result) {
-                JSObject out = new JSObject();
-                try { out.put("authenticated", true); call.resolve(out); }
-                catch (Exception e) { call.reject("Résultat de déverrouillage illisible."); }
+        try {
+            int authenticators = BiometricManager.Authenticators.BIOMETRIC_STRONG | BiometricManager.Authenticators.DEVICE_CREDENTIAL;
+            if (BiometricManager.from(getContext()).canAuthenticate(authenticators) != BiometricManager.BIOMETRIC_SUCCESS) {
+                call.reject("Configure une empreinte ou un code de verrouillage Android pour protéger AppForge.", "AUTH_UNAVAILABLE");
+                return;
             }
-            @Override public void onAuthenticationError(int code, CharSequence message) { call.reject(String.valueOf(message), "AUTH_CANCELLED"); }
-        });
-        biometric.authenticate(prompt);
+            BiometricPrompt.PromptInfo.Builder promptBuilder = new BiometricPrompt.PromptInfo.Builder()
+                .setTitle("Déverrouiller AppForge Studio")
+                .setSubtitle("Biométrie ou code de verrouillage Android");
+            if (android.os.Build.VERSION.SDK_INT >= 30) promptBuilder.setAllowedAuthenticators(authenticators);
+            else promptBuilder.setDeviceCredentialAllowed(true);
+            BiometricPrompt.PromptInfo prompt = promptBuilder.build();
+            BiometricPrompt biometric = new BiometricPrompt(getActivity(), ContextCompat.getMainExecutor(getContext()), new BiometricPrompt.AuthenticationCallback() {
+                @Override public void onAuthenticationSucceeded(BiometricPrompt.AuthenticationResult result) {
+                    JSObject out = new JSObject();
+                    try { out.put("authenticated", true); call.resolve(out); }
+                    catch (Exception e) { call.reject("Résultat de déverrouillage illisible."); }
+                }
+                @Override public void onAuthenticationError(int code, CharSequence message) { call.reject(String.valueOf(message), "AUTH_CANCELLED"); }
+            });
+            biometric.authenticate(prompt);
+        } catch (Exception e) {
+            // A biometric provider failure must be reported to JavaScript, never crash the host app.
+            call.reject("Le déverrouillage Android est indisponible. Réessaie ou vérifie le verrouillage de l’appareil.", "AUTH_START_FAILED");
+        }
     }
 
     @PluginMethod

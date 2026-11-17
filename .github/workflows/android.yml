@@ -36,11 +36,11 @@ jobs:
           cd android
           ./gradlew --no-daemon assembleApi23Debug
           mkdir -p ../release-output
-          cp app/build/outputs/apk/api23/debug/app-api23-debug.apk ../release-output/AppForge-Studio-15.8.1-Debug-API23.apk
+          cp app/build/outputs/apk/api23/debug/app-api23-debug.apk ../release-output/AppForge-Studio-15.8.2-Debug-API23.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: AppForge-Studio-15.8.1-Debug-API23
-          path: release-output/AppForge-Studio-15.8.1-Debug-API23.apk
+          name: AppForge-Studio-15.8.2-Debug-API23
+          path: release-output/AppForge-Studio-15.8.2-Debug-API23.apk
           if-no-files-found: error
           retention-days: 30
       - name: Check release signing secrets
@@ -65,18 +65,18 @@ jobs:
           cd android
           ./gradlew --no-daemon assembleApi23Release assembleApi29Release
           mkdir -p ../release-output
-          cp app/build/outputs/apk/api23/release/app-api23-release.apk ../release-output/AppForge-Studio-15.8.1-Release-API23.apk
-          cp app/build/outputs/apk/api29/release/app-api29-release.apk ../release-output/AppForge-Studio-15.8.1-Release-API29.apk
+          cp app/build/outputs/apk/api23/release/app-api23-release.apk ../release-output/AppForge-Studio-15.8.2-Release-API23.apk
+          cp app/build/outputs/apk/api29/release/app-api29-release.apk ../release-output/AppForge-Studio-15.8.2-Release-API29.apk
       - name: Verify signed APKs
         run: |
-          test -s release-output/AppForge-Studio-15.8.1-Release-API23.apk
-          test -s release-output/AppForge-Studio-15.8.1-Release-API29.apk
-          $ANDROID_HOME/build-tools/34.0.0/apksigner verify --print-certs release-output/AppForge-Studio-15.8.1-Release-API23.apk
-          $ANDROID_HOME/build-tools/34.0.0/apksigner verify --print-certs release-output/AppForge-Studio-15.8.1-Release-API29.apk
+          test -s release-output/AppForge-Studio-15.8.2-Release-API23.apk
+          test -s release-output/AppForge-Studio-15.8.2-Release-API29.apk
+          $ANDROID_HOME/build-tools/34.0.0/apksigner verify --print-certs release-output/AppForge-Studio-15.8.2-Release-API23.apk
+          $ANDROID_HOME/build-tools/34.0.0/apksigner verify --print-certs release-output/AppForge-Studio-15.8.2-Release-API29.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: AppForge-Studio-15.8.1-Signed-Release-API23-API29
-          path: release-output/AppForge-Studio-15.8.1-Release-API*.apk
+          name: AppForge-Studio-15.8.2-Signed-Release-API23-API29
+          path: release-output/AppForge-Studio-15.8.2-Release-API*.apk
           if-no-files-found: error
           retention-days: 30
   launch-smoke:
@@ -86,7 +86,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: AppForge-Studio-15.8.1-Debug-API23
+          name: AppForge-Studio-15.8.2-Signed-Release-API23-API29
           path: release-output
       - name: Launch on Android 13 emulator
         uses: reactivecircus/android-emulator-runner@v2
@@ -98,9 +98,12 @@ jobs:
           emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect
           disable-animations: true
           script: |
-            adb install -r release-output/AppForge-Studio-15.8.1-Debug-API23.apk
+            adb install -r release-output/AppForge-Studio-15.8.2-Release-API29.apk
             adb shell am force-stop mg.appforge.studio
             adb shell am start -W -n mg.appforge.studio/.MainActivity
             sleep 5
             adb shell pidof mg.appforge.studio
             adb shell dumpsys activity activities | grep -E 'ResumedActivity|topResumedActivity' | grep 'mg.appforge.studio'
+            adb shell uiautomator dump /sdcard/appforge-window.xml
+            adb pull /sdcard/appforge-window.xml appforge-window.xml
+            grep -F 'Déverrouiller' appforge-window.xml

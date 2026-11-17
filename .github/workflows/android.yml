@@ -37,22 +37,6 @@ jobs:
           ./gradlew --no-daemon assembleApi23Debug
           mkdir -p ../release-output
           cp app/build/outputs/apk/api23/debug/app-api23-debug.apk ../release-output/AppForge-Studio-15.8.1-Debug-API23.apk
-      - name: Launch on Android 13 emulator
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 33
-          target: google_apis
-          arch: x86_64
-          profile: pixel_2
-          emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect
-          disable-animations: true
-          script: |
-            adb install -r android/app/build/outputs/apk/api23/debug/app-api23-debug.apk
-            adb shell am force-stop mg.appforge.studio
-            adb shell am start -W -n mg.appforge.studio/.MainActivity
-            sleep 5
-            adb shell pidof mg.appforge.studio
-            adb shell dumpsys activity activities | grep -E 'ResumedActivity|topResumedActivity' | grep 'mg.appforge.studio'
       - uses: actions/upload-artifact@v4
         with:
           name: AppForge-Studio-15.8.1-Debug-API23
@@ -95,3 +79,28 @@ jobs:
           path: release-output/AppForge-Studio-15.8.1-Release-API*.apk
           if-no-files-found: error
           retention-days: 30
+  launch-smoke:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: AppForge-Studio-15.8.1-Debug-API23
+          path: release-output
+      - name: Launch on Android 13 emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect
+          disable-animations: true
+          script: |
+            adb install -r release-output/AppForge-Studio-15.8.1-Debug-API23.apk
+            adb shell am force-stop mg.appforge.studio
+            adb shell am start -W -n mg.appforge.studio/.MainActivity
+            sleep 5
+            adb shell pidof mg.appforge.studio
+            adb shell dumpsys activity activities | grep -E 'ResumedActivity|topResumedActivity' | grep 'mg.appforge.studio'

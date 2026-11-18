@@ -30,9 +30,21 @@ async function verifySignedToken(env, token) {
   if (claims.exp && Date.parse(claims.exp) <= Date.now()) throw new Error("expired");
   return claims;
 }
+async function cloudRights(env, productId, accessId, scope) {
+  if(scope==='trial'){const trial=await env.DB.prepare("SELECT expires_at FROM trials WHERE product_id=? AND installation_hash=?").bind(productId,accessId.slice(6)).first();return {enabled:!!trial&&Date.parse(trial.expires_at)>Date.now(),maxBytes:5242880,requestsDay:1000,expiresAt:trial?.expires_at||null};}
+  const row=await env.DB.prepare("SELECT cloud_enabled,cloud_quota_bytes,cloud_requests_day,expires_at,status,paid_confirmed FROM licenses WHERE id=? AND product_id=?").bind(accessId,productId).first();
+  return {enabled:!!row&&row.cloud_enabled===1&&row.status==='active'&&!!row.paid_confirmed&&(!row.expires_at||Date.parse(row.expires_at)>Date.now()),maxBytes:row?.cloud_quota_bytes||0,requestsDay:row?.cloud_requests_day||0,expiresAt:row?.expires_at||null};
+}
+async function consumeCloudRequest(env, productId, accessId, limit) {
+  const day=new Date().toISOString().slice(0,10);
+  const row=await env.DB.prepare("INSERT INTO cloud_usage_daily(access_id,product_id,day,requests) VALUES(?,?,?,1) ON CONFLICT(access_id,product_id,day) DO UPDATE SET requests=requests+1 WHERE requests<? RETURNING requests").bind(accessId,productId,day,limit).first();
+  return !!row;
+}
 async function issueCloudToken(env, productId, accessId, installationHash, scope = "license") {
-  const expiresAt = new Date(Date.now() + 6 * 3600000).toISOString();
-  return { token: await signedToken(env, { v: 1, kind: "cloud", scope, product: productId, access: accessId, install: installationHash, iat: new Date().toISOString(), exp: expiresAt }), expiresAt };
+  const rights=await cloudRights(env,productId,accessId,scope);
+  if(!rights.enabled)return {enabled:false};
+  const expiresAt = new Date(Math.min(Date.now()+6*3600000,rights.expiresAt?Date.parse(rights.expiresAt):Infinity)).toISOString();
+  return { enabled:true, token: await signedToken(env, { v: 1, kind: "cloud", scope, product: productId, access: accessId, install: installationHash, iat: new Date().toISOString(), exp: expiresAt }), expiresAt, maxBytes:rights.maxBytes, requestsDay:rights.requestsDay };
 }
 async function cloudToken(req, env) {
   const data = await body(req), productId = String(data.productId || "").trim().toUpperCase(), installationId = String(data.installationId || "").trim();
@@ -53,6 +65,9 @@ async function cloudToken(req, env) {
   const activation = await env.DB.prepare("SELECT id FROM activations WHERE license_id=? AND installation_hash=?").bind(claims.license, install).first();
   if (!activation) return json({ error: "Cet appareil n’est plus autorisé." }, 403);
   await env.DB.prepare("UPDATE activations SET last_seen=? WHERE license_id=? AND installation_hash=?").bind(new Date().toISOString(), claims.license, install).run();
+  const rights=await cloudRights(env,productId,claims.license,"license");
+  if(!rights.enabled)return json({error:"Accès Cloud désactivé pour cette licence."},403);
+  if(!await consumeCloudRequest(env,productId,claims.license,rights.requestsDay))return json({error:"Quota journalier Cloud atteint."},429);
   return json({ ok: true, ...(await issueCloudToken(env, productId, claims.license, install)), offline: false });
 }
 async function cloudSnapshot(req, env, url) {
@@ -69,6 +84,9 @@ async function cloudSnapshot(req, env, url) {
     const activation = await env.DB.prepare("SELECT id FROM activations WHERE license_id=? AND installation_hash=?").bind(claims.access, claims.install).first();
     if (!activation) return json({ error: "Cet appareil n’est plus autorisé." }, 403);
   } else return json({ error: "Portée Cloud invalide." }, 403);
+  const rights=await cloudRights(env,claims.product,claims.access,claims.scope);
+  if(!rights.enabled)return json({error:"Accès Cloud désactivé pour cette licence."},403);
+  if(!await consumeCloudRequest(env,claims.product,claims.access,rights.requestsDay))return json({error:"Quota journalier Cloud atteint."},429);
   const resource = String(url.searchParams.get("resource") || "default");
   if (!/^[A-Za-z0-9_-]{1,80}$/.test(resource)) return json({ error: "Identifiant de sauvegarde invalide." }, 400);
   const read = async () => {
@@ -91,8 +109,12 @@ async function cloudSnapshot(req, env, url) {
   const revision = current.revision + 1, now = new Date().toISOString();
   const payload = JSON.stringify(d.snapshot);
   const write = current.revision === 0
-    ? await env.DB.prepare("INSERT OR IGNORE INTO cloud_snapshots(access_id,product_id,resource,revision,payload,updated_at) VALUES(?,?,?,?,?,?)").bind(claims.access, claims.product, resource, revision, payload, now).run()
-    : await env.DB.prepare("UPDATE cloud_snapshots SET revision=?,payload=?,updated_at=? WHERE access_id=? AND product_id=? AND resource=? AND revision=?").bind(revision, payload, now, claims.access, claims.product, resource, d.expectedRevision).run();
+    ? await env.DB.prepare("INSERT OR IGNORE INTO cloud_snapshots(access_id,product_id,resource,revision,payload,updated_at) SELECT ?,?,?,?,?,? WHERE (SELECT COALESCE(SUM(length(CAST(payload AS BLOB))),0) FROM cloud_snapshots WHERE access_id=? AND product_id=?) + length(CAST(? AS BLOB)) <= ?").bind(claims.access,claims.product,resource,revision,payload,now,claims.access,claims.product,payload,rights.maxBytes).run()
+    : await env.DB.prepare("UPDATE cloud_snapshots SET revision=?,payload=?,updated_at=? WHERE access_id=? AND product_id=? AND resource=? AND revision=? AND (SELECT COALESCE(SUM(length(CAST(payload AS BLOB))),0) FROM cloud_snapshots WHERE access_id=? AND product_id=?) - length(CAST(payload AS BLOB)) + length(CAST(? AS BLOB)) <= ?").bind(revision,payload,now,claims.access,claims.product,resource,d.expectedRevision,claims.access,claims.product,payload,rights.maxBytes).run();
+  if(!(write.meta?.changes>0)){
+    const latest=await read();if(latest.revision!==d.expectedRevision)return json({conflict:true,...latest},409);
+    return json({error:"Quota de stockage Cloud atteint."},413);
+  }
   if (!(write.meta?.changes > 0)) return json({ conflict: true, ...(await read()) }, 409);
   return json({ ok: true, resource, revision, updatedAt: now });
 }
@@ -153,9 +175,9 @@ async function activate(req, env) {
   const installationHash = await digest(installationId);
   const prior = await env.DB.prepare("SELECT id FROM activations WHERE license_id=? AND installation_hash=?").bind(license.id, installationHash).first();
   if (!prior) {
-    const count = await env.DB.prepare("SELECT COUNT(*) AS n FROM activations WHERE license_id=?").bind(license.id).first();
-    if ((count?.n || 0) >= license.max_devices) return json({ error: "Nombre maximal d’appareils atteint. Contactez le support pour réinitialiser une activation." }, 403);
-    await env.DB.prepare("INSERT INTO activations(license_id,installation_hash,activated_at,last_seen) VALUES(?,?,?,?)").bind(license.id, installationHash, new Date().toISOString(), new Date().toISOString()).run();
+    await env.DB.prepare("INSERT OR IGNORE INTO activations(license_id,installation_hash,activated_at,last_seen) SELECT ?,?,?,? WHERE (SELECT COUNT(*) FROM activations WHERE license_id=?) < (SELECT max_devices FROM licenses WHERE id=?)").bind(license.id,installationHash,new Date().toISOString(),new Date().toISOString(),license.id,license.id).run();
+    const registered=await env.DB.prepare("SELECT id FROM activations WHERE license_id=? AND installation_hash=?").bind(license.id,installationHash).first();
+    if(!registered)return json({error:"Nombre maximal d’appareils atteint."},403);
   } else {
     await env.DB.prepare("UPDATE activations SET last_seen=? WHERE license_id=? AND installation_hash=?").bind(new Date().toISOString(), license.id, installationHash).run();
   }
@@ -269,6 +291,17 @@ async function handle(req, env) {
     const dbPlan = ["lifetime","owner"].includes(plan) ? "lifetime" : "annual";
     await env.DB.prepare("INSERT INTO licenses(id,product_id,customer_name,customer_email,code_hash,status,paid_confirmed,plan,max_devices,expires_at,payment_reference,created_at,license_type) VALUES(?,?,?,?,?,'active',1,?,?,?,?,?,?)").bind(id, productId, customerName, String(d.customerEmail || "").slice(0,160), codeHash, dbPlan, maxDevices, expiresAt, paymentReference.slice(0,100), now, plan).run();
     return json({ ok: true, id, productId, customerName, code, plan, maxDevices, expiresAt, createdAt: now, cloudEnabled: true, cloudAvailableAfterActivation: true }, 201);
+  }
+  const cloudAdmin=path.match(/^\/admin\/licenses\/([0-9a-f-]{36})\/cloud$/i);
+  if(cloudAdmin&&req.method==='GET'){
+    const row=await env.DB.prepare("SELECT cloud_enabled AS enabled,cloud_quota_bytes AS maxBytes,cloud_requests_day AS requestsDay FROM licenses WHERE id=?").bind(cloudAdmin[1]).first();
+    return row?json({...row,enabled:row.enabled===1}):json({error:"Licence inconnue."},404);
+  }
+  if(cloudAdmin&&req.method==='PATCH'){
+    const d=await body(req),maxBytes=Number(d.maxBytes),requestsDay=Number(d.requestsDay);
+    if(typeof d.enabled!=='boolean'||!Number.isSafeInteger(maxBytes)||maxBytes<1024||maxBytes>1073741824||!Number.isSafeInteger(requestsDay)||requestsDay<1||requestsDay>100000)return json({error:"Droits et quotas Cloud invalides."},400);
+    const r=await env.DB.prepare("UPDATE licenses SET cloud_enabled=?,cloud_quota_bytes=?,cloud_requests_day=? WHERE id=?").bind(d.enabled?1:0,maxBytes,requestsDay,cloudAdmin[1]).run();
+    return r.meta?.changes?json({ok:true,cloudEnabled:d.enabled,maxBytes,requestsDay}):json({error:"Licence inconnue."},404);
   }
   const licenseRoute = path.match(/^\/admin\/licenses\/([0-9a-f-]{36})$/i);
   if (licenseRoute && req.method === "PATCH") {

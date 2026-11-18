@@ -22,6 +22,44 @@ Le Worker gère les essais, les licences, les appareils et les instantanés Clou
 - `POST /v1/cloud/token` renouvelle le jeton à partir de `productId`, `installationId` et `licenseToken`. Le Worker vérifie de nouveau l’essai/la licence et l’activation de l’appareil.
 - `GET /v1/cloud/snapshot?resource=...` lit un instantané de la licence.
 - `PUT /v1/cloud/snapshot?resource=...` reçoit `{ "expectedRevision": 0, "snapshot": {} }`. Les écritures sont conditionnelles à la révision. Une modification concurrente retourne `409` et l’instantané actuel.
+- Le SDK client réutilisable est dans `client/appforge-cloud-sync.js`. Il active la licence, conserve l’identifiant d’installation et les jetons, renouvelle l’accès Cloud, puis synchronise les snapshots sans compte e-mail/mot de passe ni organisation.
+
+## Intégrer dans une application cliente
+
+Relie les adaptateurs du SDK au stockage métier existant. Utilise Android Keystore quand l’application fournit `window.AppForgeNativeStorage`; le stockage local du navigateur reste le repli pour le HTML standalone.
+
+```js
+const cloud = AppForgeCloudSync.create({
+  apiBase: 'https://appforge-license-api.appforge-licences-mg.workers.dev',
+  productId: 'MON_APPLICATION',
+  store: window.AppForgeNativeStorage || undefined,
+  data: {
+    getSnapshot: async () => JSON.parse(localStorage.getItem('app-data') || '{}'),
+    applySnapshot: async snapshot => {
+      localStorage.setItem('app-data', JSON.stringify(snapshot));
+      renderApplication();
+    }
+  },
+  onInitialRemote: async () =>
+    confirm('Une sauvegarde Cloud existe. Restaurer cette copie ?') ? 'remote' : 'local',
+  onConflict: async () =>
+    confirm('Une autre copie a changé. Charger la version Cloud ?') ? 'remote' : 'local',
+  onStatus: state => showCloudStatus(state)
+});
+
+// À l’ouverture de l’écran d’activation :
+await cloud.activate(licenseCode); // active la licence puis lance la première synchronisation
+
+// Au démarrage de l’application :
+await cloud.start(); // synchronise en ligne et reprend à la reconnexion
+
+// Après chaque écriture métier locale :
+cloud.notifyLocalChange();
+```
+
+Lors de la première connexion à un instantané existant, le SDK demande une décision à `onInitialRemote`. En cas de changements locaux et Cloud simultanés, il appelle `onConflict`; sans décision explicite, les deux copies sont conservées. Une application doit connecter ces callbacks à une interface compréhensible et tester le parcours avec une licence et D1 déployés.
+
+Le client ne reçoit jamais l’organisation ni le jeton administrateur. Les jetons Cloud sont des jetons porteurs liés à l’application et à l’appareil; ne les affiche pas et préfère un stockage Android Keystore. Les snapshots D1 ne sont pas chiffrés de bout en bout par le Worker.
 
 Chaque requête Cloud revérifie l’état de licence, la date et l’appareil dans D1. L’expiration, la révocation ou le retrait d’un appareil bloque donc les nouvelles lectures/écritures même si le jeton de six heures existe encore. Les données restent locales dans l’application cliente lorsque le Worker est indisponible. Les instantanés D1 ne sont pas chiffrés de bout en bout.
 
@@ -31,5 +69,6 @@ Chaque requête Cloud revérifie l’état de licence, la date et l’appareil d
 2. Appliquer `migrations/0006_cloud_snapshots.sql` avec Wrangler.
 3. Définir `ADMIN_API_TOKEN`, `LICENSE_SIGNING_PRIVATE_JWK` et `CODE_HASH_PEPPER` via `wrangler secret put`.
 4. Déployer le Worker et vérifier `/health`, `/v1/config`, essai, activation, synchronisation, conflit, expiration et révocation.
+5. Exécuter les tests du bridge avec `npm run test:cloud`.
 
 Ne pas déployer les migrations à distance sans vérifier l’environnement D1 cible. Les tests de développement et le déploiement ne sont pas implicites dans `npm run build`.

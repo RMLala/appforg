@@ -1,0 +1,26 @@
+name: AppForge License Worker validation
+
+on:
+  pull_request:
+    paths:
+      - "cloud/license-worker/**"
+      - ".github/workflows/license-worker.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  worker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install Worker dependencies
+        working-directory: cloud/license-worker
+        run: npm install
+      - name: Check Worker syntax and apply D1 migrations locally
+        working-directory: cloud/license-worker
+        run: npm run check

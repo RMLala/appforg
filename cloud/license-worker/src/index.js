@@ -165,7 +165,11 @@ async function cloudSession(req,env) {
 async function syncCloud(req,env) {
   const session=await cloudSession(req,env);if(!session)return json({error:"Jeton Cloud expiré ou accès révoqué. Reconnectez Prompti à Internet."},401);
   const d=await body(req),changes=Array.isArray(d.changes)?d.changes:[];
-  if(Number(req.headers.get("Content-Length")||0)>1000000)return json({error:"Requête de synchronisation trop volumineuse."},413);\n  if(changes.length>20)return json({error:"Limite de 20 changements par synchronisation."},413);\n  const quotaDay=new Date().toISOString().slice(0,10),quotaLimit=Math.max(1,Number(env.CLOUD_DAILY_SYNC_LIMIT||500));\n  const quota=await env.DB.prepare("INSERT INTO cloud_usage_daily(license_id,day,sync_requests) VALUES(?,?,1) ON CONFLICT(license_id,day) DO UPDATE SET sync_requests=sync_requests+1 WHERE sync_requests<? RETURNING sync_requests").bind(session.license_id,quotaDay,quotaLimit).first();\n  if(!quota)return json({error:"Quota Cloud quotidien atteint. Les données restent sur cet appareil; réessayez demain."},429);
+  if(Number(req.headers.get("Content-Length")||0)>1000000)return json({error:"Requête de synchronisation trop volumineuse."},413);
+  if(changes.length>20)return json({error:"Limite de 20 changements par synchronisation."},413);
+  const quotaDay=new Date().toISOString().slice(0,10),quotaLimit=Math.max(1,Number(env.CLOUD_DAILY_SYNC_LIMIT||500));
+  const quota=await env.DB.prepare("INSERT INTO cloud_usage_daily(license_id,day,sync_requests) VALUES(?,?,1) ON CONFLICT(license_id,day) DO UPDATE SET sync_requests=sync_requests+1 WHERE sync_requests<? RETURNING sync_requests").bind(session.license_id,quotaDay,quotaLimit).first();
+  if(!quota)return json({error:"Quota Cloud quotidien atteint. Les données restent sur cet appareil; réessayez demain."},429);
   const conflicts=[],accepted=[];
   for(const change of changes){
     const id=String(change.id||""),opId=String(change.opId||""),payload=JSON.stringify(change.data);

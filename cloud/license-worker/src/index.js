@@ -240,7 +240,7 @@ async function handle(req, env) {
   }
   if (path === "/admin/licenses" && req.method === "GET") {
     const productId = url.searchParams.get("productId") || "";
-    const { results = [] } = await env.DB.prepare("SELECT l.id,l.product_id AS productId,l.customer_name AS customerName,l.customer_email AS customerEmail,l.status,COALESCE(l.license_type,l.plan) AS plan,l.max_devices AS maxDevices,l.expires_at AS expiresAt,l.payment_reference AS paymentReference,l.created_at AS createdAt,(SELECT COUNT(*) FROM activations a WHERE a.license_id=l.id) AS activations FROM licenses l WHERE l.id NOT IN (SELECT license_id FROM deleted_licenses) AND (?='' OR l.product_id=?) ORDER BY l.created_at DESC LIMIT 500").bind(productId, productId).all();
+    const { results = [] } = await env.DB.prepare("SELECT l.id,l.product_id AS productId,l.customer_name AS customerName,l.customer_email AS customerEmail,l.status,COALESCE(l.license_type,l.plan) AS plan,l.max_devices AS maxDevices,l.cloud_enabled AS cloudEnabled,l.expires_at AS expiresAt,l.payment_reference AS paymentReference,l.created_at AS createdAt,(SELECT COUNT(*) FROM activations a WHERE a.license_id=l.id) AS activations FROM licenses l WHERE l.id NOT IN (SELECT license_id FROM deleted_licenses) AND (?='' OR l.product_id=?) ORDER BY l.created_at DESC LIMIT 500").bind(productId, productId).all();
     return json({ items: results });
   }
   if (path === "/admin/licenses" && req.method === "POST") {

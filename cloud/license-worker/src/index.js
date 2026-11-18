@@ -176,11 +176,12 @@ async function syncCloud(req,env) {
     const actual=current?.version||0,base=Number.isInteger(change.baseVersion)?change.baseVersion:-1;
     if(actual!==base){conflicts.push({id,version:actual,data:current&&!current.deleted?JSON.parse(current.payload_json):null,deleted:!!current?.deleted});continue;}
     const version=actual+1,now=new Date().toISOString(),deleted=change.deleted===true?1:0;
-    await env.DB.batch([
-      env.DB.prepare("INSERT INTO cloud_records(license_id,record_id,version,payload_json,deleted,updated_at) VALUES(?,?,?,?,?,?) ON CONFLICT(license_id,record_id) DO UPDATE SET version=excluded.version,payload_json=excluded.payload_json,deleted=excluded.deleted,updated_at=excluded.updated_at").bind(session.license_id,id,version,payload,deleted,now),
-      env.DB.prepare("INSERT INTO cloud_sync_ops(license_id,op_id,record_id,version,created_at) VALUES(?,?,?,?,?)").bind(session.license_id,opId,id,version,now),
-      env.DB.prepare("INSERT INTO cloud_changes(license_id,record_id,version,payload_json,deleted,created_at) VALUES(?,?,?,?,?,?)").bind(session.license_id,id,version,payload,deleted,now)
+    const write=await env.DB.batch([
+      env.DB.prepare("INSERT INTO cloud_records(license_id,record_id,version,payload_json,deleted,updated_at) VALUES(?,?,?,?,?,?) ON CONFLICT(license_id,record_id) DO UPDATE SET version=excluded.version,payload_json=excluded.payload_json,deleted=excluded.deleted,updated_at=excluded.updated_at WHERE cloud_records.version=?").bind(session.license_id,id,version,payload,deleted,now,actual),
+      env.DB.prepare("INSERT INTO cloud_sync_ops(license_id,op_id,record_id,version,created_at) SELECT ?,?,?,?,? WHERE changes()>0").bind(session.license_id,opId,id,version,now),
+      env.DB.prepare("INSERT INTO cloud_changes(license_id,record_id,version,payload_json,deleted,created_at) SELECT ?,?,?,?,?,? WHERE changes()>0").bind(session.license_id,id,version,payload,deleted,now)
     ]);
+    if(!(write?.[0]?.meta?.changes||0)){const latest=await env.DB.prepare("SELECT version,payload_json,deleted FROM cloud_records WHERE license_id=? AND record_id=?").bind(session.license_id,id).first();conflicts.push({id,version:latest?.version||0,data:latest&&!latest.deleted?JSON.parse(latest.payload_json):null,deleted:!!latest?.deleted});continue;}
     accepted.push({id,version});
   }
   const cursor=Math.max(0,Number(d.cursor)||0),pulled=await env.DB.prepare("SELECT seq,record_id AS id,version,payload_json AS payload,deleted FROM cloud_changes WHERE license_id=? AND seq>? ORDER BY seq LIMIT 500").bind(session.license_id,cursor).all();

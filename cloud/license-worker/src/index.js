@@ -82,7 +82,7 @@ async function activate(req, env) {
   } else {
     await env.DB.prepare("UPDATE activations SET last_seen=? WHERE license_id=? AND installation_hash=?").bind(new Date().toISOString(), license.id, installationHash).run();
   }
-  const token = await signedToken(env, { v: 1, app: productId, license: license.id, install: installationHash, iat: new Date().toISOString(), exp: license.expires_at || null });
+  const token = await signedToken(env, { v: 1, app: productId, kind: "license", license: license.id, install: installationHash, iat: new Date().toISOString(), exp: license.expires_at || null });
   return json({ ok: true, token, publicKey: await publicKey(env), offline: true });
 }
 async function checkStatus(req, env) {
@@ -111,15 +111,15 @@ async function checkStatus(req, env) {
   if (claims.kind === "trial") {
     const trial = await env.DB.prepare("SELECT expires_at FROM trials WHERE product_id=? AND installation_hash=?").bind(productId, installationHash).first();
     if (!trial || Date.parse(trial.expires_at) <= Date.now() || (claims.exp && Date.parse(claims.exp) <= Date.now())) return json({ active: false, expired: true, error: "La période d’essai est terminée." }, 403);
-    return json({ active: true, kind: "trial", expiresAt: trial.expires_at, checkedAt: new Date().toISOString() });
+    return json({ active: true, kind: "trial", cloud: false, expiresAt: trial.expires_at, checkedAt: new Date().toISOString() });
   }
   if (typeof claims.license !== "string") return json({ active: false, invalid: true, error: "Cette preuve de licence ne correspond pas." }, 403);
-  const license = await env.DB.prepare("SELECT status,paid_confirmed,expires_at FROM licenses WHERE id=? AND product_id=?").bind(claims.license, productId).first();
+  const license = await env.DB.prepare("SELECT id,status,paid_confirmed,expires_at FROM licenses WHERE id=? AND product_id=?").bind(claims.license, productId).first();
   if (!license || license.status !== "active" || !license.paid_confirmed) return json({ active: false, revoked: true, error: "Cette licence a été révoquée ou désactivée." }, 403);
   if ((license.expires_at && new Date(license.expires_at).getTime() < Date.now()) || (claims.exp && Date.parse(claims.exp) < Date.now())) return json({ active: false, expired: true, error: "Cette licence a expiré." }, 403);
   const activation = await env.DB.prepare("SELECT id FROM activations WHERE license_id=? AND installation_hash=?").bind(claims.license, installationHash).first();
   if (!activation) return json({ active: false, invalid: true, error: "Cette installation n’est plus autorisée." }, 403);
-  return json({ active: true, checkedAt: new Date().toISOString() });
+  return json({ active: true, kind: "license", cloud: true, licenseId: license.id, expiresAt: license.expires_at || null, checkedAt: new Date().toISOString() });
 }
 async function publicKey(env) {
   const jwk = JSON.parse(env.LICENSE_SIGNING_PRIVATE_JWK);

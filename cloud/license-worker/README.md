@@ -44,14 +44,16 @@ const cloud = AppForgeCloudSync.create({
     confirm('Une sauvegarde Cloud existe. Restaurer cette copie ?') ? 'remote' : 'local',
   onConflict: async () =>
     confirm('Une autre copie a changé. Charger la version Cloud ?') ? 'remote' : 'local',
-  onStatus: state => showCloudStatus(state)
+  onStatus: state => showCloudStatus(state),
+  onLicenseRevoked: () => lockLicensedFeaturesButKeepLocalData()
 });
 
 // À l’ouverture de l’écran d’activation :
 await cloud.activate(licenseCode); // active la licence puis lance la première synchronisation
 
-// Au démarrage de l’application :
-await cloud.start(); // synchronise en ligne et reprend à la reconnexion
+// Au démarrage et au retour au premier plan :
+await cloud.start(); // revérifie la licence en ligne avant la synchronisation
+// Sur une révocation, onLicenseRevoked bloque les fonctions sous licence, sans effacer les données locales
 
 // Après chaque écriture métier locale :
 cloud.notifyLocalChange();

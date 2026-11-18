@@ -1050,7 +1050,7 @@ window.addEventListener('appforge:license-connected',e=>{if(e.detail)store.set(k
 window.addEventListener('appforge:cloud-connected',e=>{if(e.detail)store.set(keys.cloud,JSON.stringify(e.detail)).catch(err=>console.warn('Secure Cloud credential storage:',err.message))});
 document.getElementById('afLicenseDisconnect')?.addEventListener('click',()=>{store.remove(keys.license).catch(()=>{})});
 document.getElementById('afSyncLogout')?.addEventListener('click',()=>{store.remove(keys.cloud).catch(()=>{})});
-(async()=>{
+const restore=async()=>{
  try{
   const license=safeParse(await store.get(keys.license)),cloud=safeParse(await store.get(keys.cloud));
   const licenseUrl=document.getElementById('afLicenseApiUrl'),licenseToken=document.getElementById('afLicenseAdminToken');
@@ -1058,6 +1058,7 @@ document.getElementById('afSyncLogout')?.addEventListener('click',()=>{store.rem
   if(license.base&&license.token&&licenseUrl&&licenseToken){licenseUrl.value=license.base;licenseToken.value=license.token;setTimeout(()=>{if(!window.AppForgeLicenseSession)document.getElementById('afLicenseConnect')?.click()},0)}
   if(cloud.base&&cloud.email&&cloud.password&&cloudUrl&&cloudEmail&&cloudPassword){cloudUrl.value=cloud.base;cloudEmail.value=cloud.email;cloudPassword.value=cloud.password;setTimeout(()=>{if(!window.AppForgeCloudSession)document.getElementById('afSyncLogin')?.click()},0)}
  }catch(err){console.warn('Secure credential restore:',err.message)}
-})();
+};
+if(document.getElementById('afNativeLock'))window.addEventListener('appforge:native-unlocked',restore,{once:true});else restore();
 })();
 </script></body></html>

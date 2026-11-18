@@ -83,6 +83,10 @@ jobs:
           retention-days: 30
   launch-smoke:
     needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        api-level: [29, 33]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -90,10 +94,10 @@ jobs:
         with:
           name: AppForge-Studio-15.8.4-Signed-Release-API23-API29
           path: release-output
-      - name: Launch on Android 13 emulator
+      - name: Launch on Android API ${{ matrix.api-level }} emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 33
+          api-level: ${{ matrix.api-level }}
           target: google_apis
           arch: x86_64
           profile: pixel_2
@@ -103,14 +107,11 @@ jobs:
             adb install -r release-output/AppForge-Studio-15.8.4-Release-API29.apk
             adb shell am force-stop mg.appforge.studio
             adb shell am start -n mg.appforge.studio/.MainActivity
-            for attempt in $(seq 1 30); do
-              if adb shell pidof mg.appforge.studio | tr -d '\r' | grep -q '[0-9]'; then break; fi
-              sleep 2
-            done
+            sleep 25
             adb shell pidof mg.appforge.studio | grep -q '[0-9]'
             adb shell dumpsys activity activities | grep -E 'ResumedActivity|topResumedActivity' | grep 'mg.appforge.studio'
             adb logcat -d -s AndroidRuntime:E > appforge-androidruntime.log
-            if grep -F 'FATAL EXCEPTION' appforge-androidruntime.log; then exit 1; fi
+            ! grep -F 'FATAL EXCEPTION' appforge-androidruntime.log
             adb shell screencap -p /sdcard/appforge-smoke.png
             adb pull /sdcard/appforge-smoke.png appforge-smoke.png
             test -s appforge-smoke.png
@@ -118,7 +119,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: AppForge-Studio-15.8.4-Android13-launch-evidence
+          name: AppForge-Studio-15.8.4-Android-${{ matrix.api-level }}-launch-evidence
           path: appforge-smoke.png
           if-no-files-found: ignore
           retention-days: 14

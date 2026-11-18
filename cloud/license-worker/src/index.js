@@ -114,12 +114,12 @@ async function checkStatus(req, env) {
     return json({ active: true, kind: "trial", expiresAt: trial.expires_at, checkedAt: new Date().toISOString() });
   }
   if (typeof claims.license !== "string") return json({ active: false, invalid: true, error: "Cette preuve de licence ne correspond pas." }, 403);
-  const license = await env.DB.prepare("SELECT status,paid_confirmed,expires_at FROM licenses WHERE id=? AND product_id=?").bind(claims.license, productId).first();
+  const license = await env.DB.prepare("SELECT status,paid_confirmed,cloud_enabled,license_type,expires_at FROM licenses WHERE id=? AND product_id=?").bind(claims.license, productId).first();
   if (!license || license.status !== "active" || !license.paid_confirmed) return json({ active: false, revoked: true, error: "Cette licence a été révoquée ou désactivée." }, 403);
   if ((license.expires_at && new Date(license.expires_at).getTime() < Date.now()) || (claims.exp && Date.parse(claims.exp) < Date.now())) return json({ active: false, expired: true, error: "Cette licence a expiré." }, 403);
   const activation = await env.DB.prepare("SELECT id FROM activations WHERE license_id=? AND installation_hash=?").bind(claims.license, installationHash).first();
   if (!activation) return json({ active: false, invalid: true, error: "Cette installation n’est plus autorisée." }, 403);
-  return json({ active: true, checkedAt: new Date().toISOString() });
+  return json({ active: true, cloudEnabled: !!license.cloud_enabled, expiresAt: license.expires_at, plan: license.license_type, checkedAt: new Date().toISOString() });
 }
 async function publicKey(env) {
   const jwk = JSON.parse(env.LICENSE_SIGNING_PRIVATE_JWK);
@@ -252,14 +252,14 @@ async function handle(req, env) {
     const durationDays = { test_day: 1, monthly: 30, annual: 365 }[plan];
     const expiresAt = durationDays ? new Date(Date.now() + durationDays * 86400000).toISOString() : null;
     const dbPlan = ["lifetime","owner"].includes(plan) ? "lifetime" : "annual";
-    await env.DB.prepare("INSERT INTO licenses(id,product_id,customer_name,customer_email,code_hash,status,paid_confirmed,plan,max_devices,expires_at,payment_reference,created_at,license_type) VALUES(?,?,?,?,?,'active',1,?,?,?,?,?,?)").bind(id, productId, customerName, String(d.customerEmail || "").slice(0,160), codeHash, dbPlan, maxDevices, expiresAt, paymentReference.slice(0,100), now, plan).run();
+    await env.DB.prepare("INSERT INTO licenses(id,product_id,customer_name,customer_email,code_hash,status,paid_confirmed,plan,max_devices,expires_at,payment_reference,created_at,license_type,cloud_enabled) VALUES(?,?,?,?,?,'active',1,?,?,?,?,?,?,?)").bind(id, productId, customerName, String(d.customerEmail || "").slice(0,160), codeHash, dbPlan, maxDevices, expiresAt, paymentReference.slice(0,100), now, plan, plan === "test_day" ? 0 : 1).run();
     return json({ ok: true, id, productId, customerName, code, plan, maxDevices, expiresAt, createdAt: now }, 201);
   }
   const licenseRoute = path.match(/^\/admin\/licenses\/([0-9a-f-]{36})$/i);
   if (licenseRoute && req.method === "PATCH") {
-    const d = await body(req), customerName = String(d.customerName || "").trim(), customerEmail = String(d.customerEmail || "").trim(), paymentReference = String(d.paymentReference || "").trim(), maxDevices = Number(d.maxDevices);
+    const d = await body(req), customerName = String(d.customerName || "").trim(), customerEmail = String(d.customerEmail || "").trim(), paymentReference = String(d.paymentReference || "").trim(), maxDevices = Number(d.maxDevices), cloudEnabled = typeof d.cloudEnabled === "boolean" ? (d.cloudEnabled ? 1 : 0) : null;
     if (customerName.length < 2 || customerName.length > 120 || customerEmail.length > 160 || paymentReference.length > 100 || !Number.isInteger(maxDevices) || maxDevices < 1 || maxDevices > 10) return json({ error: "Nom, e-mail, référence ou nombre d’appareils invalide." }, 400);
-    const r = await env.DB.prepare("UPDATE licenses SET customer_name=?,customer_email=?,payment_reference=?,max_devices=? WHERE id=? AND status IN ('active','revoked')").bind(customerName,customerEmail,paymentReference,maxDevices,licenseRoute[1]).run();
+    const r = await env.DB.prepare("UPDATE licenses SET customer_name=?,customer_email=?,payment_reference=?,max_devices=?,cloud_enabled=COALESCE(?,cloud_enabled) WHERE id=? AND status IN ('active','revoked')").bind(customerName,customerEmail,paymentReference,maxDevices,cloudEnabled,licenseRoute[1]).run();
     return json({ ok: true, changed: r.meta?.changes || 0 });
   }
   if (licenseRoute && req.method === "DELETE") {

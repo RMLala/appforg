@@ -88,7 +88,9 @@ jobs:
           apk-glob: 'release-output/*Release-API29.apk'
           application: 'AppForge-Studio'
           folder-id: '11JBTSIJmbFia_WC2jHSNb2fMFXQWUfA7'
-          service-account-json: ${{ secrets.DRIVE_SERVICE_ACCOUNT_JSON }}
+          oauth-client-id: ${{ secrets.DRIVE_OAUTH_CLIENT_ID }}
+          oauth-client-secret: ${{ secrets.DRIVE_OAUTH_CLIENT_SECRET }}
+          oauth-token-json: ${{ secrets.DRIVE_OAUTH_TOKEN_JSON }}
   launch-smoke:
     needs: build
     strategy:

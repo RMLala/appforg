@@ -1,0 +1,30 @@
+name: AppForge Cloud Sync Worker
+
+on:
+  push:
+    branches:
+      - main
+      - work/worshipflow-v3-license-cloud-20261118
+    paths:
+      - "cloud/sync-worker/**"
+      - ".github/workflows/cloud-sync-worker.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "cloud/sync-worker/**"
+      - ".github/workflows/cloud-sync-worker.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  worker-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node --test cloud/sync-worker/tests/*.test.js

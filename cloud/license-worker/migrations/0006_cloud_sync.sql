@@ -37,3 +37,4 @@ CREATE TABLE IF NOT EXISTS cloud_changes (
   created_at TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_cloud_changes_license_seq ON cloud_changes(license_id, seq);
+UPDATE licenses SET cloud_enabled=0 WHERE license_type='test_day' OR paid_confirmed<>1 OR status<>'active';

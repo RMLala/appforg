@@ -5,7 +5,7 @@ compatibility_date = "2026-11-05"
 [[d1_databases]]
 binding = "DB"
 database_name = "appforge-licenses"
-database_id = "ba3b4784-fb64-4c60-818d-ec9cd086a2e2"
+database_id = "a77521ea-dc78-4b80-b495-405127e275e7"
 migrations_dir = "migrations"
 
 [vars]

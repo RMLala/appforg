@@ -1,0 +1,31 @@
+import {test} from "node:test";
+import assert from "node:assert/strict";
+import worker from "../src/index.js";
+
+class MemoryD1 {
+  snapshots=new Map();
+  usage=new Map();
+  prepare(sql){return {args:[],bind(...args){this.args=args;return this},async first(){
+    if(sql.includes("INSERT INTO cloud_usage")){const [license,day]=this.args,key=license+"|"+day,count=(this.db.usage.get(key)||0)+1;this.db.usage.set(key,count);return {requests:count}}
+    if(sql.includes("SELECT revision,payload_json")){const [license,app]=this.args;return this.db.snapshots.get(license+"|"+app)||null}
+    if(sql.includes("INSERT OR IGNORE INTO cloud_snapshots")){const [license,app,payload,updated]=this.args,key=license+"|"+app;if(this.db.snapshots.has(key))return null;const row={revision:1,payload_json:payload,updated_at:updated};this.db.snapshots.set(key,row);return {revision:1}}
+    if(sql.includes("UPDATE cloud_snapshots")){const [payload,updated,license,app,expected]=this.args,key=license+"|"+app,row=this.db.snapshots.get(key);if(!row||row.revision!==expected)return null;row.revision++;row.payload_json=payload;row.updated_at=updated;return {revision:row.revision}}
+    throw new Error("Unexpected D1 query: "+sql)
+  },db:this}}
+}
+const env={DB:new MemoryD1(),CLOUD_TOKEN_SECRET:"test-cloud-secret-that-is-long-enough-123456",LICENSE_API_ORIGIN:"https://license.invalid",MAX_SNAPSHOT_BYTES:"1048576"};
+let licenseId="license-A",revoked=false,kind="license";
+const originalFetch=globalThis.fetch;
+function mockLicense(){globalThis.fetch=async(_url,options)=>{const d=JSON.parse(options.body);return Response.json(revoked?{active:false,error:"revoked"}:{active:true,kind,cloud:kind==="license",licenseId,expiresAt:null})}}
+async function issue(installationId="device-installation-0001"){mockLicense();const res=await worker.fetch(new Request("https://cloud.invalid/v2/session/issue",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({productId:"WORSHIPFLOW",licenseToken:"signed-proof",installationId})}),env);return {res,data:await res.json(),installationId}}
+function snapshotRequest(method,token,installationId,body){return new Request("https://cloud.invalid/v2/snapshot",{method,headers:{"Authorization":"Bearer "+token,"X-AppForge-License-Proof":"signed-proof","X-AppForge-Installation":installationId,"Content-Type":"application/json"},...(body?{body:JSON.stringify(body)}:{})})}
+const sample={schema:1,app:"worshipflow",songs:[{id:1,title:"Chant",lyrics:"Texte",themes:[]}],services:[],insps:[],themes:[]};
+test("paid active license automatically receives a short-lived device-bound Cloud token",async()=>{const {res,data}=await issue();assert.equal(res.status,200);assert.equal(data.cloud,true);assert.ok(data.token);assert.ok(Date.parse(data.expiresAt)>Date.now());assert.equal(data.licenseId,"license-A")});
+test("trial or non-Cloud license receives no Cloud token",async()=>{kind="trial";const {res,data}=await issue();assert.equal(res.status,403);assert.equal(data.cloud,false);kind="license"});
+test("two devices on one license synchronize the same D1 snapshot without account or org",async()=>{const a=await issue("device-installation-0001"),b=await issue("device-installation-0002");assert.equal(a.res.status,200);assert.equal(b.res.status,200);mockLicense();let response=await worker.fetch(snapshotRequest("GET",a.data.token,a.installationId),env);assert.deepEqual(await response.json(),{revision:0,snapshot:null});mockLicense();response=await worker.fetch(snapshotRequest("PUT",a.data.token,a.installationId,{expectedRevision:0,snapshot:sample}),env);assert.equal(response.status,200);mockLicense();response=await worker.fetch(snapshotRequest("GET",b.data.token,b.installationId),env);const remote=await response.json();assert.equal(remote.revision,1);assert.deepEqual(remote.snapshot,sample)});
+test("snapshot compare-and-swap rejects stale writes and avoids duplicate revisions",async()=>{licenseId="license-C";const a=await issue();mockLicense();let response=await worker.fetch(snapshotRequest("PUT",a.data.token,a.installationId,{expectedRevision:0,snapshot:sample}),env);assert.equal(response.status,200);mockLicense();response=await worker.fetch(snapshotRequest("PUT",a.data.token,a.installationId,{expectedRevision:0,snapshot:sample}),env);assert.equal(response.status,409)});
+test("revocation is enforced on every Cloud operation",async()=>{licenseId="license-R";const a=await issue();revoked=true;const response=await worker.fetch(snapshotRequest("GET",a.data.token,a.installationId),env);assert.equal(response.status,403);revoked=false});
+test("a token cannot be reused by a different device or product",async()=>{licenseId="license-D";const a=await issue();mockLicense();let response=await worker.fetch(snapshotRequest("GET",a.data.token,"another-device-installation"),env);assert.equal(response.status,403);response=await worker.fetch(new Request("https://cloud.invalid/v2/snapshot",{headers:{"Authorization":"Bearer "+a.data.token,"X-AppForge-License-Proof":"signed-proof","X-AppForge-Installation":a.installationId}}),env);assert.equal(response.status,403)});
+test("offline use remains local; the server route does not erase or replace data",async()=>{licenseId="license-O";const a=await issue();mockLicense();let response=await worker.fetch(snapshotRequest("PUT",a.data.token,a.installationId,{expectedRevision:0,snapshot:sample}),env);assert.equal(response.status,200);revoked=true;response=await worker.fetch(snapshotRequest("GET",a.data.token,a.installationId),env);assert.equal(response.status,403);assert.equal(env.DB.snapshots.get("license-O|WORSHIPFLOW").revision,1);revoked=false});
+test("CORS allows only the required Cloud auth headers and unknown routes are rejected",async()=>{const preflight=await worker.fetch(new Request("https://cloud.invalid/v2/snapshot",{method:"OPTIONS"}),env);assert.match(preflight.headers.get("Access-Control-Allow-Headers"),/X-AppForge-License-Proof/);const response=await worker.fetch(new Request("https://cloud.invalid/v1/auth/login"),env);assert.equal(response.status,404)});
+test.after(()=>{globalThis.fetch=originalFetch});

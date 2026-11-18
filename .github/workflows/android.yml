@@ -88,7 +88,7 @@ jobs:
       matrix:
         api-level: [29, 33]
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -102,6 +102,7 @@ jobs:
           arch: x86_64
           profile: pixel_2
           emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect
+          emulator-boot-timeout: 900
           disable-animations: true
           script: |
             adb install -r release-output/AppForge-Studio-15.8.4-Release-API29.apk
@@ -111,6 +112,7 @@ jobs:
             adb shell pidof mg.appforge.studio | grep -q '[0-9]'
             adb shell dumpsys activity activities | grep -E 'ResumedActivity|topResumedActivity' | grep 'mg.appforge.studio'
             adb logcat -d -s AndroidRuntime:E > appforge-androidruntime.log
+            cat appforge-androidruntime.log
             ! grep -F 'FATAL EXCEPTION' appforge-androidruntime.log
             adb shell screencap -p /sdcard/appforge-smoke.png
             adb pull /sdcard/appforge-smoke.png appforge-smoke.png
@@ -120,6 +122,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: AppForge-Studio-15.8.4-Android-${{ matrix.api-level }}-launch-evidence
-          path: appforge-smoke.png
+          path: |
+            appforge-smoke.png
+            appforge-androidruntime.log
           if-no-files-found: ignore
           retention-days: 14

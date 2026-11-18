@@ -125,6 +125,69 @@ async function publicKey(env) {
   const jwk = JSON.parse(env.LICENSE_SIGNING_PRIVATE_JWK);
   return { kty: jwk.kty, crv: jwk.crv, x: jwk.x, y: jwk.y, ext: true, key_ops: ["verify"] };
 }
+
+async function verifyLicenseProof(token, productId, installationId, env) {
+  const parts=String(token||"").split(".");
+  if(parts.length!==2) return null;
+  let claims;
+  try {
+    claims=JSON.parse(new TextDecoder().decode(from64u(parts[0])));
+    const key=await crypto.subtle.importKey("jwk",await publicKey(env),{name:"ECDSA",namedCurve:"P-256"},false,["verify"]);
+    if(!await crypto.subtle.verify({name:"ECDSA",hash:"SHA-256"},key,from64u(parts[1]),enc.encode(parts[0]))) return null;
+  } catch { return null; }
+  const installationHash=await digest(installationId);
+  if(claims.v!==1||claims.app!==productId||claims.install!==installationHash||typeof claims.license!=="string") return null;
+  const license=await env.DB.prepare("SELECT id,product_id,status,paid_confirmed,cloud_enabled,expires_at FROM licenses WHERE id=? AND product_id=?").bind(claims.license,productId).first();
+  if(!license||license.status!=="active"||!license.paid_confirmed||!license.cloud_enabled) return null;
+  if((license.expires_at&&Date.parse(license.expires_at)<=Date.now())||(claims.exp&&Date.parse(claims.exp)<=Date.now())) return null;
+  const activation=await env.DB.prepare("SELECT id FROM activations WHERE license_id=? AND installation_hash=?").bind(license.id,installationHash).first();
+  return activation?{license,installationHash}:null;
+}
+async function cloudToken(req,env) {
+  const d=await body(req),productId=String(d.productId||"").trim().toUpperCase(),installationId=String(d.installationId||"").trim();
+  if(!validId(productId)||installationId.length<16||installationId.length>120||!d.licenseToken) return json({error:"Informations Cloud invalides."},400);
+  const verified=await verifyLicenseProof(d.licenseToken,productId,installationId,env);
+  if(!verified) return json({error:"Licence expirée, révoquée ou sans droit Cloud pour cet appareil."},403);
+  const raw=b64u(crypto.getRandomValues(new Uint8Array(32))),hash=await digest(raw),now=Date.now(),expiresAt=new Date(now+15*60*1000).toISOString();
+  await env.DB.prepare("INSERT INTO cloud_sessions(token_hash,license_id,product_id,installation_hash,expires_at,created_at,last_used_at) VALUES(?,?,?,?,?,?,?)").bind(hash,verified.license.id,productId,verified.installationHash,expiresAt,new Date(now).toISOString(),new Date(now).toISOString()).run();
+  return json({ok:true,token:raw,expiresAt,licenseExpiresAt:verified.license.expires_at,cloudEnabled:true});
+}
+async function cloudSession(req,env) {
+  const raw=(req.headers.get("Authorization")||"").replace(/^Bearer\s+/i,"");
+  if(raw.length<32||raw.length>200)return null;
+  const row=await env.DB.prepare("SELECT s.token_hash,s.license_id,s.product_id,s.installation_hash,l.status,l.paid_confirmed,l.cloud_enabled,l.expires_at FROM cloud_sessions s JOIN licenses l ON l.id=s.license_id AND l.product_id=s.product_id WHERE s.token_hash=? AND s.revoked_at IS NULL AND s.expires_at>?").bind(await digest(raw),new Date().toISOString()).first();
+  if(!row||row.status!=="active"||!row.paid_confirmed||!row.cloud_enabled||(row.expires_at&&Date.parse(row.expires_at)<=Date.now()))return null;
+  const active=await env.DB.prepare("SELECT id FROM activations WHERE license_id=? AND installation_hash=?").bind(row.license_id,row.installation_hash).first();
+  if(!active)return null;
+  await env.DB.prepare("UPDATE cloud_sessions SET last_used_at=? WHERE token_hash=?").bind(new Date().toISOString(),row.token_hash).run();
+  return row;
+}
+async function syncCloud(req,env) {
+  const session=await cloudSession(req,env);if(!session)return json({error:"Jeton Cloud expiré ou accès révoqué. Reconnectez Prompti à Internet."},401);
+  const d=await body(req),changes=Array.isArray(d.changes)?d.changes:[];
+  if(changes.length>100)return json({error:"Limite de 100 changements par synchronisation."},413);
+  const conflicts=[],accepted=[];
+  for(const change of changes){
+    const id=String(change.id||""),opId=String(change.opId||""),payload=JSON.stringify(change.data);
+    if(!/^[a-zA-Z0-9_-]{1,80}$/.test(id)||!/^[a-zA-Z0-9_-]{12,80}$/.test(opId)||payload.length>128000)return json({error:"Un élément de synchronisation est invalide ou trop volumineux."},400);
+    const duplicate=await env.DB.prepare("SELECT version FROM cloud_sync_ops WHERE license_id=? AND op_id=?").bind(session.license_id,opId).first();
+    if(duplicate){accepted.push({id,version:duplicate.version,duplicate:true});continue;}
+    const current=await env.DB.prepare("SELECT version,payload_json,deleted FROM cloud_records WHERE license_id=? AND record_id=?").bind(session.license_id,id).first();
+    const actual=current?.version||0,base=Number.isInteger(change.baseVersion)?change.baseVersion:-1;
+    if(actual!==base){conflicts.push({id,version:actual,data:current&&!current.deleted?JSON.parse(current.payload_json):null,deleted:!!current?.deleted});continue;}
+    const version=actual+1,now=new Date().toISOString(),deleted=change.deleted===true?1:0;
+    await env.DB.batch([
+      env.DB.prepare("INSERT INTO cloud_records(license_id,record_id,version,payload_json,deleted,updated_at) VALUES(?,?,?,?,?,?) ON CONFLICT(license_id,record_id) DO UPDATE SET version=excluded.version,payload_json=excluded.payload_json,deleted=excluded.deleted,updated_at=excluded.updated_at").bind(session.license_id,id,version,payload,deleted,now),
+      env.DB.prepare("INSERT INTO cloud_sync_ops(license_id,op_id,record_id,version,created_at) VALUES(?,?,?,?,?)").bind(session.license_id,opId,id,version,now),
+      env.DB.prepare("INSERT INTO cloud_changes(license_id,record_id,version,payload_json,deleted,created_at) VALUES(?,?,?,?,?,?)").bind(session.license_id,id,version,payload,deleted,now)
+    ]);
+    accepted.push({id,version});
+  }
+  const cursor=Math.max(0,Number(d.cursor)||0),pulled=await env.DB.prepare("SELECT seq,record_id AS id,version,payload_json AS payload,deleted FROM cloud_changes WHERE license_id=? AND seq>? ORDER BY seq LIMIT 500").bind(session.license_id,cursor).all();
+  const rows=pulled.results||[],nextCursor=rows.length?rows[rows.length-1].seq:cursor;
+  return json({ok:true,accepted,conflicts,changes:rows.map(x=>({id:x.id,version:x.version,data:x.deleted?null:JSON.parse(x.payload),deleted:!!x.deleted})),cursor:nextCursor});
+}
+
 async function handle(req, env) {
   const url = new URL(req.url), path = url.pathname.replace(/\/$/, "") || "/";
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
@@ -133,6 +196,9 @@ async function handle(req, env) {
   if (path === "/v1/activate" && req.method === "POST") return activate(req, env);
   if (path === "/v1/trial" && req.method === "POST") return startTrial(req, env);
   if (path === "/v1/status" && req.method === "POST") return checkStatus(req, env);
+  if (path === "/v1/cloud/token" && req.method === "POST") return cloudToken(req, env);
+  if (path === "/v1/cloud/renew" && req.method === "POST") return cloudToken(req, env);
+  if (path === "/v1/cloud/sync" && req.method === "POST") return syncCloud(req, env);
   if (!path.startsWith("/admin/")) return json({ error: "Route inconnue." }, 404);
   if (!(await auth(req, env))) return json({ error: "Accès administrateur refusé." }, 401);
   if (path === "/admin/usage" && req.method === "GET") return json(await dailyUsage(env));

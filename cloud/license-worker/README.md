@@ -30,7 +30,7 @@ Relie les adaptateurs du SDK au stockage métier existant. Utilise Android Keyst
 
 ```js
 const cloud = AppForgeCloudSync.create({
-  apiBase: 'https://appforge-license-api.appforge-licences-mg.workers.dev',
+  apiBase: 'https://appforge-license-api.lalainaadclick.workers.dev',
   productId: 'MON_APPLICATION',
   store: window.AppForgeNativeStorage || undefined,
   data: {

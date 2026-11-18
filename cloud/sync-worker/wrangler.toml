@@ -1,0 +1,15 @@
+name = "appforge-cloud-sync-api"
+main = "src/index.js"
+compatibility_date = "2026-11-18"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "appforge-cloud-sync"
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations"
+
+[vars]
+LICENSE_API_ORIGIN = "https://appforge-license-api.appforge-licences-mg.workers.dev"
+CLOUD_TOKEN_TTL_SECONDS = "600"
+MAX_SNAPSHOT_BYTES = "1048576"
+DAILY_SYNC_LIMIT = "5000"

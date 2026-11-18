@@ -96,7 +96,8 @@ test('a write race offers the fresh server copy to the conflict handler', async 
   assert.equal(prompted, true);
   assert.equal(activated.sync.direction, 'download');
   assert.equal(f.local.records[0].id, 'newer-device');
-});\n
+});
+
 test('a revoked license is invalidated on the next online check without deleting local data', async () => {
   let revokedNotice;
   const f = fixture({ onLicenseRevoked: detail => { revokedNotice = detail; } });

@@ -5,15 +5,13 @@ on:
       confirm_production:
         description: Confirm applying the D1 migration and deploying the Worker
         required: true
-        type: choice
-        options:
-          - no
-          - yes
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
   deploy:
-    if: inputs.confirm_production == 'yes'
+    if: inputs.confirm_production
     runs-on: ubuntu-latest
     timeout-minutes: 15
     defaults:

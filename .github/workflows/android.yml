@@ -1,7 +1,7 @@
 name: AppForge Studio Android
 on:
   push:
-    branches: [appforge/studio-v15.5-cloud-sync, appforge/studio-v15.8-premium]
+    branches: [main, appforge/studio-v15.5-cloud-sync, appforge/studio-v15.8-premium]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -81,6 +81,14 @@ jobs:
           path: release-output/AppForge-Studio-15.8.4-Release-API*.apk
           if-no-files-found: error
           retention-days: 30
+      - name: Archive signed API29 APK in Google Drive
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: RMLala/android-template/.github/actions/upload-api29-drive@main
+        with:
+          apk-glob: 'release-output/*Release-API29.apk'
+          application: 'AppForge-Studio'
+          folder-id: '11JBTSIJmbFia_WC2jHSNb2fMFXQWUfA7'
+          service-account-json: ${{ secrets.DRIVE_SERVICE_ACCOUNT_JSON }}
   launch-smoke:
     needs: build
     strategy:

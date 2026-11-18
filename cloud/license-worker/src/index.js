@@ -1,7 +1,7 @@
 const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Authorization, Content-Type",
+  "Access-Control-Allow-Headers": "Authorization, Content-Type, X-License-Token, X-Installation-Id",
   "Access-Control-Max-Age": "86400"
 };
 const enc = new TextEncoder();
@@ -111,7 +111,7 @@ async function checkStatus(req, env) {
   if (claims.kind === "trial") {
     const trial = await env.DB.prepare("SELECT expires_at FROM trials WHERE product_id=? AND installation_hash=?").bind(productId, installationHash).first();
     if (!trial || Date.parse(trial.expires_at) <= Date.now() || (claims.exp && Date.parse(claims.exp) <= Date.now())) return json({ active: false, expired: true, error: "La période d’essai est terminée." }, 403);
-    return json({ active: true, kind: "trial", expiresAt: trial.expires_at, checkedAt: new Date().toISOString() });
+    return json({ active: true, kind: "trial", expiresAt: trial.expires_at, checkedAt: new Date().toISOString(), productId, cloudAllowed: cloudAllowed(env, productId), cloudQuotaBytes: cloudQuota(env, productId) });
   }
   if (typeof claims.license !== "string") return json({ active: false, invalid: true, error: "Cette preuve de licence ne correspond pas." }, 403);
   const license = await env.DB.prepare("SELECT status,paid_confirmed,expires_at FROM licenses WHERE id=? AND product_id=?").bind(claims.license, productId).first();
@@ -119,8 +119,77 @@ async function checkStatus(req, env) {
   if ((license.expires_at && new Date(license.expires_at).getTime() < Date.now()) || (claims.exp && Date.parse(claims.exp) < Date.now())) return json({ active: false, expired: true, error: "Cette licence a expiré." }, 403);
   const activation = await env.DB.prepare("SELECT id FROM activations WHERE license_id=? AND installation_hash=?").bind(claims.license, installationHash).first();
   if (!activation) return json({ active: false, invalid: true, error: "Cette installation n’est plus autorisée." }, 403);
-  return json({ active: true, checkedAt: new Date().toISOString() });
+  return json({ active: true, checkedAt: new Date().toISOString(), productId, licenseId: claims.license, cloudAllowed: cloudAllowed(env, productId), cloudQuotaBytes: cloudQuota(env, productId) });
 }
+
+function cloudAllowed(env, productId) { return String(env.CLOUD_ENABLED_PRODUCTS || "").split(",").map(x => x.trim().toUpperCase()).includes(productId); }
+function cloudQuota(env, productId) { try { const map = JSON.parse(env.CLOUD_QUOTAS_JSON || "{}"); return Math.max(0, Math.min(104857600, Number(map[productId]) || 0)); } catch { return 0; } }
+async function cloudSignedToken(env, claims) {
+  const secret = String(env.CLOUD_TOKEN_SIGNING_SECRET || "");
+  if (secret.length < 32) throw new Error("cloud-signing-secret");
+  const payload = b64u(enc.encode(JSON.stringify(claims)));
+  const key = await crypto.subtle.importKey("raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const sig = await crypto.subtle.sign("HMAC", key, enc.encode(payload));
+  return payload + "." + b64u(sig);
+}
+async function verifyCloudToken(env, token) {
+  const parts = String(token || "").split(".");
+  if (parts.length !== 2) return null;
+  try {
+    const key = await crypto.subtle.importKey("raw", enc.encode(String(env.CLOUD_TOKEN_SIGNING_SECRET || "")), { name: "HMAC", hash: "SHA-256" }, false, ["verify"]);
+    if (!await crypto.subtle.verify("HMAC", key, from64u(parts[1]), enc.encode(parts[0]))) return null;
+    const claims = JSON.parse(new TextDecoder().decode(from64u(parts[0])));
+    if (claims.aud !== "appforge-cloud-v1" || !claims.license || !claims.product || !claims.install || !Number.isFinite(claims.exp) || claims.exp <= Date.now()) return null;
+    return claims;
+  } catch { return null; }
+}
+async function cloudLicense(req, env) {
+  const authHeader = req.headers.get("Authorization") || "";
+  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
+  const claims = await verifyCloudToken(env, token);
+  const licenseToken = req.headers.get("X-License-Token") || "";
+  const installationId = req.headers.get("X-Installation-Id") || "";
+  if (!claims || !licenseToken || installationId.length < 16 || installationId.length > 120) return { error: json({ error: "Accès Cloud refusé." }, 401) };
+  const statusRequest = new Request(new URL("/v1/status", req.url), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ productId: claims.product, token: licenseToken, installationId }) });
+  const response = await checkStatus(statusRequest, env), status = await response.json();
+  if (!response.ok || status.active !== true || status.cloudAllowed !== true || status.licenseId !== claims.license || claims.product !== status.productId || claims.install !== await digest(installationId)) return { error: json({ error: "La licence, les droits Cloud ou l’appareil ne sont plus valides." }, 403) };
+  return { claims, licenseId: status.licenseId, productId: status.productId, quotaBytes: status.cloudQuotaBytes };
+}
+async function cloudSnapshot(req, env) {
+  const authorization = await cloudLicense(req, env);
+  if (authorization.error) return authorization.error;
+  const { licenseId, productId, quotaBytes } = authorization;
+  const row = await env.DB.prepare("SELECT revision,snapshot_json,updated_at,last_operation_id,bytes FROM cloud_snapshots WHERE license_id=? AND product_id=?").bind(licenseId, productId).first();
+  if ((row?.bytes || 0) > quotaBytes) return json({ error: "Quota Cloud dépassé." }, 413);
+  return json({ revision: row?.revision || 0, snapshot: row ? JSON.parse(row.snapshot_json) : {}, updatedAt: row?.updated_at || null, lastOperationId: row?.last_operation_id || null, quotaBytes });
+}
+async function putCloudSnapshot(req, env) {
+  const authorization = await cloudLicense(req, env);
+  if (authorization.error) return authorization.error;
+  const { licenseId, productId, quotaBytes } = authorization;
+  const length = Number(req.headers.get("Content-Length") || 0);
+  if (length > quotaBytes + 4096 || length > 1048576) return json({ error: "La sauvegarde dépasse la limite autorisée." }, 413);
+  const data = await body(req), operationId = String(data.operationId || "");
+  const baseRevision = Number(data.baseRevision), snapshot = data.snapshot;
+  if (!/^[A-Za-z0-9_-]{12,100}$/.test(operationId) || !Number.isSafeInteger(baseRevision) || baseRevision < 0 || !snapshot || typeof snapshot !== "object" || Array.isArray(snapshot)) return json({ error: "Requête de synchronisation invalide." }, 400);
+  const encoded = JSON.stringify(snapshot), bytes = enc.encode(encoded).length;
+  if (bytes > quotaBytes || bytes > 1048576) return json({ error: "Quota Cloud dépassé." }, 413);
+  const current = await env.DB.prepare("SELECT revision,snapshot_json,updated_at,last_operation_id FROM cloud_snapshots WHERE license_id=? AND product_id=?").bind(licenseId, productId).first();
+  if (current?.last_operation_id === operationId) return json({ ok: true, revision: current.revision, updatedAt: current.updated_at, lastOperationId: operationId, duplicate: true });
+  const revision = current?.revision || 0;
+  if (revision !== baseRevision) return json({ error: "Conflit de synchronisation.", conflict: true, revision, snapshot: current ? JSON.parse(current.snapshot_json) : {}, lastOperationId: current?.last_operation_id || null }, 409);
+  const now = new Date().toISOString(), nextRevision = revision + 1;
+  let result;
+  if (current) result = await env.DB.prepare("UPDATE cloud_snapshots SET revision=?,snapshot_json=?,updated_at=?,last_operation_id=?,bytes=? WHERE license_id=? AND product_id=? AND revision=?").bind(nextRevision, encoded, now, operationId, bytes, licenseId, productId, revision).run();
+  else result = await env.DB.prepare("INSERT OR IGNORE INTO cloud_snapshots(license_id,product_id,revision,snapshot_json,updated_at,last_operation_id,bytes) VALUES(?,?,1,?,?,?,?)").bind(licenseId, productId, encoded, now, operationId, bytes).run();
+  if (!(result.meta?.changes > 0)) {
+    const latest = await env.DB.prepare("SELECT revision,snapshot_json,updated_at,last_operation_id FROM cloud_snapshots WHERE license_id=? AND product_id=?").bind(licenseId, productId).first();
+    if (latest?.last_operation_id === operationId) return json({ ok: true, revision: latest.revision, updatedAt: latest.updated_at, lastOperationId: operationId, duplicate: true });
+    return json({ error: "Conflit de synchronisation.", conflict: true, revision: latest?.revision || 0, snapshot: latest ? JSON.parse(latest.snapshot_json) : {}, lastOperationId: latest?.last_operation_id || null }, 409);
+  }
+  return json({ ok: true, revision: nextRevision, updatedAt: now, lastOperationId: operationId });
+}
+
 async function publicKey(env) {
   const jwk = JSON.parse(env.LICENSE_SIGNING_PRIVATE_JWK);
   return { kty: jwk.kty, crv: jwk.crv, x: jwk.x, y: jwk.y, ext: true, key_ops: ["verify"] };
@@ -132,7 +201,7 @@ async function handle(req, env) {
   if (path === "/v1/config" && req.method === "GET") return json({ publicKey: await publicKey(env), protocol: "appforge-license-v1" });
   if (path === "/v1/activate" && req.method === "POST") return activate(req, env);
   if (path === "/v1/trial" && req.method === "POST") return startTrial(req, env);
-  if (path === "/v1/status" && req.method === "POST") return checkStatus(req, env);
+  if (path === "/v1/status" && req.method === "POST") return checkStatus(req, env);\n  if (path === "/v1/cloud/token" && req.method === "POST") {\n    const d = await body(req), productId = String(d.productId || "").trim().toUpperCase(), installationId = String(d.installationId || "").trim(), licenseToken = String(d.token || "").trim();\n    const statusReq = new Request(new URL("/v1/status", req.url), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ productId, token: licenseToken, installationId }) });\n    const checked = await checkStatus(statusReq, env), status = await checked.json();\n    if (!checked.ok || status.active !== true) return json({ error: "Licence ou appareil non autorisé." }, 403);\n    if (status.cloudAllowed !== true || !status.cloudQuotaBytes) return json({ error: "Cette licence ne dispose pas du droit Cloud." , cloudAllowed: false }, 403);\n    const expiresAt = Math.min(Date.now() + 15 * 60 * 1000, status.expiresAt ? Date.parse(status.expiresAt) : Date.now() + 15 * 60 * 1000);\n    const cloudToken = await cloudSignedToken(env, { aud: "appforge-cloud-v1", product: status.productId, license: status.licenseId || installationId, install: await digest(installationId), quota: status.cloudQuotaBytes, exp: expiresAt });\n    return json({ cloudToken, expiresAt: new Date(expiresAt).toISOString(), cloudAllowed: true, quotaBytes: status.cloudQuotaBytes });\n  }\n  if (path === "/v1/cloud/snapshot" && req.method === "GET") return cloudSnapshot(req, env);\n  if (path === "/v1/cloud/snapshot" && req.method === "PUT") return putCloudSnapshot(req, env);
   if (!path.startsWith("/admin/")) return json({ error: "Route inconnue." }, 404);
   if (!(await auth(req, env))) return json({ error: "Accès administrateur refusé." }, 401);
   if (path === "/admin/usage" && req.method === "GET") return json(await dailyUsage(env));

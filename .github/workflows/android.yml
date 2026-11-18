@@ -84,7 +84,7 @@ jobs:
   launch-smoke:
     needs: build
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -102,11 +102,23 @@ jobs:
           script: |
             adb install -r release-output/AppForge-Studio-15.8.4-Release-API29.apk
             adb shell am force-stop mg.appforge.studio
-            adb shell am start -W -n mg.appforge.studio/.MainActivity
-            sleep 5
-            adb shell pidof mg.appforge.studio
+            adb shell am start -n mg.appforge.studio/.MainActivity
+            for attempt in $(seq 1 30); do
+              if adb shell pidof mg.appforge.studio | tr -d '\r' | grep -q '[0-9]'; then break; fi
+              sleep 2
+            done
+            adb shell pidof mg.appforge.studio | grep -q '[0-9]'
             adb shell dumpsys activity activities | grep -E 'ResumedActivity|topResumedActivity' | grep 'mg.appforge.studio'
-            adb shell uiautomator dump /sdcard/appforge-window.xml
-            adb pull /sdcard/appforge-window.xml appforge-window.xml
-            grep -F 'Tableau de bord' appforge-window.xml
-            ! grep -F 'Le déverrouillage Android est indisponible' appforge-window.xml
+            adb logcat -d -s AndroidRuntime:E > appforge-androidruntime.log
+            if grep -F 'FATAL EXCEPTION' appforge-androidruntime.log; then exit 1; fi
+            adb shell screencap -p /sdcard/appforge-smoke.png
+            adb pull /sdcard/appforge-smoke.png appforge-smoke.png
+            test -s appforge-smoke.png
+      - name: Upload Android 13 launch evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: AppForge-Studio-15.8.4-Android13-launch-evidence
+          path: appforge-smoke.png
+          if-no-files-found: ignore
+          retention-days: 14

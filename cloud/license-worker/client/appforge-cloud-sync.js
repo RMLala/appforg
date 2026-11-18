@@ -182,6 +182,8 @@
       }
     }
     async _cloudToken(force = false) {
+      const verification = await this.checkLicenseStatus();
+      if (verification.state !== 'licensed') throw new Error(verification.error || (verification.state === 'revoked' ? 'Cette licence a été révoquée.' : 'La licence doit être vérifiée en ligne avant la synchronisation.'));
       let record = await this._record();
       if (!record.licenseToken) throw new Error('Active d’abord une licence AppForge ou un essai.');
       const expires = Date.parse(record.cloudExpiresAt || '');

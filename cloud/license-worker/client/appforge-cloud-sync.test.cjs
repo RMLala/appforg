@@ -2,7 +2,8 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { create } = require('./appforge-cloud-sync.js');
 
-function fixture({ remote = null, onInitialRemote, onConflict } = {}) {
+function fixture({ remote = null, onInitialRemote, onConflict, onLicenseRevoked } = {}) {
+  const statusResult = { active: true };
   const db = new Map();
   const calls = [];
   const local = { records: [{ id: 'a', value: 10 }] };
@@ -14,6 +15,7 @@ function fixture({ remote = null, onInitialRemote, onConflict } = {}) {
     const body = init.body ? JSON.parse(init.body) : null;
     calls.push({ path, method: init.method || 'GET', body, headers: init.headers || {} });
     if (path.endsWith('/v1/activate')) return response({ token: 'license-signed', cloudAccess: { token: 'cloud-signed', expiresAt: new Date(Date.now()+3600000).toISOString() } });
+    if (path.endsWith('/v1/status')) return statusResult.active ? response({ active: true }) : response({ active: false, revoked: true, error: 'Cette licence a été révoquée.' }, 403);
     if (path.endsWith('/v1/cloud/token')) return response({ token: 'renewed-cloud', expiresAt: new Date(Date.now()+3600000).toISOString() });
     if (path.includes('/v1/cloud/snapshot') && (init.method || 'GET') === 'GET') return response({ revision, snapshot: serverSnapshot });
     if (path.includes('/v1/cloud/snapshot') && init.method === 'PUT') {
@@ -28,9 +30,9 @@ function fixture({ remote = null, onInitialRemote, onConflict } = {}) {
     productId: 'DEMO_APP',
     store, fetch, isOnline: () => true,
     data: { getSnapshot: async () => local, applySnapshot: async data => Object.assign(local, data) },
-    onInitialRemote, onConflict
+    onInitialRemote, onConflict, onLicenseRevoked
   });
-  return { client, calls, db, local, get serverSnapshot(){return serverSnapshot}, get revision(){return revision} };
+  return { client, calls, db, local, revoke(){statusResult.active=false;}, get serverSnapshot(){return serverSnapshot}, get revision(){return revision} };
 }
 function response(data, status = 200) { return { ok: status >= 200 && status < 300, status, json: async () => data }; }
 
@@ -94,4 +96,20 @@ test('a write race offers the fresh server copy to the conflict handler', async 
   assert.equal(prompted, true);
   assert.equal(activated.sync.direction, 'download');
   assert.equal(f.local.records[0].id, 'newer-device');
+});\n
+test('a revoked license is invalidated on the next online check without deleting local data', async () => {
+  let revokedNotice;
+  const f = fixture({ onLicenseRevoked: detail => { revokedNotice = detail; } });
+  await f.client.activate('APF-ABCDE-ABCDE-ABCDE-ABCDE');
+  f.revoke();
+  f.calls.length = 0;
+  const result = await f.client.start();
+  assert.equal(result.state, 'revoked');
+  assert.equal(f.calls[0].path, '/v1/status');
+  assert.equal(f.calls.some(call => call.path.includes('/v1/cloud/snapshot')), false);
+  assert.equal(revokedNotice.preserveLocalData, true);
+  assert.deepEqual(f.local.records, [{ id: 'a', value: 10 }]);
+  const record = JSON.parse(f.db.get('appforge-cloud-entitlement-v1:DEMO_APP'));
+  assert.equal(record.licenseToken, '');
+  assert.equal(record.cloudToken, '');
 });

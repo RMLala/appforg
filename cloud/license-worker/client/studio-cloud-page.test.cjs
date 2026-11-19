@@ -6,7 +6,7 @@ const path = require('node:path');
 const source = fs.readFileSync(path.join(__dirname, '../../../AppForge_Studio_V15_7_Questionnaire_Client.html'), 'utf8');
 const start = source.indexOf("page.id='page-cloudsync'");
 const end = source.indexOf('</script>', start);
-const cloudPage = source.slice(start, end);
+const cloudPage = source.slice(source.lastIndexOf('<script', start), end);
 
 test('Studio Cloud page targets only the canonical central V3 Worker', () => {
   assert.ok(start > 0 && end > start, 'Cloud page script is present');

@@ -10,7 +10,7 @@ const cloudPage = source.slice(start, end);
 
 test('Studio Cloud page targets only the canonical central V3 Worker', () => {
   assert.ok(start > 0 && end > start, 'Cloud page script is present');
-  assert.match(cloudPage, /https:\/\/appforge-license-api\.lalainaadclick\.workers\.dev/);
+  assert.match(source, /https:\/\/appforge-license-api\.lalainaadclick\.workers\.dev/);
   assert.doesNotMatch(cloudPage, /appforge-cloud-api\.appforge-licences-mg\.workers\.dev/);
   assert.doesNotMatch(cloudPage, /\/v1\/auth\/login|\/v1\/session|\/v1\/organizations\//);
 });

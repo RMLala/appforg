@@ -1,11 +1,11 @@
 {
   "name": "appforge-studio",
-  "version": "15.8.4",
+  "version": "15.8.7",
   "private": true,
   "description": "AppForge Studio Android",
   "scripts": {
     "build": "node scripts/build.cjs",
-    "test:cloud": "node --test cloud/license-worker/client/appforge-cloud-sync.test.cjs",
+    "test:cloud": "node --test cloud/license-worker/client/*.test.cjs",
     "sync": "npm run build && cap sync android",
     "open": "cap open android"
   },

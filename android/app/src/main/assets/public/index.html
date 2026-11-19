@@ -664,7 +664,7 @@ const oldForm=form;form=function(){const f=oldForm();f.guidedData.language=$('gL
    try{$('afLicenseConnect').disabled=true;const r=await fetch(afLicBase+'/admin/apps',{headers:{Authorization:'Bearer '+token}});const d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.error||'Connexion refusée ('+r.status+').');afLicToken=token;window.AppForgeLicenseSession={base:afLicBase,token};localStorage.setItem(baseKey,afLicBase);$('afLicenseAdminToken').value='';$('afLicenseAdmin').hidden=false;window.dispatchEvent(new CustomEvent('appforge:license-connected',{detail:{base:afLicBase,token}}));status('Connecté. Le jeton est conservé chiffré dans le coffre déverrouillé.');await load()}
    catch(e){afLicToken='';$('afLicenseAdmin').hidden=true;status(e.message,true)}finally{$('afLicenseConnect').disabled=false}
  }
- $('afLicenseApiUrl').value=localStorage.getItem(baseKey)||'';
+ const canonicalBase='https://appforge-license-api.lalainaadclick.workers.dev';const savedBase=localStorage.getItem(baseKey)||'';const initialBase=/appforge-license-api\.appforge-licences-mg\.workers\.dev/i.test(savedBase)?canonicalBase:(savedBase||canonicalBase);$('afLicenseApiUrl').value=initialBase;if(initialBase!==savedBase)localStorage.setItem(baseKey,initialBase);
  $('afLicenseConnect').onclick=connect;
  $('afLicenseDisconnect').onclick=()=>{afLicToken='';afLicBase='';window.AppForgeLicenseSession=null;$('afLicenseAdmin').hidden=true;status('Déconnecté. Le jeton administrateur a été effacé de la mémoire.')};
  $('afLicenseRefresh').onclick=async()=>{try{await load();status('Données actualisées.')}catch(e){status(e.message,true)}};
@@ -1055,7 +1055,7 @@ const restore=async()=>{
   const license=safeParse(await store.get(keys.license)),cloud=safeParse(await store.get(keys.cloud));
   const licenseUrl=document.getElementById('afLicenseApiUrl'),licenseToken=document.getElementById('afLicenseAdminToken');
   const cloudUrl=document.getElementById('afSyncApiUrl'),cloudEmail=document.getElementById('afSyncEmail'),cloudPassword=document.getElementById('afSyncPassword');
-  if(license.base&&license.token&&licenseUrl&&licenseToken){licenseUrl.value=license.base;licenseToken.value=license.token;setTimeout(()=>{if(!window.AppForgeLicenseSession)document.getElementById('afLicenseConnect')?.click()},0)}
+  if(license.base&&license.token&&licenseUrl&&licenseToken){licenseUrl.value=/appforge-license-api\.appforge-licences-mg\.workers\.dev/i.test(license.base)?'https://appforge-license-api.lalainaadclick.workers.dev':license.base;licenseToken.value=license.token;setTimeout(()=>{if(!window.AppForgeLicenseSession)document.getElementById('afLicenseConnect')?.click()},0)}
   if(cloud.base&&cloud.email&&cloud.password&&cloudUrl&&cloudEmail&&cloudPassword){cloudUrl.value=cloud.base;cloudEmail.value=cloud.email;cloudPassword.value=cloud.password;setTimeout(()=>{if(!window.AppForgeCloudSession)document.getElementById('afSyncLogin')?.click()},0)}
  }catch(err){console.warn('Secure credential restore:',err.message)}
 };

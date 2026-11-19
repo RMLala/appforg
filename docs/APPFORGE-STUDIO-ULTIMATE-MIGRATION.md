@@ -42,8 +42,23 @@ Le Worker AppForge central reste l'autorité unique. Aucun secret administrateur
 - PR + CI obligatoires. Conserver Business Manager autonome en archive fonctionnelle jusqu'à validation de parité et récupération des données.
 - Bascule uniquement après approbation explicite, aucune modification de production dans cette phase.
 
+
+## UX/UI validée — navigation compacte, tactile et responsive
+- Desktop/tablette : sidebar gauche rétractable (icônes + infobulles en mode compact), sections Studio / Business / Licences / Cloud / Pilotage / Réglages, topbar avec titre, recherche et actions contextuelles.
+- Mobile : barre basse de 4 destinations maximum (Accueil, Projets, Business, Cloud), bouton « Plus » pour les sections secondaires ; respecter safe-area Android et clavier virtuel.
+- Bouton Retour visible en haut à gauche dans les sous-écrans, relié à un historique interne cohérent ; Android Back et Escape suivent le même parcours ; en cas de formulaire modifié, demander confirmation avant sortie.
+- Menu trois points (⋮) en haut à droite pour actions contextuelles : exporter, dupliquer, aide, paramètres ; seules les actions pertinentes sont affichées et chaque action est fonctionnelle.
+- Navigation persistante sans doublons sidebar/barre basse ; conserver section, filtres et position de défilement lors d'un retour ; focus accessible, labels, tailles tactiles >=44px.
+- Pas de boutons morts ; états chargement, hors ligne, erreur, confirmation et notification ; recherche et filtres dans les modules complexes.
+- Vérifier la navigation sur écran étroit, tablette, desktop, rotation, clavier, Android Back, modales et menus ; éviter le masquage du contenu par la barre basse.
+
+## Source Business Manager localisée dans la Library
+- Référence exacte : `libfile_6906f6a525348191a05b854a43fc565c`, `AppForge-Business-Manager-v1.6.0-Worker-Lalainaadclick.html` (168386 octets, 904 lignes dans l'index Library).
+- Lecture textuelle de la source effectuée : HTML standalone avec sidebar et sections métier, CRM, devis/factures, projets et configuration Cloud. Son code n'est pas encore importé.
+- La Library permet la lecture indexée, mais la copie brute autorisée vers le conteneur a échoué ; ne pas prétendre disposer d'un fichier source intégral exploitable pour une migration automatique avant obtention des octets.
+
 ## Bloqueurs actuels
-1. Source intégrale Business Manager v1.6.0 non identifiée dans GitHub ; demander son fichier exact si inaccessible depuis Project/Library.
+1. Source Business Manager v1.6.0 localisée et lisible dans Library, mais extraction brute refusée ; obtenir un fichier HTML montable ou une voie de copie autorisée avant intégration.
 2. Aucun Product ID Business Manager confirmé : ne pas en inventer.
 3. R2 non configuré et authentification admin déléguée non implémentée.
 

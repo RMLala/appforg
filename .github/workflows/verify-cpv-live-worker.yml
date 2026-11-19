@@ -1,0 +1,30 @@
+name: Verify CPV on canonical live Worker
+on:
+  push:
+    branches: [work/cpv-live-worker-verification-20261119]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  live-trial:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: cloud/license-worker
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - name: Verify D1 product and isolated authenticated trial
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: node scripts/verify-cpv-live.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: CPV-canonical-live-worker-evidence
+          path: cloud/license-worker/qa/cpv-live-worker.json

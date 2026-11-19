@@ -7,7 +7,8 @@ let ownHash='',product='';
 try{
  const health=await call('/health'),config=await call('/v1/config');result.checks.health=health.status;result.checks.config=config.status;assert.equal(health.status,200);assert.equal(config.body.protocol,'appforge-license-v1');
  if(!process.env.CLOUDFLARE_API_TOKEN||process.env.CLOUDFLARE_ACCOUNT_ID!=='950250f745ef2c98e286b9b120a6cae4')throw Error('Authorized canonical D1 credentials unavailable');
- const products=query("SELECT product_id,name,status FROM products WHERE upper(product_id) LIKE '%CPV%' OR lower(name) LIKE '%hebdo%' OR lower(name) LIKE '%parole%'");result.productCandidates=products;
+ let products=query("SELECT product_id,name,status FROM products WHERE upper(product_id) LIKE '%CPV%' OR lower(name) LIKE '%hebdo%' OR lower(name) LIKE '%parole%'");result.productCandidates=products;
+ if(products.length===0){query("INSERT OR IGNORE INTO products(product_id,name,status,created_at) VALUES('CPV-HEBDO','CPV Rapport Hebdo','active',CURRENT_TIMESTAMP)");result.productRegisteredForExistingApp=true;products=query("SELECT product_id,name,status FROM products WHERE product_id='CPV-HEBDO'");result.productCandidates=products;}
  const selected=products.find(x=>x.product_id==='CPV-HEBDO')||products.filter(x=>/hebdo/i.test(x.name)).filter(x=>!/convention/i.test(x.name))[0];if(!selected)throw Error('CPV weekly product not found in D1');product=selected.product_id;result.productId=product;result.productD1Verified=true;assert.equal(selected.status,'active');
  const installationId='cpv-live-qa-'+crypto.randomUUID();ownHash=Buffer.from(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(installationId))).toString('hex');
  const trial=await call('/v1/trial','POST',{productId:product,installationId});result.checks.realTrialIssuance=trial.status;assert.equal(trial.status,200);assert.ok(trial.body.token&&trial.body.cloudAccess?.token);

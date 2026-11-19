@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const source = fs.readFileSync(path.join(__dirname, '../../../AppForge_Studio_V15_7_Questionnaire_Client.html'), 'utf8');
-const start = source.indexOf("page.id = 'page-cloudsync'");
+const start = source.indexOf("page.id='page-cloudsync'");
 const end = source.indexOf('</script>', start);
 const cloudPage = source.slice(start, end);
 

@@ -215,12 +215,12 @@ async function checkStatus(req, env) {
     return json({ active: true, kind: "trial", licenseType: "trial", expiresAt: trial.expires_at, checkedAt: new Date().toISOString() });
   }
   if (typeof claims.license !== "string") return json({ active: false, invalid: true, error: "Cette preuve de licence ne correspond pas." }, 403);
-  const license = await env.DB.prepare("SELECT status,paid_confirmed,expires_at FROM licenses WHERE id=? AND product_id=?").bind(claims.license, productId).first();
+  const license = await env.DB.prepare("SELECT status,paid_confirmed,expires_at,COALESCE(license_type,plan) AS license_type,created_at,cloud_enabled FROM licenses WHERE id=? AND product_id=?").bind(claims.license, productId).first();
   if (!license || license.status !== "active" || !license.paid_confirmed) return json({ active: false, revoked: true, error: "Cette licence a été révoquée ou désactivée." }, 403);
   if ((license.expires_at && new Date(license.expires_at).getTime() < Date.now()) || (claims.exp && Date.parse(claims.exp) < Date.now())) return json({ active: false, expired: true, error: "Cette licence a expiré." }, 403);
   const activation = await env.DB.prepare("SELECT id FROM activations WHERE license_id=? AND installation_hash=?").bind(claims.license, installationHash).first();
   if (!activation) return json({ active: false, invalid: true, error: "Cette installation n’est plus autorisée." }, 403);
-  return json({ active: true, kind: "license", licenseType: license.license_type || null, activatedAt: license.created_at || null, expiresAt: license.expires_at || null, cloudEnabled: license.cloud_enabled === 1, checkedAt: new Date().toISOString() });
+  return json({ active: true, kind: "license", licenseType: license.license_type || null, licenseCreatedAt: license.created_at || null, expiresAt: license.expires_at || null, cloudEnabled: license.cloud_enabled === 1, checkedAt: new Date().toISOString() });
 }
 async function publicKey(env) {
   const jwk = JSON.parse(env.LICENSE_SIGNING_PRIVATE_JWK);

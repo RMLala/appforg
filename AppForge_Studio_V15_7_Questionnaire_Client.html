@@ -824,6 +824,7 @@ $('afSyncLogin').onclick=connect;$('afSyncRefresh').onclick=connect;$('afSyncLog
 $('afSyncSnapshotRead').onclick=readSnapshot;$('afSyncSnapshotPush').onclick=()=>push(true);$('afSyncSnapshotRestore').onclick=restore;$('afSyncSnapshotAuto').onchange=()=>{if(!$('afSyncSnapshotAuto').checked)linked=false};
 window.AppForgeStudioCloudSync={localChanged(){if(!$('afSyncSnapshotAuto')?.checked||!token||!linked||busy)return;clearTimeout(timer);timer=setTimeout(()=>push(false),1200)},async restore(){try{owner=await readSaved();if(owner?.licenseToken)await connect()}catch{}}};
 window.addEventListener('appforge:vault-unlocked',()=>window.AppForgeStudioCloudSync.restore());
+window.addEventListener('appforge:native-storage-ready',()=>{native()?.remove('appforge_studio_cloud_owner_v1').catch(()=>{});readSaved().then(x=>{owner=x;if(x?.licenseToken)connect()}).catch(()=>{})});
 if(native()){native().remove('appforge_studio_cloud_owner_v1').catch(()=>{});readSaved().then(x=>{owner=x;if(x?.licenseToken)connect()}).catch(()=>{})}buttons();
 })();
 </script>
@@ -944,6 +945,7 @@ const importInput=document.getElementById('afLicImportFile');document.getElement
   }
   const store={get:async key=>{if(plugin?.secureGet)return (await plugin.secureGet({key})).value||null;return localStorage.getItem(key)},set:async(key,value)=>{if(plugin?.secureSet)await plugin.secureSet({key,value});else localStorage.setItem(key,value)},remove:async key=>{if(plugin?.secureRemove)await plugin.secureRemove({key});else localStorage.removeItem(key)}};
   window.AppForgeNativeStorage=plugin?{get:store.get,set:store.set,remove:store.remove}:undefined;
+  window.dispatchEvent(new Event('appforge:native-storage-ready'));
   document.documentElement.style.visibility='visible';
   const lockKey='appforge_studio_lock_v1',lockPanel=document.querySelector('#page-vault .af-stack');
   if(lockPanel&&!document.getElementById('afAppLockSettings')){

@@ -28,4 +28,5 @@ test('legacy owner credentials are discarded and the V3 proof has secure storage
   assert.match(source, /AppForge · cloud propriétaire/);
   assert.match(source, /native\(\)\.remove\('appforge_studio_cloud_owner_v1'\)/);
   assert.match(source, /appforge_studio_cloud_v3_owner/);
+  assert.match(source, /appforge:native-storage-ready/);
 });

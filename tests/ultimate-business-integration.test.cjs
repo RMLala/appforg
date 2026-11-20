@@ -53,7 +53,7 @@ test('Ultimate navigation survives dynamic sidebar rebuild and includes Business
   assert.ok(source.includes("['business-manager','▣','Business']"));
   assert.ok(source.includes("document.getElementById('ultimate-business-launcher')?.click()"));
   assert.ok(source.includes("hamburger.onclick="));
-  assert.ok(build.includes('Studio\\'s navigation is rebuilt at runtime'));
+  assert.ok(build.includes("navigation is rebuilt at runtime"));
   assert.ok(dist.includes('id="ultimate-business-launcher"'));
   assert.ok(dist.includes('id="ultimate-business-frame"'));
 });

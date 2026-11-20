@@ -10,9 +10,12 @@ if(fs.existsSync(businessSource)){
   // Add an accessible entry only when the actual module is packaged.
   const studioIndex=path.join(root,'dist','index.html');
   const studioHtml=fs.readFileSync(studioIndex,'utf8');
-  const launchMarkup='<nav id="ultimate-business-launcher" aria-label="AppForge Ultimate" style="position:fixed;right:12px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:2147483000"><a href="modules/business-manager/index.html" style="display:inline-flex;align-items:center;min-height:44px;padding:10px 16px;border-radius:22px;background:#272c57;color:#fff;font:600 14px system-ui;text-decoration:none;box-shadow:0 3px 18px #0006">Business Manager</a></nav>';
-  if(!studioHtml.includes('id="ultimate-business-launcher"'))fs.writeFileSync(studioIndex,studioHtml.replace(/<\\/body>/i,launchMarkup+'</body>'));
-  console.log('Ultimate: Business Manager module included (no data migration).');
+  // Insert a normal sidebar destination, not a floating overlay that hides content.
+  const launchMarkup='<div class="nav-label" id="ultimate-business-label">BUSINESS MANAGER</div><a id="ultimate-business-launcher" href="modules/business-manager/index.html" style="display:flex;align-items:center;min-height:44px;padding:10px 12px;border-radius:10px;color:var(--t);text-decoration:none;font-size:12px">▣ &nbsp; Business Manager</a>';
+  const navAnchor='<aside class="nav" id="mainNav" aria-label="Menu principal">';
+  if(!studioHtml.includes(navAnchor))throw new Error('Studio navigation anchor missing: refusing incomplete integration');
+  if(!studioHtml.includes('id="ultimate-business-launcher"'))fs.writeFileSync(studioIndex,studioHtml.replace(navAnchor,navAnchor+launchMarkup));
+  if(!fs.existsSync(businessDest))throw new Error('Business Manager missing from build output');
 }else{
   console.log('Ultimate: Business Manager module not yet present; existing Studio build preserved.');
 }console.log('AppForge Studio 15.8.8 : HTML Android et PromptiPro prêts.');

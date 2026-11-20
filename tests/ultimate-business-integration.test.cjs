@@ -43,6 +43,10 @@ test('Legacy Studio commercial records are joined to the common project only by 
   assert.match(build, /state\.sales\.filter\(sale=>appIds\.has\(String\(sale\.applicationId\)\)\)/);
   assert.match(build, /state\.payments\.filter\(payment=>saleIds\.has\(String\(payment\.saleId\)\)\)/);
   assert.match(build, /delete persisted\.studioLegacyCommercial/);
+  assert.match(build, /linkLegacyApplication:\(applicationId,projectId\)/);
+  assert.match(build, /Anciennes affaires sans rattachement/);
+  assert.match(build, /Choisir un projet client/);
+  assert.match(build, /renderStudioUnlinked\(\)/);
   assert.match(build, /Affaires historiques du Studio liées à ce projet/);
   assert.match(build, /non validé\(s\) ici/);
 });

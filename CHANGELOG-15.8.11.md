@@ -6,3 +6,5 @@
 - Le calcul du solde de facture ne retient que les paiements dont la validation manuelle est enregistrée.
 - Le questionnaire et le générateur Studio restent accessibles dans AppForge Studio.
 - Android versionCode : 172.
+- Les licences du projet affichent les émissions et droits Cloud lus avec la session Studio, sans inventer un état serveur.
+- « Licence & Cloud » permet de choisir les données D1 et pièces jointes R2, vérifie l’empreinte SHA-256 et enregistre une copie locale avant restauration. Les noms et liens de projet des fichiers restent ceux que le Worker expose (ID opaque).

@@ -54,13 +54,33 @@ test('Studio navigation and Business Manager runtime parse and remain in the sam
   assert.match(runtime, /data-studio-page="cloudsync"/);
   assert.match(runtime, /appforgeProjectLicenseContext/);
   assert.match(runtime, /admin\/licenses\?productId=/);
-  assert.match(runtime, /Droit non retourné par le Worker/);
+  assert.match(runtime, /admin\/licenses\/.*\/cloud/);
+  assert.match(runtime, /rights\.maxBytes/);
   assert.match(moduleScript, /filter\(p=>p\.status==='Vérifié manuellement'/);
   assert.match(moduleScript, /status:'Vérifié manuellement'/);
   assert.doesNotThrow(() => new vm.Script(moduleScript));
   assert.match(studio, /\['business-manager','▣','Business Manager'\]/);
   assert.doesNotMatch(studio, /ultimate-business-launcher|ultimate-business-frame|srcdoc/);
   assert.deepEqual(fs.readdirSync(path.join(root,'dist')).filter(name=>name.endsWith('.html')),['index.html']);
+});
+
+
+test('Studio Cloud restoration is selective, integrity-checked, and backed up locally first', () => {
+  const sourceHtml = fs.readFileSync(path.join(root, 'AppForge_Studio_V15_7_Questionnaire_Client.html'), 'utf8');
+  assert.match(sourceHtml, /Restaurer depuis le Cloud/);
+  assert.match(sourceHtml, /afRestoreStudio/);
+  assert.match(sourceHtml, /afRestoreDelivery/);
+  const anchor = sourceHtml.indexOf("const $=id=>document.getElementById(id),API='");
+  assert.ok(anchor >= 0, 'Cloud client source exists');
+  const scriptStart = sourceHtml.lastIndexOf('<script>', anchor);
+  const scriptEnd = sourceHtml.indexOf('</script>', anchor);
+  const cloudScript = sourceHtml.slice(sourceHtml.indexOf('>', scriptStart) + 1, scriptEnd);
+  assert.doesNotThrow(() => new vm.Script(cloudScript));
+  assert.match(cloudScript, /v1\/cloud\/files/);
+  assert.match(cloudScript, /v1\/cloud\/file\?fileId=/);
+  assert.match(cloudScript, /crypto\.subtle\.digest\('SHA-256'/);
+  assert.match(cloudScript, /idbPut\('backups',backup\)/);
+  assert.match(cloudScript, /appforge-studio-cloud-restore/);
 });
 
 test('Studio design and generator stay in Studio instead of redirecting to PromptiPro', () => {

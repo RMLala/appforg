@@ -7,6 +7,11 @@ if(fs.existsSync(businessSource)){
   const businessDest=path.join(root,'dist','modules/business-manager/index.html');
   fs.mkdirSync(path.dirname(businessDest),{recursive:true});
   fs.writeFileSync(businessDest,businessHtml);
+  // Add an accessible entry only when the actual module is packaged.
+  const studioIndex=path.join(root,'dist','index.html');
+  const studioHtml=fs.readFileSync(studioIndex,'utf8');
+  const launchMarkup='<nav id="ultimate-business-launcher" aria-label="AppForge Ultimate" style="position:fixed;right:12px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:2147483000"><a href="modules/business-manager/index.html" style="display:inline-flex;align-items:center;min-height:44px;padding:10px 16px;border-radius:22px;background:#272c57;color:#fff;font:600 14px system-ui;text-decoration:none;box-shadow:0 3px 18px #0006">Business Manager</a></nav>';
+  if(!studioHtml.includes('id="ultimate-business-launcher"'))fs.writeFileSync(studioIndex,studioHtml.replace(/<\\/body>/i,launchMarkup+'</body>'));
   console.log('Ultimate: Business Manager module included (no data migration).');
 }else{
   console.log('Ultimate: Business Manager module not yet present; existing Studio build preserved.');

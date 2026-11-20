@@ -98,3 +98,14 @@ test('body cap, empty body and revision header are validated',async()=>{
   assert.equal(f.objects.size,0);
   assert.equal(r2Limits(f.env,'trial').maxFileBytes,3);
 });
+test('central Worker never exposes private R2 endpoints without a signed Cloud token', async () => {
+  const worker = (await import('./index.js')).default;
+  const api = 'https://appforge-license-api.example.workers.dev';
+  for (const endpoint of ['/v1/cloud/file?fileId=backup','/v1/cloud/files']) {
+    const res = await worker.fetch(new Request(api+endpoint), {});
+    assert.equal(res.status, 401);
+  }
+  const preflight = await worker.fetch(new Request(api+'/v1/cloud/file', {method:'OPTIONS'}), {});
+  assert.equal(preflight.status, 204);
+  assert.ok(preflight.headers.get('Access-Control-Allow-Headers').includes('X-AppForge-Expected-Revision'));
+});

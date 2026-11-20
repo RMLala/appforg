@@ -7,7 +7,8 @@
     "build": "node scripts/build.cjs",
     "test:cloud": "node --test cloud/license-worker/client/*.test.cjs",
     "sync": "npm run build && cap sync android",
-    "open": "cap open android"
+    "open": "cap open android",
+    "test:ultimate": "node --test tests/ultimate-business-integration.test.cjs"
   },
   "dependencies": {
     "@capacitor/android": "7.6.9",

@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+
+<html lang="fr"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1" name="viewport"/><title>AppForge Business Manager v1.7.2 — Retour Android et barre compacte</title>
+<style>
+:root{font-family:Inter,Segoe UI,Arial,sans-serif;color-scheme:dark;--bg:#0b1020;--panel:#131b32;--line:#2b3655;--text:#f2f5ff;--muted:#a5b0ce;--accent:#8175f6;--input:#10182d}body{margin:0;background:radial-gradient(circle at top left,#16234c,#0b1020 55%);color:var(--text)}*{box-sizing:border-box}button,input,textarea,select{font:inherit}button{cursor:pointer;background:var(--accent);border:0;border-radius:10px;color:white;padding:11px 16px;font-weight:600}button.secondary{background:transparent;border:1px solid var(--line)}button.danger{background:#842e54}.shell{max-width:1320px;margin:auto;padding:24px}header{display:flex;align-items:center;justify-content:space-between;gap:15px;border-bottom:1px solid var(--line);padding-bottom:20px}h1{font-size:24px;margin:0}h2{font-size:19px;margin:0 0 12px}h3{font-size:15px;margin:0 0 10px}p,.subtle{color:var(--muted)}.pill{font-size:12px;color:#beb9ff;border:1px solid #6258a8;padding:5px 9px;border-radius:30px}.layout{display:grid;grid-template-columns:270px 1fr;gap:20px;margin-top:20px}.sidebar,.panel{background:rgba(19,27,50,.95);border:1px solid var(--line);border-radius:16px;padding:20px}.nav{display:block;width:100%;text-align:left;margin:7px 0;background:transparent;color:var(--muted)}.nav.active{background:#272c59;color:white}.panel{min-height:620px}.toolbar{display:flex;flex-wrap:wrap;gap:10px;margin:15px 0}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}.field{display:flex;flex-direction:column;gap:7px}.field.full{grid-column:1/-1}label{font-size:13px;color:#cbd4ed}input,textarea,select{width:100%;background:var(--input);color:var(--text);border:1px solid var(--line);border-radius:9px;padding:11px}textarea{resize:vertical;min-height:92px}.section{border-top:1px solid var(--line);padding-top:18px;margin-top:20px}.muted{font-size:13px;color:var(--muted)}.list-item{padding:15px;border:1px solid var(--line);border-radius:12px;margin:10px 0;display:flex;justify-content:space-between;align-items:center;gap:10px}.list-item small{display:block;color:var(--muted);margin-top:5px}.status{color:#bbf7d0;font-size:12px}.banner{background:#211f47;border:1px solid #5047aa;border-radius:12px;padding:12px;margin-bottom:20px;color:#d9d6ff}.hidden{display:none!important}.footer{margin-top:28px;font-size:12px;color:var(--muted)}.kpi{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.kpi>div{padding:20px;background:#1a2440;border-radius:12px}.kpi strong{font-size:26px;display:block;margin-bottom:7px}.empty{border:1px dashed var(--line);padding:35px;text-align:center;border-radius:12px;color:var(--muted)}.locked{max-width:460px;margin:10vh auto;background:var(--panel);padding:30px;border:1px solid var(--line);border-radius:20px}.hidden-print{}@media(max-width:800px){.layout{grid-template-columns:1fr}.grid{grid-template-columns:1fr}.kpi{grid-template-columns:1fr}.shell{padding:12px}.panel{padding:16px}header{flex-wrap:wrap}}@media print{body{background:white;color:black}.sidebar,header,.toolbar,.hidden-print,.banner,.footer{display:none!important}.layout{display:block}.panel{background:white;border:0;padding:0}.print-section{color:black} .print-section h2{color:black}}
+
+#sectorCard{background:#151d36;border:1px solid #35436a;border-radius:14px;padding:18px}#sectorQuestions{display:grid;gap:12px}.sector-q{padding:12px;border:1px solid var(--line);border-radius:11px}.sector-q h4{margin:0 0 9px;font-size:14px}.sector-q .choice-grid{max-height:none}.sector-q .choice-other{width:100%}.sector-summary{margin:10px 0;padding:10px;border-left:3px solid var(--accent);background:#1b2341;color:var(--muted)}
+.choice-panel{border:1px solid var(--line);border-radius:11px;padding:12px;background:#10182d}
+.choice-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:7px;max-height:220px;overflow:auto}
+.choice-item{display:flex;align-items:center;gap:8px;background:#19233b;border:1px solid #374361;padding:9px 10px;border-radius:9px;cursor:pointer;line-height:1.3}
+.choice-item input{width:17px;height:17px;accent-color:#8175f6;flex-shrink:0}
+.choice-item:has(input:checked){border-color:#a99efa;background:#2b2a55}
+.choice-other{margin-top:10px}
+.choice-help{font-size:12px;color:var(--muted);margin:0 0 9px}
+.choice-original{display:none!important}
+@media(max-width:580px){.choice-grid{grid-template-columns:1fr 1fr}.choice-item{font-size:12px;padding:8px}}
+
+.table-scroll{overflow-x:auto}.quote-table{width:100%;border-collapse:collapse;min-width:830px}.quote-table td,.quote-table th{border-bottom:1px solid var(--line);padding:8px;text-align:left;vertical-align:top}.quote-table td input,.quote-table td select{min-width:85px;padding:8px}.quote-table td:first-child input{min-width:200px}.quote-table button{padding:7px}.quote-summary{margin-top:16px;text-align:right;font-weight:600;white-space:pre-line;line-height:1.9}.quote-paper{background:white;color:#171f33;border-radius:12px;padding:22px;margin-top:22px}.quote-paper h2,.quote-paper h3,.quote-paper p{color:#171f33}.quote-paper table{width:100%;border-collapse:collapse}.quote-paper td,.quote-paper th{padding:8px;border:1px solid #cbd5e1;text-align:left}.quote-paper .subdued{color:#5b6678}.quote-paper .total{font-size:20px;font-weight:700;text-align:right}.quote-paper .small{font-size:12px}.quote-preview-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media print{body.printing-quote #quote{display:block!important}body.printing-quote #quote>.qform,body.printing-quote #quote>.table-scroll,body.printing-quote #quote>.quote-summary,body.printing-quote #quote>.toolbar,body.printing-quote #quote>.section,body.printing-quote #quote>h2,body.printing-quote #quote>h3,body.printing-quote #quote>p{display:none!important}body.printing-quote #quotePreview{display:block;border:0;margin:0;padding:0}body.printing-quote main section:not(#quote){display:none!important}body.printing-quote .panel{min-height:0}}
+
+.crm-line{padding:13px;border:1px solid var(--line);border-radius:11px;margin:10px 0}.crm-line small{color:var(--muted)}.crm-line .toolbar{margin:8px 0 0}.crm-line strong{overflow-wrap:anywhere}.crm-line .row-notes{white-space:pre-wrap;overflow-wrap:anywhere}
+@media(max-width:650px){.crm-line{padding:10px}}
+
+.business-table{width:100%;border-collapse:collapse}.business-table th,.business-table td{padding:10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}.business-table input,.business-table select{min-width:100px}.business-table .num{text-align:right;font-variant-numeric:tabular-nums}.compact-panel{background:#161f39;border:1px solid var(--line);padding:15px;border-radius:12px;margin:12px 0}.compact-panel h3{margin:0 0 12px}.stat-note{padding:10px;border-radius:9px;background:#232342;color:#ede9ff}.chip{font-size:12px;padding:4px 8px;border:1px solid #58527f;border-radius:40px;display:inline-block}button:disabled{opacity:.48;cursor:not-allowed}
+@media print{body.printing-invoice .shell>header,body.printing-invoice .sidebar,body.printing-invoice .banner,body.printing-invoice .footer,body.printing-invoice .hidden-print,body.printing-invoice #businessWorkspace>.compact-panel:not(#invoicePrintPanel),body.printing-invoice #business>h2,body.printing-invoice #business>p,body.printing-invoice #business>.toolbar,body.printing-invoice #business>#businessStats,body.printing-invoice #business>#businessMessage{display:none!important}body.printing-invoice #app,body.printing-invoice #business,body.printing-invoice #businessWorkspace,body.printing-invoice #invoicePrintPanel,body.printing-invoice .panel{display:block!important;border:0!important;background:white!important;color:black!important;min-height:0!important;padding:0!important}body.printing-invoice .layout{display:block!important}body.printing-invoice #invoicePrintPanel *{color:black!important}body.printing-invoice #invoicePrintPanel{box-shadow:none!important}}
+.project-mode{border:1px solid #615db3;background:#1d2648;border-radius:12px;padding:14px}
+.kind-label{display:inline-block;border:1px solid #6e6c9f;color:#d2cbff;padding:3px 7px;border-radius:24px;font-size:11px;margin-right:7px}
+.nav[data-commercial="1"].hidden-mode{display:none!important}
+.two-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.two-steps>div{background:#182542;padding:13px;border:1px solid var(--line);border-radius:11px}
+@media(max-width:720px){.list-item{align-items:flex-start;flex-direction:column}.two-steps{grid-template-columns:1fr}}
+.toggle-inline{display:flex;align-items:center;gap:8px;margin:12px 0}.toggle-inline input{width:auto}.prompt-history-row{border-bottom:1px solid var(--line);padding:10px 0;display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px}.prompt-history-row .toolbar{margin:0}.code-inline{overflow-wrap:anywhere;font-family:ui-monospace,monospace;font-size:13px}
+.save-banner{padding:13px 16px;border:1px solid #60729f;border-radius:11px;background:#1b2e4a;color:#f0f6ff;margin:12px 0;line-height:1.5}
+.save-banner.is-error{background:#4a1f32;border-color:#d76b82;color:#fff0f3}
+.save-banner.is-success{background:#143b36;border-color:#45b6a1;color:#e1fff6}
+.field-invalid{outline:2px solid #fb7185!important;outline-offset:2px}
+#saveBanner{position:sticky;top:8px;z-index:3;box-shadow:0 8px 30px #0005}
+
+/* v1.5 - navigation tactile latérale et barre inférieure compacte */
+header .header-menu{padding:7px 11px;margin-left:12px;font-size:12px;vertical-align:middle}
+.layout{grid-template-columns:245px minmax(0,1fr)}.sidebar{position:sticky;top:12px;align-self:start;max-height:calc(100dvh - 24px);overflow:auto}
+.sidebar .nav{padding:10px 12px;min-height:40px;font-size:13px;line-height:1.25}
+.sidebar h3{font-size:12px;color:#9ba5c4;text-transform:uppercase;letter-spacing:.04em}
+.mobile-dock{display:none}body.nav-compact .layout{grid-template-columns:73px minmax(0,1fr)}
+body.nav-compact .sidebar{padding:9px 5px}body.nav-compact .sidebar h3,body.nav-compact .sidebar #asideCloudState{display:none}
+body.nav-compact .sidebar .nav{font-size:0;text-align:center;min-height:51px;padding:9px 2px}
+body.nav-compact .sidebar .nav::first-letter{font-size:21px}
+#bmCloudGlobalPanel{border-color:#534aa9;background:linear-gradient(135deg,#181e3d,#171c30)}
+#bmCloudGlobalPanel input{max-width:100%}#bmCloudGlobalPanel #bmCloudStatus{white-space:pre-line}
+#bmEntitlementPanel{background:#131e32}#bmServerChecks{background:#131e32}
+#bmEntitlementPanel .toolbar button,#bmServerChecks .toolbar button{max-width:100%}
+@media(max-width:800px){.layout{grid-template-columns:1fr!important}.sidebar{display:none;position:fixed;z-index:91;top:8px;left:8px;bottom:74px;max-height:none;width:min(315px,85vw);overflow:auto;box-shadow:0 8px 40px #000a}body.mobile-sidebar-open .sidebar{display:block}body.nav-compact .sidebar{width:min(315px,85vw);padding:16px}body.nav-compact .sidebar .nav{font-size:13px;text-align:left;min-height:40px;padding:10px 12px}body.nav-compact .sidebar .nav::first-letter{font-size:13px}body.nav-compact .sidebar h3,body.nav-compact .sidebar #asideCloudState{display:block}.panel{padding:14px}.shell{padding:12px 12px 100px}.mobile-dock{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px;position:fixed;bottom:0;left:0;right:0;z-index:90;padding:7px max(8px,env(safe-area-inset-left)) calc(7px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-right));background:#101931;box-shadow:0 -7px 24px #05071499;border-top:1px solid #3b4664}.dock-item{padding:6px 2px;color:#b7c2e0;background:transparent;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-direction:column;min-height:47px;gap:3px}.dock-icon{font-size:18px;line-height:1}.dock-item small{font-size:10px;font-weight:500;line-height:1.1}.dock-item.active{background:#303568;color:#fff}.header-menu{display:inline-block}}
+@media(min-width:801px){.header-menu{display:inline-block}}
+@media print{.mobile-dock,.header-menu{display:none!important}}
+
+/* Navigation premium : taille tactile, menu accessible, conservation de l'espace. */
+.bm-header-actions{display:flex;align-items:center;gap:6px;margin-top:9px;flex-wrap:wrap}
+.bm-icon-button{min-width:44px;min-height:44px;padding:8px 12px;font-size:23px;line-height:1}
+.bm-icon-button:disabled{opacity:.4;cursor:not-allowed}
+.bm-more-wrap{position:relative}
+.bm-more-menu{position:absolute;z-index:110;top:calc(100% + 6px);left:0;width:220px;background:#1b2440;border:1px solid var(--line);border-radius:12px;box-shadow:0 15px 30px #0008;padding:6px}
+.bm-more-menu.hidden{display:none!important}
+.bm-more-menu button{display:block;width:100%;text-align:left;background:transparent;border-radius:8px;padding:12px;color:var(--text);font-size:13px}
+.bm-more-menu button:hover,.bm-more-menu button:focus-visible{background:#303568}
+.nav,.dock-item{min-height:44px}
+@media(max-width:800px){.bm-header-actions{margin-top:6px}.bm-more-menu{left:auto;right:0}.shell>header{align-items:flex-start}.shell>header h1{font-size:19px}.shell>header .pill{font-size:10px}.mobile-dock{grid-template-columns:repeat(5,minmax(0,1fr))}.dock-item{min-height:48px}.panel{min-width:0}main{min-width:0}}
+@media print{.bm-header-actions{display:none!important}}
+
+/* v1.7.0 : navigation hybride premium, sidebar intelligente + dock mobile */
+:root{--premium-nav:#10182d;--premium-border:#303c5c}
+.layout{grid-template-columns:238px minmax(0,1fr);gap:14px}.sidebar{padding:14px;top:10px;border-radius:15px;background:var(--premium-nav)}
+.side-brand{display:flex;align-items:center;gap:10px;padding:9px 6px 16px;border-bottom:1px solid var(--premium-border);margin-bottom:10px}.side-logo{display:grid;place-items:center;background:#36317b;color:#e3ddff;width:34px;height:34px;border-radius:11px;font-size:23px;flex-shrink:0}.side-brand-text{font-size:13px;font-weight:800;letter-spacing:.06em}.side-brand-text small{display:block;font-size:9px;font-weight:500;color:var(--muted);margin-top:3px}.side-close{display:none;margin-left:auto;padding:5px 11px;font-size:22px}.side-group{padding:5px 0 9px;border-bottom:1px solid #29334f}.side-group:last-of-type{border:0}.side-group-title{font-size:10px;color:#8999be;font-weight:750;letter-spacing:.12em;text-transform:uppercase;padding:11px 11px 5px}.sidebar .nav{position:relative;display:flex;align-items:center;gap:11px;margin:2px 0;border-radius:10px;padding:11px 12px;font-size:13px;min-height:44px;color:#c5d0ea}.sidebar .nav:hover,.sidebar .nav:focus-visible{background:#242e4c;color:#fff}.sidebar .nav.active{background:#39346e;color:white;box-shadow:inset 3px 0 #b6aaff}.sidebar .nav::before{content:'◦';font-size:19px;line-height:1;min-width:23px;text-align:center}.sidebar .nav[data-view=dashboard]::before{content:'⌂'}.sidebar .nav[data-view=dossiers]::before{content:'▤'}.sidebar .nav[data-view=editor]::before{content:'✎'}.sidebar .nav[data-view=document]::before{content:'▣'}.sidebar .nav[data-view=quote]::before{content:'◈'}.sidebar .nav[data-view=crm]::before{content:'◎'}.sidebar .nav[data-view=business]::before{content:'▦'}.sidebar .nav[data-view=production]::before{content:'⌘'}.sidebar .nav[data-view=licensing]::before{content:'◇'}.sidebar .nav[data-view=backup]::before{content:'⇅'}.sidebar .nav[data-view=about]::before{content:'ⓘ'}
+body.nav-compact .layout{grid-template-columns:75px minmax(0,1fr)}body.nav-compact .sidebar{padding:9px 5px}body.nav-compact .side-brand-text,body.nav-compact .side-group-title,body.nav-compact #asideCloudState{display:none}body.nav-compact .side-brand{justify-content:center;padding:7px 0 12px}body.nav-compact .sidebar .nav{font-size:0;justify-content:center;min-height:46px;padding:7px 0}body.nav-compact .sidebar .nav::before{font-size:23px;min-width:0}
+.premium-launchpad{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:17px 0 8px}.premium-launchpad button{background:#1b2540;border:1px solid #33405f;border-radius:13px;min-height:112px;display:flex;align-items:flex-start;flex-direction:column;gap:6px;text-align:left;padding:15px}.premium-launchpad button:hover,.premium-launchpad button:focus-visible{border-color:#9184f8;background:#252b52}.premium-launchpad span{font-size:23px;color:#b9b0ff}.premium-launchpad strong{font-size:13px}.premium-launchpad small{color:#b0bdd8;font-weight:400;font-size:11px}.side-backdrop{display:none}
+@media(max-width:1000px){.premium-launchpad{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:800px){.layout,body.nav-compact .layout{grid-template-columns:1fr!important}.sidebar,body.nav-compact .sidebar{position:fixed;display:block;top:0;bottom:0;left:0;width:min(310px,86vw);max-height:100dvh;z-index:102;overflow-y:auto;border-radius:0 18px 18px 0;padding:15px;transform:translateX(-105%);transition:transform .2s ease;box-shadow:12px 0 45px #0008}.mobile-sidebar-open .sidebar{transform:translateX(0)}.side-backdrop:not(.hidden){display:block;position:fixed;inset:0;background:#0009;z-index:101}.side-close{display:block}.sidebar .nav,body.nav-compact .sidebar .nav{font-size:13px;justify-content:flex-start;min-height:44px;padding:11px 12px}.sidebar .nav::before,body.nav-compact .sidebar .nav::before{font-size:19px;min-width:23px}.side-brand-text,body.nav-compact .side-brand-text,.side-group-title,body.nav-compact .side-group-title,body.nav-compact #asideCloudState{display:block}.mobile-dock{grid-template-columns:repeat(4,minmax(0,1fr));z-index:95}.dock-item{min-height:52px}.dock-item.active{background:#34356b}.shell{padding-bottom:calc(100px + env(safe-area-inset-bottom))}.premium-launchpad{grid-template-columns:repeat(2,minmax(0,1fr))}.premium-launchpad button{min-height:100px;padding:12px}.shell>header{gap:10px}.shell>header .subtle{font-size:12px}}
+@media(max-width:380px){.premium-launchpad{gap:7px}.premium-launchpad button{padding:10px}.dock-item small{font-size:10px}}
+@media print{.premium-launchpad,.side-backdrop,.mobile-dock{display:none!important}}
+</style><style>
+/* v1.7.1 — compact app bar, task-first mobile UI */
+#app>header{position:sticky;top:0;z-index:80;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 15px;background:#111a32;border-bottom:1px solid #303b59;min-height:58px}
+.bm-top-left,.bm-top-right{display:flex;align-items:center;gap:8px;min-width:0}
+#app>header h1{font-size:17px;line-height:1.2;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(100vw - 135px)}
+#app>header h1 span{color:#b6aaff}
+#app>header .bm-icon-button{border:0;background:transparent;min-width:42px;min-height:42px;padding:6px 8px}
+#app>header .bm-header-actions{margin:0}
+#app>header .bm-more-menu{right:0;left:auto}
+#app>header #bmBack.bm-back-inactive{display:none!important}
+#app>header .bm-hidden-lock{display:none!important}
+@media(max-width:800px){
+ .shell{padding-bottom:calc(78px + env(safe-area-inset-bottom,0px))}
+ #app>header{padding:8px 12px;min-height:54px}
+ #app>header h1{font-size:16px;max-width:calc(100vw - 90px)}
+ #app>header #sidebarToggle{display:none!important}
+ #app .layout{margin-top:0}
+ #app main.panel{padding:14px 12px}
+ #app main.panel>section#dashboard>h2{font-size:20px;margin:3px 0 12px}
+ #app main.panel>section#dashboard>.toolbar{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 14px}
+ #app main.panel>section#dashboard>.toolbar button{min-width:0;padding:11px 7px;font-size:12px;white-space:normal;line-height:1.3;min-height:52px}
+ #app main.panel>section#dashboard>.kpi{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px}
+ #app main.panel>section#dashboard>.kpi>div{min-width:0;padding:12px}
+ #app main.panel>section#dashboard>.premium-launchpad{display:none}
+ #app .mobile-dock{grid-template-columns:repeat(4,minmax(0,1fr))!important;bottom:0;padding-bottom:env(safe-area-inset-bottom,0px);z-index:95}
+ #app .dock-item{min-width:0}
+ #app .footer{display:none}
+}
+@media print{#app>header{position:static}}
+</style><style>
+/* v1.7.2: fixed single-row toolbar, native Android/Chrome Back. */
+#app>header{display:flex!important;flex-flow:row nowrap!important;align-items:center!important;justify-content:space-between!important;width:100%;min-width:0;min-height:54px!important;padding:8px 12px!important;gap:8px!important}
+#app>header .bm-top-left{flex:1 1 auto;min-width:0;overflow:hidden}
+#app>header .bm-top-right{flex:0 0 auto;margin-left:auto;align-self:center}
+#app>header h1{font-size:clamp(13px,3.6vw,17px)!important;max-width:100%!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.35}
+#app>header .bm-more-wrap{position:relative;flex-shrink:0}
+#app>header #bmMore{display:grid!important;place-items:center;min-width:44px!important;width:44px;height:44px;min-height:44px!important;padding:0!important;font-size:24px}
+#app>header #bmMoreMenu{right:0!important;left:auto!important;top:calc(100% + 5px);width:min(250px,calc(100vw - 24px));max-height:70dvh;overflow-y:auto}
+#app>header #sidebarToggle{margin:0;white-space:nowrap}
+@media(max-width:800px){#app>header #sidebarToggle{display:none!important}#app>header h1{font-size:clamp(13px,3.8vw,16px)!important}}
+</style></head><body>
+<div class="locked" id="lock"><h1>AppForge Business Manager</h1><p>Accès local protégé par PIN. Initialisez votre code pour ce navigateur, ou saisissez votre PIN existant.</p><div class="field"><label for="pin">PIN (4 chiffres)</label><input autocomplete="off" id="pin" inputmode="numeric" maxlength="12" minlength="4" pattern="[0-9]*" type="password"/></div><div class="toolbar"><button id="unlockBtn">Ouvrir l'application</button></div><p class="muted" id="lockMsg" role="alert"></p><small class="muted">Version prototype locale. Le PIN ne chiffre pas la base de données du navigateur. Évitez les informations sensibles sur un appareil partagé.</small></div>
+<div class="shell hidden" id="app"><header><div class="bm-top-left"><h1>◆ AppForge <span>Business Manager</span></h1></div><div class="bm-top-right"><button aria-label="Réduire ou ouvrir la navigation" class="secondary header-menu" id="sidebarToggle" type="button">☰ Navigation</button><div class="bm-more-wrap"><button aria-controls="bmMoreMenu" aria-expanded="false" aria-label="Actions supplémentaires" class="secondary bm-icon-button" id="bmMore" title="Plus d’actions" type="button">⋮</button><div class="bm-more-menu hidden" id="bmMoreMenu" role="menu"><button data-menu-go="backup" role="menuitem" type="button">⇅ Sauvegardes</button><button data-menu-go="about" role="menuitem" type="button">ⓘ À propos &amp; Support</button><button data-menu-go="licensing" role="menuitem" type="button">◇ Licences &amp; Cloud</button><button id="bmMoreLock" role="menuitem" type="button">🔒 Verrouiller</button></div></div></div><button class="secondary bm-hidden-lock" id="lockBtn">Verrouiller</button></header><div class="layout"><aside aria-label="Navigation principale" class="sidebar" id="premiumSidebar"><div class="side-brand"><span class="side-logo">◆</span><span class="side-brand-text">APPFORGE <small>BUSINESS MANAGER</small></span><button aria-label="Fermer le menu" class="secondary side-close" id="sideClose" type="button">×</button></div><div class="side-group"><div class="side-group-title">Essentiel</div><button aria-label="Pilotage" class="nav active" data-group="Essentiel" data-small-label="dashboard" data-view="dashboard" title="Pilotage">Pilotage</button><button aria-label="Projets" class="nav" data-group="Essentiel" data-small-label="dossiers" data-view="dossiers" title="Projets">Projets</button></div><div class="side-group"><div class="side-group-title">Conception</div><button aria-label="Découverte" class="nav" data-group="Conception" data-small-label="editor" data-view="editor" title="Découverte">Découverte</button><button aria-label="Cahier des charges" class="nav" data-group="Conception" data-small-label="document" data-view="document" title="Cahier des charges">Cahier des charges</button><button aria-label="Prompts" class="nav" data-group="Conception" data-small-label="production" data-view="production" title="Prompts">Prompts</button></div><div class="side-group"><div class="side-group-title">Commercial</div><button aria-label="Devis" class="nav" data-commercial="1" data-group="Commercial" data-small-label="quote" data-view="quote" title="Devis">Devis</button><button aria-label="CRM" class="nav" data-commercial="1" data-group="Commercial" data-small-label="crm" data-view="crm" title="CRM">CRM</button><button aria-label="Gestion commerciale" class="nav" data-commercial="1" data-group="Commercial" data-small-label="business" data-view="business" title="Gestion commerciale">Gestion commerciale</button></div><div class="side-group"><div class="side-group-title">Administration</div><button aria-label="Licences &amp; Cloud" class="nav" data-group="Administration" data-small-label="licensing" data-view="licensing" title="Licences &amp; Cloud">Licences &amp; Cloud</button><button aria-label="Sauvegardes" class="nav" data-group="Administration" data-small-label="backup" data-view="backup" title="Sauvegardes">Sauvegardes</button><button aria-label="À propos &amp; Support" class="nav" data-group="Administration" data-small-label="about" data-view="about" title="À propos &amp; Support">À propos &amp; Support</button></div><div class="section muted" id="asideCloudState">Licence Business : non vérifiée | Cloud : non synchronisé</div></aside><div aria-hidden="true" class="side-backdrop hidden" id="sideBackdrop"></div><main class="panel">
+<section id="dashboard"><h2>Tableau de bord</h2><div class="toolbar"><button id="quickPersonal">+ Application personnelle</button><button class="secondary" id="quickClient">+ Application client</button></div><div class="kpi" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))"><div><strong id="totalCount">0</strong>Projets totaux</div><div><strong id="personalCount">0</strong>Personnels</div><div><strong id="clientCount">0</strong>Clients</div><div><strong id="approvedCount">0</strong>Cahiers validés</div></div><div aria-label="Accès rapide aux modules" class="premium-launchpad"><button data-launch="dossiers" type="button"><span>▤</span><strong>Projets</strong><small>Consulter les dossiers</small></button><button data-launch="business" type="button"><span>▦</span><strong>Commercial</strong><small>Devis et factures</small></button><button data-launch="production" type="button"><span>⌘</span><strong>Production</strong><small>Générer des prompts</small></button><button data-launch="licensing" type="button"><span>◇</span><strong>Licences &amp; Cloud</strong><small>Accès et sauvegarde</small></button></div><div class="section"><h3>Derniers dossiers</h3><div id="recent"></div></div></section>
+<section class="hidden" id="dossiers"><h2>Projets et dossiers</h2><div aria-live="polite" class="save-banner hidden" id="listSaveBanner" role="status"></div><div class="toolbar"><button id="addBtn">+ Projet client</button><button class="secondary" id="addPersonal">+ Projet personnel</button><input aria-label="Rechercher" id="search" placeholder="Rechercher client ou projet" style="max-width:300px"/><select aria-label="Filtrer par type" id="kindFilter" style="max-width:180px"><option value="">Tous types</option><option value="personal">Personnels</option><option value="client">Clients</option></select><select aria-label="Filtrer par statut" id="statusFilter" style="max-width:200px"><option value="">Tous statuts</option><option>Découverte</option><option>En rédaction</option><option>À valider</option><option>Validé</option><option>En développement</option><option>Livré</option></select></div><div id="dossierList"></div></section>
+<section class="hidden" id="editor"><h2>Questionnaire métier · Projet personnel ou client</h2><p>Compléter selon le projet. Pour un projet personnel, les champs commerciaux disparaissent. Seul le nom du projet est obligatoire pour enregistrer un brouillon. Les autres champs peuvent être complétés ultérieurement.</p><div class="toolbar"><button id="newBtn">+ Client</button><button class="secondary" id="newPersonalBtn">+ Personnel</button><button id="saveBtn">Enregistrer et voir dans les projets</button><button class="secondary" id="docBtn">Voir le cahier des charges</button><button class="secondary" data-commercial="1" id="toQuote">Devis commercial</button></div><div aria-live="polite" class="save-banner hidden" id="saveBanner" role="alert"></div><div class="project-mode"><div class="field"><label for="projectKind">Type de projet *</label><select data-key="projectKind" id="projectKind"><option value="client">Application client — parcours commercial complet</option><option value="personal">Application personnelle — sans devis, facturation ni paiement</option></select></div><p class="muted" id="projectModeInfo">Projet client : cahier des charges, devis, commandes, facturation et licences.</p></div><div class="grid" id="fields">
+<div class="field commercial-field"><label>Nom du client / organisation (à compléter pour un dossier client)</label><input data-key="client" maxlength="180" placeholder="Ex. Boutique Tana"/></div>
+<div class="field commercial-field"><label>Personne de contact</label><input data-key="contact" maxlength="180" placeholder="Nom et fonction"/></div>
+<div class="field"><label>Nom de l’application / projet *</label><input data-key="project" maxlength="180" placeholder="Ex. Gestion des ventes" required=""/></div>
+<div class="field"><label>Secteur d'activité</label><select data-key="sector"><option value="">Choisir</option><option>Commerce</option><option>Éducation</option><option>Santé</option><option>Transport</option><option>Industrie</option><option>Association / ONG</option><option>Services</option><option>Autre</option></select></div>
+<div class="field commercial-field"><label>Canal de contact</label><input data-key="channel" placeholder="Facebook, téléphone, recommandation..."/></div>
+<div class="field"><label>Statut du dossier</label><select data-key="status"><option>Découverte</option><option>En rédaction</option><option>À valider</option><option>Validé</option><option>En développement</option><option>Livré</option></select></div>
+<div class="field full"><label>Problème métier actuel (à compléter)</label><textarea data-key="problem" placeholder="Quel problème concret résoudre ?" required=""></textarea></div>
+<div class="field full"><label>Objectifs mesurables / résultats attendus</label><textarea data-key="goals" placeholder="Ex. Réduire les erreurs de stock, produire les états plus rapidement"></textarea></div>
+<div class="field full"><label>Processus actuel et outils utilisés</label><textarea data-key="current" placeholder="Excel, cahier papier, logiciel existant..."></textarea></div>
+<div class="field full"><label>Fonctionnalités indispensables (MVP)</label><textarea data-key="must" placeholder="Une fonctionnalité par ligne"></textarea></div>
+<div class="field full"><label>Fonctionnalités secondaires (phase 2)</label><textarea data-key="nice" placeholder="Une fonctionnalité par ligne"></textarea></div>
+<div class="field"><label>Utilisateurs et rôles</label><input data-key="roles" placeholder="Admin, vendeur, comptable..."/></div>
+<div class="field"><label>Nombre d'utilisateurs</label><input data-key="users" placeholder="Ex. 15, sur 3 sites"/></div>
+<div class="field"><label>Plateformes</label><select data-key="platform"><option>Android + Web</option><option>Android</option><option>Web / HTML autonome</option><option>Windows portable</option><option>Windows installable</option></select></div>
+<div class="field"><label>Mode de fonctionnement</label><select data-key="mode"><option>Hors ligne + Cloud si licence</option><option>Hors ligne uniquement</option><option>En ligne uniquement</option></select></div>
+<div class="field"><label>Langues souhaitées</label><input data-key="languages" value="Français / Malagasy"/></div>
+<div class="field"><label>Données à importer</label><input data-key="import" placeholder="Excel, CSV, historique..."/></div>
+<div class="field full"><label>Rapports, statistiques et exports</label><textarea data-key="reports" placeholder="Rapport journalier, stock, ventes, PDF..."></textarea></div>
+<div class="field full"><label>Contraintes légales, sécurité et confidentialité</label><textarea data-key="security" placeholder="Données personnelles, accès, sauvegardes, conservation..."></textarea></div>
+<div class="field commercial-field"><label>Budget indicatif (MGA)</label><input data-key="budget" placeholder="À définir ou montant"/></div>
+<div class="field"><label>Date cible souhaitée</label><input data-key="deadline" type="date"/></div>
+<div class="field full"><label>Critères d'acceptation / comment vérifier la réussite ?</label><textarea data-key="acceptance" placeholder="Tests et résultats attendus"></textarea></div>
+<div class="field full"><label>Questions ouvertes / risques / dépendances</label><textarea data-key="questions" placeholder="Clarifications avant devis"></textarea></div>
+<div class="field full section" id="sectorCard"><h3>Questionnaire métier adapté au secteur</h3><p class="muted" id="sectorIntro">Sélectionnez d’abord un secteur d’activité ci-dessus. Les questions adaptées apparaîtront ici.</p><div id="sectorQuestions"></div></div>
+<div class="field full commercial-field"><label>Observations commerciales</label><textarea data-key="notes"></textarea></div>
+</div><p class="muted" id="saveMessage" role="status"></p></section>
+<section class="hidden" id="document"><h2>Cahier des charges généré</h2><p>Document dérivé du dossier actuellement sélectionné. Les éléments non renseignés sont signalés comme « À préciser ».</p><div class="toolbar hidden-print"><button id="printBtn">Imprimer / Enregistrer PDF</button><button class="secondary" id="txtBtn">Télécharger .txt</button></div><article class="print-section" id="docContent"></article></section>
+<section class="hidden" id="quote"><h2>Devis commercial · MGA</h2><p>Choisissez un dossier projet enregistré avant d'établir un devis. Les tarifs sont définis par vous, jamais automatiquement inventés.</p>
+<div class="toolbar hidden-print"><button class="secondary" id="quotePick">Choisir un dossier</button><button id="quoteSave">Enregistrer le devis</button><button class="secondary" id="quotePrint">Imprimer / PDF</button><button class="secondary" id="quoteCSV">Exporter les lignes CSV</button></div>
+<p class="muted" id="quoteMsg" role="status"></p><div class="qform grid">
+<div class="field"><label>Numéro de devis *</label><input id="quoteNumber" maxlength="70" placeholder="Ex. AF-2026-001"/></div>
+<div class="field"><label>État du devis</label><select id="quoteStatus"><option>Brouillon</option><option>Envoyé</option><option>Accepté</option><option>Refusé</option></select></div>
+<div class="field"><label>Date du devis *</label><input id="quoteDate" type="date"/></div>
+<div class="field"><label>Validité (jours)</label><input id="quoteValidity" max="365" min="1" type="number" value="30"/></div>
+<div class="field"><label>Taux taxe applicable (%) — 0 par défaut</label><input id="quoteTax" max="100" min="0" step="0.01" type="number" value="0"/><small class="muted">À renseigner après vérification du régime fiscal. Ne présume pas la TVA.</small></div>
+<div class="field"><label>Acompte demandé (%)</label><input id="quoteDeposit" max="100" min="0" step="0.01" type="number" value="30"/></div>
+<div class="field full"><label>Conditions et échéancier</label><textarea id="quoteTerms" placeholder="Ex. 30 % à la commande, 70 % à la réception, après validation contractuelle"></textarea></div>
+<div class="field full"><label>Observations, exclusions et périmètre</label><textarea id="quoteNotes" placeholder="Préciser le périmètre et les prestations non incluses"></textarea></div>
+</div>
+<h3 class="section">Postes du devis</h3><p class="muted">Prix unitaire en MGA. Choisissez la périodicité pour distinguer les frais initiaux, mensuels et annuels.</p>
+<div class="toolbar hidden-print"><select aria-label="Ajouter une prestation prédéfinie" id="quotePreset" style="max-width:330px"><option value="">Choisir une prestation…</option><option>Étude et cadrage</option><option>Design UX/UI</option><option>Développement HTML autonome</option><option>Développement Android</option><option>Application Windows</option><option>Base de données</option><option>Tableau de bord</option><option>Import / export de données</option><option>Licence logicielle</option><option>Cloud / synchronisation</option><option>Maintenance et support</option><option>Formation utilisateurs</option><option>Tests et mise en production</option><option>Personnalisation / autre module</option></select><button id="quoteAdd">+ Ajouter un poste</button></div>
+<div class="table-scroll"><table class="quote-table"><thead><tr><th>Prestation *</th><th>Qté</th><th>Prix unitaire MGA</th><th>Remise %</th><th>Périodicité</th><th>Montant MGA</th><th class="hidden-print">Action</th></tr></thead><tbody id="quoteRows"></tbody></table></div>
+<div class="quote-summary" id="quoteTotals"></div>
+<div class="section"><h3>Modalités de paiement</h3><p><strong>MVola Madagascar</strong> — 034 85 874 58 · Transfert classique avec référence de paiement et validation manuelle dans Business Manager.</p><p class="muted">Virement BNI MGA et carte Visa : intégrations futures, non disponibles dans cette version.</p></div>
+<div class="quote-paper print-quote" id="quotePreview"></div>
+</section>
+<section class="hidden" id="crm"><h2>Suivi commercial · CRM</h2><p>Pipeline des affaires, relances et encaissements <strong>déclaratifs</strong>, reliés à chaque dossier projet. Aucune transaction n'est vérifiée auprès de MVola.</p>
+<div class="kpi"><div><strong id="crmPipelineCount">0</strong>Opportunités actives</div><div><strong id="crmPipelineValue">0</strong>Devis initiaux acceptés (MGA)</div><div><strong id="crmPaymentTotal">0</strong>Encaissements déclarés (MGA)</div></div>
+<div class="toolbar"><select aria-label="Choisir un dossier projet" id="crmRecordPick"></select><button class="secondary" id="crmNewRecord">+ Nouveau dossier</button><button class="secondary" id="crmExport">Exporter CRM CSV</button></div><p class="muted" id="crmMessage" role="status"></p>
+<div class="empty" id="crmEmpty">Sélectionnez ou créez un dossier projet pour gérer son suivi commercial.</div>
+<div class="hidden" id="crmWorkspace">
+<div class="grid"><div class="field"><label>Étape commerciale</label><select id="crmStage"><option>Prospect</option><option>Qualification</option><option>Découverte</option><option>Proposition envoyée</option><option>Négociation</option><option>Gagné</option><option>Perdu</option><option>En réalisation</option><option>Livré</option><option>Support</option></select></div>
+<div class="field"><label>Priorité</label><select id="crmPriority"><option>Normale</option><option>Haute</option><option>Basse</option></select></div>
+<div class="field"><label>Responsable de suivi</label><input id="crmOwner" maxlength="100" placeholder="Commercial / interlocuteur interne"/></div>
+<div class="field"><label>Prochaine relance</label><input id="crmNext" type="date"/></div>
+<div class="field full"><label>Prochaine action attendue</label><textarea id="crmAction" maxlength="1500" placeholder="Appeler le client, valider le périmètre, envoyer la proposition…"></textarea></div>
+<div class="field full"><label>Motif de perte / observations</label><textarea id="crmReason" maxlength="1500"></textarea></div></div>
+<div class="toolbar"><button id="crmSave">Enregistrer le suivi</button><button class="secondary" id="crmAddActivity">+ Ajouter une interaction</button></div>
+<h3 class="section">Journal d'interactions</h3><div id="crmActivities"></div>
+<h3 class="section">Paiements déclarés · validation manuelle</h3><p class="muted">MVola : 034 85 874 58. Les références indiquées ne vérifient pas le paiement. Un statut « Vérifié manuellement » est un enregistrement interne, pas une preuve bancaire.</p>
+<div class="toolbar"><button id="crmAddPayment">+ Enregistrer un paiement</button></div><div id="crmPayments"></div><p class="muted" id="crmPaymentSummary"></p>
+</div></section>
+<section class="hidden" id="business"><h2>Gestion commerciale · Ventes et abonnements</h2><p>Catalogue de prix interne, commandes, factures et échéances. Les montants ne constituent pas une preuve d'encaissement ou d'activation des licences.</p>
+<div class="toolbar"><select aria-label="Dossier commercial" id="bizRecordPick"></select><button class="secondary" id="bizGoQuote">Voir le devis</button><button class="secondary" id="bizExport">Exporter le suivi CSV</button></div>
+<p class="muted" id="businessMessage" role="status"></p><div class="kpi" id="businessStats"><div><strong id="bizOrdersTotal">0 MGA</strong>Commandes enregistrées (initial)</div><div><strong id="bizInvoicesDue">0 MGA</strong>Factures restant dues</div><div><strong id="bizSubsCount">0</strong>Abonnements enregistrés</div></div>
+<div class="compact-panel"><h3>Catalogue de prestations et tarifs (local)</h3><p class="muted">Montants saisis par l'opérateur. Aucun prix n'est prérempli.</p>
+<div class="grid"><div class="field"><label>Prestation *</label><input id="catalogName" maxlength="160" placeholder="Ex. Maintenance Premium"/></div><div class="field"><label>Prix MGA *</label><input id="catalogPrice" max="1000000000000" min="0" step="1" type="number"/></div><div class="field"><label>Périodicité</label><select id="catalogPeriod"><option>Unique</option><option>Mensuel</option><option>Annuel</option></select></div><div class="field"><label>Catégorie</label><select id="catalogCategory"><option>Développement</option><option>Licence</option><option>Cloud</option><option>Maintenance</option><option>Formation</option><option>Services</option></select></div></div>
+<div class="toolbar"><button id="catalogAdd">Ajouter au catalogue</button></div><div class="table-scroll" id="catalogList"></div></div>
+<div class="empty" id="bizEmpty">Choisissez un dossier projet enregistré.</div>
+<div class="hidden" id="businessWorkspace">
+<div class="compact-panel"><h3>Commande client</h3><p class="muted">La commande est une copie du devis enregistré. Un devis accepté n'est pas une commande automatique.</p>
+<div class="grid"><div class="field"><label>Numéro de commande *</label><input id="orderNumber" maxlength="70" placeholder="BC-2026-001"/></div><div class="field"><label>Date de commande</label><input id="orderDate" type="date"/></div><div class="field"><label>Statut</label><select id="orderStatus"><option>Confirmée</option><option>En réalisation</option><option>Livrée</option><option>Annulée</option></select></div><div class="field"><label>Référence accord client</label><input id="orderApproval" maxlength="120" placeholder="Référence du bon ou accord écrit"/></div></div>
+<div class="toolbar"><button id="orderFromQuote">Créer depuis devis accepté</button></div><div id="orderList"></div></div>
+<div class="compact-panel"><h3>Facturation et échéances</h3><div class="grid"><div class="field"><label>Commande source</label><select id="invoiceOrder"></select></div><div class="field"><label>Numéro facture *</label><input id="invoiceNumber" maxlength="70" placeholder="FAC-2026-001"/></div><div class="field"><label>Date facture</label><input id="invoiceDate" type="date"/></div><div class="field"><label>Date d'échéance</label><input id="invoiceDue" type="date"/></div><div class="field"><label>Montant à facturer (MGA, initial uniquement)</label><input id="invoiceAmount" max="1000000000000" min="1" step="1" type="number"/></div><div class="field"><label>Note de facturation</label><input id="invoiceNote" maxlength="240" placeholder="Acompte, solde ou facture totale"/></div></div>
+<div class="toolbar"><button id="invoiceAdd">Créer facture</button></div><div id="invoiceList"></div><p class="muted">Les paiements sont saisis séparément par facture, après vérification manuelle hors application. Les paiements CRM restent indépendants pour éviter les compensations automatiques non justifiées.</p></div>
+<div class="compact-panel"><h3>Abonnements · Prévisions commerciales</h3><p class="muted">Une souscription commerciale enregistrée ici ne crée pas de licence active et ne prélève pas de paiement.</p>
+<div class="grid"><div class="field"><label>Prestation / formule *</label><input id="subName" maxlength="160" placeholder="Cloud / Maintenance / Licence"/></div><div class="field"><label>Montant par période (MGA) *</label><input id="subAmount" max="1000000000000" min="0" step="1" type="number"/></div><div class="field"><label>Cycle</label><select id="subPeriod"><option>Mensuel</option><option>Annuel</option></select></div><div class="field"><label>Échéance suivante *</label><input id="subNext" type="date"/></div><div class="field"><label>État commercial</label><select id="subStatus"><option>Prévu</option><option>Actif commercialement</option><option>Suspendu</option><option>Résilié</option></select></div><div class="field"><label>Référence contrat</label><input id="subRef" maxlength="100"/></div></div>
+<div class="toolbar"><button id="subAdd">Enregistrer l'abonnement</button></div><div id="subList"></div></div>
+<div class="compact-panel" id="invoicePrintPanel"><h3>Facture sélectionnée</h3><div class="muted" id="invoicePaper">Sélectionnez « Voir / Imprimer » sur une facture.</div><div class="toolbar hidden-print"><button class="secondary" disabled="" id="invoicePrint">Imprimer / PDF</button></div></div>
+</div></section>
+<section class="hidden" id="production"><h2>Générateur de prompts · Business Manager</h2>
+<p>Produisez ici des instructions de développement depuis les exigences du dossier. Production et export des prompts directement dans Business Manager. Aucun transfert vers une autre application.</p>
+<div class="toolbar"><select aria-label="Projet à utiliser pour générer le prompt" id="prodRecordPick"></select></div>
+<div class="empty" id="prodEmpty">Créez ou sélectionnez un dossier.</div>
+<div class="hidden" id="prodWorkspace"><p class="stat-note" id="prodSummary"></p>
+<div class="grid">
+<div class="field"><label>Plateforme du prompt</label><select id="promptTarget"><option value="android">Android Studio · Kotlin / Compose</option><option value="html">HTML standalone · CSS / JS</option><option value="web">Application Web avec backend</option><option value="windows">Application Windows portable</option><option value="dashboard">Dashboard BI</option><option value="custom">Autre plateforme / stack</option></select></div>
+<div class="field"><label>Type de prompt</label><select id="promptPurpose"><option value="build">Développer une application complète</option><option value="fix">Modifier / corriger une application existante</option><option value="audit">Auditer / tester / fiabiliser</option><option value="deploy">Préparer une livraison</option></select></div>
+<div class="field full"><label>Instructions additionnelles (facultatif)</label><textarea id="promptInstructions" maxlength="4000" placeholder="Technologies privilégiées, détails non prévus dans le questionnaire, modules à prioriser…"></textarea></div>
+</div>
+<div class="toolbar"><button id="promptGenerate">Générer et enregistrer le prompt</button><button class="secondary" id="promptCopy">Copier le prompt</button><button class="secondary" id="promptMarkdown">Exporter .md</button></div>
+<p class="muted">Production locale par modèle structuré, sans appel à une IA distante. Le document doit être relu, notamment les exigences métier et la sécurité.</p>
+<div class="field"><label for="promptPreview">Prompt produit</label><textarea id="promptPreview" placeholder="Sélectionnez un dossier puis cliquez sur Générer." readonly="" style="min-height:430px;line-height:1.55"></textarea></div>
+<p class="muted" id="prodMessage" role="status"></p>
+<div class="section"><h3>Historique des prompts de ce projet</h3><div class="compact-panel" id="promptHistory"></div></div>
+</div></section>
+<section class="hidden" id="licensing"><h2>Licences &amp; Cloud · Business Manager (Worker central)</h2><div class="banner">Les paramètres locaux ne sont pas des licences actives. Activation et synchronisation client : Worker AppForge V3 central uniquement. La création/révocation de licences serveur exige un mécanisme administrateur sécurisé encore absent du parcours HTML autonome. Aucun jeton administrateur ne sera demandé ici. La révocation serveur est impossible dans cette interface tant qu’une route de session administrateur déléguée n’existe pas.</div>
+<h3 class="section">Connexion Business Manager au Worker AppForge V3</h3><div class="compact-panel" id="bmCloudGlobalPanel">
+<p class="muted">Licence de Business Manager uniquement. La vérification du droit et la synchronisation sont réalisées par le Worker AppForge V3 central. Aucun compte Cloud, aucune organisation, aucun identifiant Cloud client. Aucun jeton administrateur intégré au HTML.</p>
+<div class="grid">
+<p class="muted">Worker central fixe : <code id="bmEndpointLabel">https://appforge-license-api.lalainaadclick.workers.dev</code>. Aucune adresse Worker à configurer. L’identifiant produit doit être contrôlé dans D1 : ne pas saisir PROMPTI-V1 pour Business Manager.</p>
+<div class="field"><label for="bmProductId">Product ID exact enregistré dans D1 pour Business Manager *</label><input autocomplete="off" id="bmProductId" maxlength="40" placeholder="ID EXACT enregistré dans D1 (A-Z, 0-9, _ ou -)"/></div>
+<p class="muted">Le Worker n’expose pas de liste publique des Product ID. Si le produit Business Manager n’est pas créé dans D1, l’activation sera refusée ; ne réutilisez pas l’ID d’une autre application.</p>
+<div class="field"><label for="bmLicenseCode">Code de licence de Business Manager *</label><input autocomplete="off" id="bmLicenseCode" maxlength="80" placeholder="Code reçu de l’administrateur du Worker" type="password"/></div>
+</div>
+<div class="toolbar"><button class="secondary" id="bmHealth">Tester /health</button><button id="bmActivate">Activer réellement</button><button class="secondary" id="bmTrial" type="button">Démarrer l’essai 3 jours</button><button class="secondary" id="bmLicenseCheck">Vérifier le droit</button><button class="secondary" id="bmSync">Synchroniser les dossiers</button><button class="secondary" id="bmDisconnect">Terminer la session</button></div>
+<div class="field" style="max-width:560px;margin:12px 0"><label for="bmCloudPass">Phrase de chiffrement local des sauvegardes Cloud (12 caractères minimum) *</label><input autocomplete="new-password" id="bmCloudPass" maxlength="200" minlength="12" placeholder="Phrase secrète privée, non envoyée au Worker" type="password"/><small class="muted">Ce n’est ni un mot de passe Cloud ni un compte client. Conservez exactement cette phrase pour restaurer sur un autre appareil. Rien n’est stocké ni envoyé en clair à D1.</small></div>
+<label class="toggle-inline"><input id="bmAuto" type="checkbox"/> Synchroniser après modification et retour d’Internet (session active seulement, avec phrase de chiffrement saisie)</label>
+<p class="stat-note" id="bmCloudStatus" role="status">Non connecté : aucune licence ni synchronisation serveur confirmée.</p>
+<p class="muted">Les informations sont chiffrées dans le navigateur avant transfert vers D1 ; seul un objet chiffré quitte votre appareil, après activation et synchronisation explicites. Les sauvegardes Business Manager sont chiffrées localement avant l’envoi D1. La phrase de chiffrement n’est pas transmise au Worker, ni enregistrée dans le navigateur. Gardez-la dans un gestionnaire de mots de passe : sa perte rend la copie Cloud illisible. Ne confondez pas une licence cliente avec la licence propriétaire de Business Manager.</p>
+<div class="compact-panel" id="bmEntitlementPanel"><h3>Reprise de licence chiffrée</h3><p class="muted">Après activation, la preuve de licence peut être conservée chiffrée dans ce navigateur avec ta phrase privée ci-dessus. Elle est déchiffrée seulement sur cet appareil, puis revérifiée auprès du Worker à chaque reprise. Aucun jeton Cloud ni code de licence n'est enregistré en clair.</p><div class="toolbar"><button class="secondary" id="bmResume">Restaurer et revérifier ma licence</button><button class="secondary" id="bmForget">Effacer la preuve chiffrée locale</button></div><p class="stat-note" id="bmVaultStatus" role="status">Aucun état de reprise encore vérifié.</p></div><div class="compact-panel" id="bmServerChecks"><h3>Contrôles de licence &amp; D1</h3><p class="muted">Ces vérifications interrogent le Worker central. Aucun résultat n'est prédéfini. Le refus après révocation est vérifié sur le serveur (la révocation elle-même exige une administration déléguée, indisponible dans cette version).</p><div class="toolbar"><button class="secondary" id="bmVerifyCloud">Vérifier jeton + lecture D1</button><button class="secondary" id="bmTestRoundTrip">Test D1 lecture/écriture (ressource isolée)</button></div><p class="stat-note" id="bmCheckStatus" role="status">Aucun test authentifié lancé.</p></div></div><div class="compact-panel" id="httpAuditPanel"><h3>Diagnostic HTTP du Worker central (sans secret)</h3>
+<p class="muted">Tests non destructifs depuis ton navigateur. Ils ne créent pas de licence, n'écrivent rien dans D1 et ne prouvent pas la synchronisation. Les codes 401 attendus prouvent seulement que la route répond avec une protection, pas qu'une licence fonctionne.</p>
+<div class="toolbar"><button class="secondary" id="bmHttpAudit">Tester routes déployées (GET / OPTIONS)</button><button class="secondary" disabled="" id="bmHttpExport">Exporter le rapport HTTP JSON</button></div>
+<pre id="bmHttpResult" role="status" style="white-space:pre-wrap;overflow-wrap:anywhere;max-height:300px;overflow:auto;background:#10182b;border-radius:8px;padding:12px">Diagnostic disponible sans projet. Les codes HTTP et erreurs CORS seront affichés ici après test.</pre>
+<p class="muted">Le test réel d'écriture D1 nécessite une licence de test valide et la lecture avec preuve liée à l'appareil. Le test de révocation exige une opération d'administration autorisée sur le Worker central suivie d'une vérification du refus d'accès. Ce bouton ne contourne pas ces exigences.</p></div><div class="compact-panel"><h3>Licences des applications du portefeuille</h3>
+<p class="muted" id="bmAdminStatus" role="status">Le Worker source expose <code>GET/POST /admin/apps</code>, <code>GET/POST /admin/licenses</code>, <code>PATCH /admin/licenses/:id/cloud</code> et <code>POST /admin/licenses/:id/revoke</code> avec <code>ADMIN_API_TOKEN</code> serveur. Aucun mécanisme de session administrateur déléguée n’est présent dans les sources consultées. La création, modification et révocation administratives restent désactivées jusqu’à mise en place d’une session administrateur déléguée sécurisée dans CE MÊME Worker. Nécessité : sécuriser l’accès aux routes /admin existantes sur le Worker CENTRAL par une session administrateur courte, limitée aux droits requis et vérifiée côté serveur (par exemple Cloudflare Access JWT validé côté Worker). Aucun jeton global dans le HTML ni le dépôt. Aucun deuxième backend.</p>
+<div class="toolbar"><button class="secondary" id="bmExportAdmin">Exporter un dossier de revue JSON (sans secret)</button></div>
+<p class="muted">Aucune création de licence, mise à jour de quota ni révocation n’est simulée par ce fichier. Les opérations d’administration réelles sont à exécuter dans un environnement sécurisé contre le Worker existant jusqu’à disponibilité d’une délégation administrateur sécurisée.</p>
+</div>
+<p class="stat-note">Diagnostic réseau accessible sans dossier projet. Il ne demande aucune licence ni aucun secret et ne modifie pas D1.</p>
+<div class="toolbar"><select aria-label="Dossier associé à la demande de licence" id="licRecordPick"></select><button class="secondary" id="licToCRM">Ouvrir le CRM du projet client</button></div><div class="empty" id="licEmpty">Sélectionnez un dossier projet.</div>
+<p class="stat-note">La licence de Business Manager se vérifie ci-dessus sans sélectionner de projet. Le formulaire ci-dessous sert à préparer les paramètres de licence des applications de ton portefeuille.</p><div class="hidden" id="licWorkspace"><p class="stat-note" id="licKindInfo">Type de projet : à sélectionner.</p><div class="grid"><div class="field"><label>Product ID AppForge (3 à 40 caractères, A-Z/0-9/_/-)</label><input id="licAppCode" maxlength="80" placeholder="Ex. MON_APPLICATION (A-Z, 0-9, _ et -)"/></div><div class="field"><label>Version cible</label><input id="licAppVersion" maxlength="40" placeholder="1.0.0"/></div><div class="field"><label>Offre demandée</label><select id="licPlan"><option>À définir</option><option>Essai 3 jours</option><option>Mensuelle</option><option>Annuelle</option><option>À vie</option><option>Propriétaire</option></select></div>
+<div class="field"><label>Fonction Cloud souhaitée</label><select id="licCloud"><option>À définir</option><option>Sans Cloud</option><option>Cloud inclus sous réserve de licence</option></select></div>
+<div class="field"><label>Quota Cloud prévisionnel (Mo)</label><input id="licQuota" max="100000" min="0" step="1" type="number" value="100"/></div><div class="field"><label>Politique de synchronisation envisagée</label><select id="licSyncPolicy"><option value="offline-first">Offline-first, synchronisation au retour réseau</option><option value="local-only">Local uniquement</option><option value="online">En ligne uniquement</option></select></div><div class="field"><label>Nombre d'appareils souhaité</label><input id="licDevices" max="9999" min="1" type="number" value="1"/></div>
+<div class="field"><label>Étape de préparation commerciale (pas une licence)</label><select id="licRequest"><option>À qualifier</option><option>Préparation interne (personnel)</option><option>Devis à préparer</option><option>En attente de justificatif MVola</option><option>À transmettre pour vérification manuelle</option><option>Prête pour revue administrative (activation serveur non effectuée)</option><option>Annulée</option></select></div>
+<div class="field full"><label>Référence de suivi (non sensible)</label><input id="licReference" maxlength="100" placeholder="N° dossier interne, sans token ou clé secrète"/></div>
+<div class="field full"><label>Observations commerciales</label><textarea id="licNotes" maxlength="1500" placeholder="Questions sur le nombre d'appareils, le cloud, la durée…"></textarea></div></div>
+<div class="toolbar"><button id="licSave">Enregistrer les paramètres</button><button class="secondary" id="licJson">Exporter projet de configuration (non activé)</button><button class="secondary" id="licExport">Exporter les besoins de licences CSV</button></div><p class="muted" id="licMessage" role="status"></p>
+</div></section>
+<section class="hidden" id="backup"><h2>Sauvegarde &amp; restauration</h2><p>Exportez la totalité des dossiers en JSON. La restauration remplace les dossiers locaux après confirmation. Une sauvegarde D1 chiffrée nécessite sa phrase de chiffrement. Ne partagez pas de sauvegardes non chiffrées contenant des informations confidentielles.</p><div class="toolbar"><button id="exportBtn">Exporter JSON</button><label style="display:inline-flex;align-items:center;gap:10px">Importer JSON <input accept=".json,application/json" id="importFile" type="file"/></label></div><p class="muted" id="backupInfo">Dernière sauvegarde : aucune enregistrée dans cette session.</p><div class="section"><h3>Statut des services</h3><p>Google Drive : export manuel du fichier, sans OAuth. Cloudflare D1 : via le Worker central AppForge V3 et un droit Cloud confirmé par une licence valide, avec chiffrement AES-GCM local de son contenu. Sans connexion, les données restent locales et les demandes de licence ne sont pas des activations. Chiffrement des exports : non disponible dans cette version.</p></div><div class="compact-panel"><h3>Restaurer une sauvegarde chiffrée Cloud</h3><p class="muted">Sélectionne un fichier de sauvegarde chiffrée v1.5.1, puis entre la phrase privée utilisée lors de sa création dans Licences &amp; Cloud. La restauration demande confirmation et conserve un fichier de secours avant remplacement.</p><div class="toolbar"><label class="secondary" style="display:inline-block;border:1px solid #465472;border-radius:9px;padding:10px"><input accept=".json,application/json" aria-label="Importer une sauvegarde chiffrée" id="bmEncryptedImport" type="file"/></label></div><p class="muted" id="bmEncryptedImportStatus" role="status">Aucun import chiffré effectué.</p></div></section>
+<section class="hidden" id="about"><h2>À propos &amp; Support</h2><p>AppForge Business Manager · Prototype local v1.7.1 · Édition interne · 20/11/2026</p><p>AppForge Business Manager · Made in Madagascar</p><p>Support : <a href="mailto:lalainaadclick@gmail.com" style="color:#b9adff">lalainaadclick@gmail.com</a></p><p>Licence Business : confirmée uniquement via l’activation et la vérification sur le Worker AppForge V3. Cloud : synchronisation via jeton Cloud signé, si droits serveur actifs. Sauvegarde : export JSON manuel. Vérification des mises à jour : indisponible hors ligne.</p><h3>Guide rapide</h3><p>Créez un projet personnel ou client. Les projets personnels n’utilisent pas les devis, factures ni paiements. Les projets clients suivent le parcours commercial. Paramétrez les demandes de licences et Cloud dans Business Manager, puis générez et exportez les prompts directement dans Business Manager. Sauvegardez régulièrement.</p><h3>FAQ</h3><p><strong>La synchronisation est-elle active ?</strong> Après activation réelle de la licence Business Manager auprès du Worker central, saisie de la phrase de chiffrement et retour de confirmation des snapshots chiffrés. Hors connexion, les projets restent disponibles localement.</p><p><strong>Le PDF est-il possible ?</strong> Utilisez « Imprimer / Enregistrer PDF » dans le navigateur.</p><h3>Confidentialité et conditions</h3><p>Les informations saisies sont conservées dans ce navigateur. Aucun transfert métier réseau avant une activation volontaire au Worker et une synchronisation initiée ou activée. Les snapshots sont chiffrés dans le navigateur avant transmission. L'utilisateur reste responsable du traitement légal des données et de la sauvegarde. La version prototype est fournie à des fins d'évaluation, sans garantie de disponibilité ni de protection renforcée des données.</p><h3>Signaler un problème</h3><p>Contactez le support et décrivez les étapes de reproduction. N'envoyez aucune donnée client sensible sans autorisation.</p><div class="section bm-cloud-notice">Dossiers conservés sur cet appareil. Accès Cloud seulement après confirmation réelle de licence par le Worker central AppForge V3. Les demandes de licence commerciales ne sont jamais des licences activées.</div></section>
+</main></div><div class="footer">AppForge Business Manager · Made in Madagascar · Version v1.7.2 — Worker Lalainaadclick, conformité V3 partielle</div><nav aria-label="Navigation principale mobile" class="mobile-dock"><button class="dock-item" data-go="dashboard" type="button"><span class="dock-icon">⌂</span><small>Accueil</small></button><button class="dock-item" data-go="dossiers" type="button"><span class="dock-icon">▤</span><small>Projets</small></button><button class="dock-item" data-go="business" type="button"><span class="dock-icon">▦</span><small>Commercial</small></button><button aria-controls="premiumSidebar" aria-expanded="false" class="dock-item" id="dockMore" type="button"><span class="dock-icon">☷</span><small>Modules</small></button></nav></div>
+<script>
+'use strict';
+const DB='appforge_clientbrief_v01',PIN='appforge_clientbrief_pin_v01';let records=[],activeId=null,view='dashboard';const $=s=>document.querySelector(s),all=s=>[...document.querySelectorAll(s)];
+function escapeHTML(x){return String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function download(name,text,type='text/plain'){const blob=new Blob([text],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+function storageLoad(){try{const x=JSON.parse(localStorage.getItem(DB)||'[]');records=Array.isArray(x)?x:[];}catch(e){records=[];alert('Stockage illisible. Aucune donnée n’a été effacée.');}}
+function storageSave(){
+ const encoded=JSON.stringify(records);
+ // Ne pas annoncer une sauvegarde sans preuve de lecture des octets enregistrés.
+ localStorage.setItem(DB,encoded);
+ if(localStorage.getItem(DB)!==encoded)throw new Error('Le navigateur n’a pas confirmé les données enregistrées.');
+ // Une erreur éventuelle du synchroniseur ne doit jamais annuler une sauvegarde locale réussie.
+ try{if(typeof window.__bmOnLocalChange==='function')window.__bmOnLocalChange();}catch(err){console.warn('Synchronisation différée non lancée :',err);}
+}
+async function hash(pin,salt){const bytes=new TextEncoder().encode(pin),key=await crypto.subtle.importKey('raw',bytes,'PBKDF2',false,['deriveBits']),bits=await crypto.subtle.deriveBits({name:'PBKDF2',salt:new Uint8Array(salt),iterations:160000,hash:'SHA-256'},key,256);return Array.from(new Uint8Array(bits)).map(x=>x.toString(16).padStart(2,'0')).join('');}
+async function unlock(){const pin=$('#pin').value;const msg=$('#lockMsg');msg.textContent='';if(!/^\d{4}$/.test(pin)&&!/^\d{6,}$/.test(pin)){msg.textContent='Saisissez un PIN de 4 chiffres (ou votre ancien PIN pour le migrer).';return;}if(!crypto?.subtle){msg.textContent='Ce navigateur ne permet pas la protection PIN (Web Crypto indisponible).';return;}try{let obj=JSON.parse(localStorage.getItem(PIN)||'null');if(!obj){if(!/^\d{4}$/.test(pin)){msg.textContent='Le nouveau PIN doit contenir exactement 4 chiffres.';return;}const salt=Array.from(crypto.getRandomValues(new Uint8Array(16)));obj={salt,digest:await hash(pin,salt)};localStorage.setItem(PIN,JSON.stringify(obj)); }else if(obj.digest!==await hash(pin,obj.salt)){msg.textContent='PIN incorrect.';return;}
+if(pin.length!==4){
+ const replacement=prompt('Ancien PIN accepté. Définissez maintenant un nouveau PIN de 4 chiffres :');
+ if(!replacement||!/^\d{4}$/.test(replacement)){msg.textContent='Migration annulée. Reconnectez-vous avec votre ancien PIN pour réessayer.';return;}
+ const confirmPin=prompt('Confirmez votre nouveau PIN de 4 chiffres :');
+ if(replacement!==confirmPin){msg.textContent='Les deux PIN ne correspondent pas. Aucune modification effectuée.';return;}
+ const salt=Array.from(crypto.getRandomValues(new Uint8Array(16)));
+ localStorage.setItem(PIN,JSON.stringify({salt,digest:await hash(replacement,salt)}));
+}
+$('#pin').value='';$('#lock').classList.add('hidden');$('#app').classList.remove('hidden');storageLoad();render();}catch(e){msg.textContent='Impossible de vérifier le PIN.';}}
+$('#unlockBtn').onclick=unlock;$('#pin').addEventListener('keydown',e=>{if(e.key==='Enter')unlock();});$('#lockBtn').onclick=()=>{bmLogout('Interface verrouillée, session Cloud effacée.');$('#app').classList.add('hidden');$('#lock').classList.remove('hidden');};
+function show(name){if(['quote','crm','business'].includes(name)&&isPersonal(records.find(r=>r.id===activeId))){name='editor';$('#saveMessage').textContent='Projet personnel : devis, CRM commercial et facturation non applicables.';}view=name;all('main section').forEach(e=>e.classList.toggle('hidden',e.id!==name));all('.nav').forEach(e=>e.classList.toggle('active',e.dataset.view===name));if(name==='document')renderDoc();if(name==='dossiers')renderList();if(name==='dashboard')renderDashboard();if(name==='crm')crmRender();if(name==='licensing')licRender();if(name==='quote')renderQuote();if(name==='business')bizRender();if(name==='production')prodRender();updateKindChrome();}
+all('.nav').forEach(b=>b.onclick=()=>show(b.dataset.view));
+
+const CHOICE_CONFIG={"sector": ["single", ["Commerce / boutique", "Supermarché / distribution", "Restaurant / restauration", "Éducation / école", "Formation professionnelle", "Santé / clinique", "Pharmacie", "Transport / livraison", "Logistique", "Agriculture / élevage", "Industrie / usine", "Textile / confection", "Construction / BTP", "Immobilier", "Hôtellerie / tourisme", "Finance / microfinance", "Association / ONG", "Église / communauté religieuse", "Services professionnels", "Administration", "E-commerce"]], "channel": ["single", ["Facebook", "WhatsApp", "Téléphone", "E-mail", "Site web", "Recommandation", "Visite commerciale", "Appel d'offres", "Client existant", "Événement / salon"]], "goals": ["multi", ["Gagner du temps", "Réduire les erreurs", "Automatiser les tâches", "Améliorer le suivi", "Centraliser les données", "Faciliter le reporting", "Augmenter les ventes", "Réduire les coûts", "Améliorer la traçabilité", "Gérer plusieurs sites", "Améliorer le service client", "Sécuriser les opérations", "Travailler hors ligne"]], "current": ["multi", ["Cahier papier", "Excel", "Google Sheets", "WhatsApp", "Google Forms", "Logiciel existant", "Sage", "ERP", "Application mobile existante", "Procédure manuelle", "Plusieurs outils séparés", "Aucun outil"]], "must": ["multi", ["Tableau de bord KPI", "Gestion clients / CRM", "Gestion fournisseurs", "Catalogue produits / services", "Stock et inventaire", "Achats et commandes", "Ventes et facturation", "Caisse / POS", "Paiements / reçus", "Comptabilité / trésorerie", "Budget et dépenses", "Ressources humaines / paie", "Présences / pointage", "Gestion membres / adhérents", "Planification / rendez-vous", "Tâches et workflow", "Documents / pièces jointes", "Recherche / filtres", "Alertes / notifications", "Tableaux / statistiques", "Rapports PDF / Excel", "Import Excel / CSV", "Gestion multi-utilisateurs", "Autorisations par rôle", "Géolocalisation / carte", "Scan QR / code-barres", "Caméra / photos", "Mode hors connexion", "Synchronisation cloud", "Sauvegarde / restauration", "Assistant IA", "Portail client", "Multilingue"]], "nice": ["multi", ["Notifications avancées", "Prévisions IA", "Tableaux de bord avancés", "Portail en ligne", "Signature électronique", "Géolocalisation", "Messagerie intégrée", "Intégration API", "Rapports personnalisés", "Automatisation des relances", "Import historique", "Module fidélité", "Gestion de plusieurs sites", "Application Android", "Application Windows", "Connecteur cloud"]], "roles": ["multi", ["Propriétaire / administrateur", "Direction générale", "Responsable", "Superviseur", "Commercial", "Vendeur / caissier", "Comptable", "Gestionnaire de stock", "Employé", "Agent terrain", "Enseignant", "Élève / étudiant", "Client final", "Fournisseur", "Auditeur / lecture seule"]], "users": ["single", ["1 utilisateur", "2 à 5", "6 à 10", "11 à 25", "26 à 50", "51 à 100", "Plus de 100", "Nombre non défini"]], "platform": ["multi", ["HTML autonome (ordinateur)", "Web navigateur", "Android APK API 23+", "Android APK API 29+", "Windows EXE portable", "Windows EXE installable", "Tablette", "Smartphone", "Ordinateur de bureau"]], "mode": ["single", ["Hors ligne uniquement", "Hors ligne + Cloud selon licence", "En ligne uniquement", "Multi-sites avec synchronisation", "À préciser"]], "languages": ["multi", ["Français", "Malagasy", "Anglais", "Bilingue Français / Malagasy", "Autres langues"]], "import": ["multi", ["Excel .xlsx", "CSV", "JSON", "Fichier texte", "Base SQL existante", "Sage", "Google Sheets exporté", "PDF", "Photos / scans", "Aucun import"]], "reports": ["multi", ["Dashboard direction", "Suivi ventes", "Suivi stock", "Suivi achats", "Suivi trésorerie", "Comptabilité", "KPI RH", "Rapport quotidien", "Rapport hebdomadaire", "Rapport mensuel", "Analyse par département", "Top / Bottom", "Graphiques", "Export CSV", "Export Excel", "Export PDF", "Impression"]], "security": ["multi", ["PIN 4 chiffres", "Biométrie Android", "Comptes utilisateurs", "Permissions par rôle", "Chiffrement sauvegarde", "Données personnelles", "Piste d'audit", "Sauvegardes locales", "Sauvegardes Google Drive manuelles", "Licence AppForge", "Accès Cloud sous licence", "Séparation des clients", "Conservation des données", "Consentement utilisateur", "Authentification backend"]], "budget": ["single", ["À définir", "Moins de 250 000 MGA", "250 000 à 500 000 MGA", "500 001 à 1 000 000 MGA", "1 000 001 à 2 500 000 MGA", "2 500 001 à 5 000 000 MGA", "Plus de 5 000 000 MGA", "Budget non communiqué"]], "acceptance": ["multi", ["Fonctions prioritaires testées", "Utilisation hors ligne validée", "Zéro perte de données sur scénario de test", "Exports exacts", "Calculs KPI vérifiés", "Responsive mobile/PC", "Import fichier testé", "Tests utilisateurs réussis", "Respect des rôles", "Performance acceptable", "Sauvegarde/restauration vérifiées", "Documentation remise", "Validation écrite client"]]};
+const choiceControls=new Map();
+function enhanceChoices(){
+ for(const [key,[mode,choices]] of Object.entries(CHOICE_CONFIG)){
+  let original=document.querySelector('[data-key="'+key+'"]');
+  if(!original)continue;
+  if(original.tagName==='SELECT'){const hidden=document.createElement('input');hidden.type='text';hidden.dataset.key=key;original.replaceWith(hidden);original=hidden;}
+  const wrap=document.createElement('div');wrap.className='choice-panel';
+  const hint=document.createElement('p');hint.className='choice-help';
+  hint.textContent=mode==='multi'?'Plusieurs réponses possibles. Cochez les choix souhaités ou ajoutez un autre besoin.':'Choisissez une réponse ou saisissez une autre valeur.';
+  wrap.append(hint);
+  const list=document.createElement('div');list.className='choice-grid';
+  const inputs=[];
+  for(const val of choices){
+    const lab=document.createElement('label');lab.className='choice-item';
+    const box=document.createElement('input');box.type=mode==='single'?'radio':'checkbox';
+    box.name='choice-'+key;box.value=val;
+    const span=document.createElement('span');span.textContent=val;
+    lab.append(box,span);list.append(lab);inputs.push(box);
+  }
+  wrap.append(list);
+  const other=document.createElement('input');other.className='choice-other';
+  other.placeholder=mode==='multi'?'Autre(s) choix : séparez-les par un point-virgule':'Autre réponse (saisie libre)';
+  other.setAttribute('aria-label','Autre réponse pour '+key);
+  wrap.append(other);original.classList.add('choice-original');original.insertAdjacentElement('afterend',wrap);
+  const sync=()=>{
+    const selected=inputs.filter(b=>b.checked).map(b=>b.value);
+    const custom=other.value.trim().split(';').map(x=>x.trim()).filter(Boolean);
+    original.value=[...selected,...custom].join('\n');
+  };
+  for(const inp of inputs){inp.addEventListener('change',()=>{
+    if(mode==='single'&&inp.checked){other.value='';}
+    sync();
+  });}
+  other.addEventListener('input',()=>{
+    if(mode==='single'&&other.value.trim())inputs.forEach(b=>b.checked=false);
+    sync();
+  });
+  const restore=(value)=>{
+    const vals=String(value||'').split(/\n|;\s*/).map(x=>x.trim()).filter(Boolean);
+    inputs.forEach(b=>b.checked=vals.includes(b.value));
+    const unknown=vals.filter(v=>!choices.includes(v));
+    other.value=unknown.join('; ');
+    // Rétrocompatibilité des anciennes sélections / textes libres
+    if(mode==='single'&&unknown.length)inputs.forEach(b=>b.checked=false);
+    sync();
+  };
+  choiceControls.set(key,{restore,sync,inputs,other});
+ }
+}
+enhanceChoices();
+
+
+const SECTOR_QUESTIONS={"Commerce / distribution":[["Quels canaux de vente utilisez-vous ?",["Boutique physique","Vente en gros","Facebook / WhatsApp","Site e-commerce","Vente ambulante","Multi-boutiques"]],["Comment gérez-vous les prix et les stocks ?",["Stocks par dépôt","Variantes taille/couleur","Lots et dates de péremption","Plusieurs tarifs","Codes-barres","Inventaires périodiques"]],["Quels moyens de paiement acceptez-vous ?",["Espèces","MVola","Orange Money","Airtel Money","Virement bancaire","Paiement à crédit"]],["Quels documents doivent être émis ?",["Devis","Factures","Tickets de caisse","Bons de commande","Bons de livraison","Avoirs"]],["Quels indicateurs souhaitez-vous ?",["Chiffre d’affaires","Marge brute","Stock minimum","Top produits","Créances clients","Performance par vendeur"]]],"Éducation / formation":[["Quels établissements ou niveaux ?",["École primaire","Collège","Lycée","Université","Centre de formation","Multi-établissements"]],["Quels dossiers gérer ?",["Élèves / étudiants","Parents / tuteurs","Enseignants","Classes et matières","Admissions","Années scolaires"]],["Quels processus scolaires ?",["Inscriptions","Frais de scolarité","Notes / bulletins","Présences / absences","Emplois du temps","Examens"]],["Quels échanges ?",["Notifications parents","SMS / e-mail","Documents téléchargeables","Portail élève","Portail enseignant","Cours en ligne"]],["Quels rapports ?",["Effectifs","Impayés","Résultats","Assiduité","Taux de réussite","Recettes par période"]]],"Santé / pharmacie":[["Quelle activité ?",["Pharmacie","Cabinet","Clinique","Laboratoire","Centre de santé","Dépôt pharmaceutique"]],["Quels dossiers et opérations ?",["Patients","Ordonnances","Consultations","Rendez-vous","Facturation","Historique médical"]],["Quelles contraintes de produits ?",["Lots","Péremption","Traçabilité","Seuil de réapprovisionnement","Inventaire","Produits réglementés"]],["Quels contrôles ?",["Confidentialité renforcée","Accès par professionnel","Historique des accès","Archivage","Consentement","Contrôle de délivrance"]],["Quels rapports ?",["Ventes","Ruptures","Péremptions prochaines","Prestations","Planning","Rapports par praticien"]]],"Transport / logistique":[["Quel type d’activité ?",["Livraison urbaine","Transport de marchandises","Transport de personnes","Messagerie","Fret","Gestion de flotte"]],["Quels éléments suivre ?",["Véhicules","Chauffeurs","Colis","Clients","Itinéraires","Entretien / carburant"]],["Quel déroulement ?",["Commande","Attribution","Enlèvement","Suivi du trajet","Preuve de livraison","Facturation"]],["Quels services mobiles ?",["GPS","Scan QR","Signature client","Photo de livraison","Mode hors ligne","Notifications"]],["Quels KPI ?",["Livraisons à temps","Coût par trajet","Carburant","Kilométrage","Retards","Rentabilité véhicule"]]],"Restauration / hôtellerie":[["Quel établissement ?",["Restaurant","Snack","Cantine","Hôtel","Café","Traiteur"]],["Quels services ?",["Salle / tables","Commande emportée","Livraison","Réservations","Chambres","Événements"]],["Quels flux ?",["Prise de commande","Cuisine / préparation","Caisse","Menu / tarifs","Approvisionnement","Stocks ingrédients"]],["Quels modes de paiement ?",["Espèces","MVola","Carte bancaire","Paiement différé","Facturation entreprise","Pourboires"]],["Quels KPI ?",["Ventes par service","Coût matières","Taux d’occupation","Ticket moyen","Pertes alimentaires","Marge par plat"]]],"Industrie / textile":[["Quels ateliers ou étapes ?",["Réception matières","Coupe","Confection","Impression","Sérigraphie","Sublimation","Contrôle qualité"]],["Quelles données ?",["Ordres de fabrication","Nomenclatures","Stocks matières","Temps de production","Lots","Machines"]],["Quelles opérations ?",["Planification","Suivi d’avancement","Déclaration consommation","Contrôle qualité","Maintenance","Traçabilité"]],["Quelles analyses ?",["Coût de revient","TRS / disponibilité","Rendement","Rebuts","Délais OF","Consommations par atelier"]],["Quelles intégrations ?",["Sage","Excel","QR / code-barres","Balance / scanner","ERP existant","Export CSV"]]],"Immobilier / BTP":[["Quelle activité ?",["Agence immobilière","Gestion locative","Promotion","Construction","Maintenance","Syndic"]],["Quels dossiers ?",["Biens","Locataires","Propriétaires","Chantiers","Fournisseurs","Contrats"]],["Quelles opérations ?",["Visites","Loyers / échéances","Charges","Devis travaux","Suivi chantier","Incidents"]],["Quels documents ?",["Baux","Quittances","Factures","Photos","PV","Documents de chantier"]],["Quels KPI ?",["Taux d’occupation","Impayés","Rentabilité par bien","Budget chantier","Avancement","Échéances"]]],"ONG / association / église":[["Quel type d’organisation ?",["Association","ONG","Église","Coopérative","Fondation","Projet de développement"]],["Quelles personnes ?",["Membres","Donateurs","Bénéficiaires","Volontaires","Équipes / ministères","Partenaires"]],["Quels flux ?",["Adhésions","Dons / offrandes","Cotisations","Dépenses","Budgets","Projets / activités"]],["Quels événements ?",["Réunions","Cultes","Formations","Campagnes","Collectes","Actions terrain"]],["Quels rapports ?",["Finances","Membres","Contributions","Suivi projets","Présences","Rapports partenaires"]]],"Finance / services":[["Quels services ?",["Cabinet comptable","Conseil","Microfinance","Prestataire de services","Assurance","Services professionnels"]],["Quelles opérations ?",["Clients","Contrats","Prestations","Facturation","Encaissements","Relances"]],["Quelles informations ?",["Comptes","Transactions","Dossiers","Échéances","Justificatifs","Temps facturables"]],["Quels contrôles ?",["Séparation des tâches","Validation hiérarchique","Historique des opérations","Confidentialité","Rapports d’audit","Archivage"]],["Quels KPI ?",["Chiffre d’affaires","Impayés","Rentabilité client","Trésorerie","Productivité","Retards"]]],"Autre secteur":[["Quel est votre type d’activité ?",["Services","Vente","Production","Administration","Événementiel","Projet communautaire"]],["Quels flux métiers ?",["Demandes","Commandes","Ventes","Achats","Stocks","Interventions"]],["Quelles personnes utilisent l’application ?",["Direction","Gestionnaires","Opérateurs","Clients","Prestataires","Public"]],["Quels automatismes ?",["Calculs","Notifications","Validation","Import / export","Planification","Documents"]],["Quels indicateurs ?",["Volumes","Coûts","Délais","Qualité","Chiffre d’affaires","Tableaux de bord"]]]};
+let currentSectorGroup='',sectorAnswers={};
+function sectorGroup(text){
+ const s=String(text||'').toLowerCase();
+ if(/commerce|boutique|supermarché|distribution|e-commerce/.test(s))return 'Commerce / distribution';
+ if(/école|éducation|formation|université/.test(s))return 'Éducation / formation';
+ if(/santé|clinique|pharmacie|médic/.test(s))return 'Santé / pharmacie';
+ if(/transport|logistique|livraison/.test(s))return 'Transport / logistique';
+ if(/restaurant|hôtel|tourisme|restauration|cantine/.test(s))return 'Restauration / hôtellerie';
+ if(/industrie|textile|confection|usine|fabrication/.test(s))return 'Industrie / textile';
+ if(/immobilier|construction|btp/.test(s))return 'Immobilier / BTP';
+ if(/association|ong|église|religieu|coopérative/.test(s))return 'ONG / association / église';
+ if(/finance|microfinance|professionnel|services|administration/.test(s))return 'Finance / services';
+ return s?'Autre secteur':'';
+}
+function readSectorInputs(){
+ if(!currentSectorGroup)return;
+ const group=SECTOR_QUESTIONS[currentSectorGroup];if(!group)return;
+ const answer=sectorAnswers[currentSectorGroup]||[];
+ document.querySelectorAll('#sectorQuestions .sector-q').forEach((el)=>{
+  const n=Number(el.dataset.qindex);
+  answer[n]={selected:[...el.querySelectorAll('input[type=checkbox]:checked')].map(i=>i.value),other:el.querySelector('.choice-other').value.trim()};
+ });
+ sectorAnswers[currentSectorGroup]=answer;
+}
+function renderSectorQuestions(){
+ const sector=document.querySelector('[data-key="sector"]').value;
+ const nextGroup=sectorGroup(sector);
+ if(currentSectorGroup===nextGroup)return;
+ readSectorInputs();currentSectorGroup=nextGroup;
+ const host=$('#sectorQuestions');host.replaceChildren();
+ $('#sectorIntro').textContent=nextGroup?'Parcours « '+nextGroup+' » — cochez plusieurs réponses et ajoutez vos précisions si nécessaire.':'Choisissez votre secteur pour activer les questions métier.';
+ if(!nextGroup)return;
+ const qs=SECTOR_QUESTIONS[nextGroup],saved=sectorAnswers[nextGroup]||[];
+ qs.forEach(([question,answers],i)=>{
+  const block=document.createElement('div');block.className='sector-q';block.dataset.qindex=i;
+  const title=document.createElement('h4');title.textContent=(i+1)+'. '+question;block.append(title);
+  const grid=document.createElement('div');grid.className='choice-grid';
+  for(const ans of answers){const lab=document.createElement('label');lab.className='choice-item';const cb=document.createElement('input');cb.type='checkbox';cb.value=ans;cb.checked=!!saved[i]?.selected?.includes(ans);const span=document.createElement('span');span.textContent=ans;lab.append(cb,span);grid.append(lab);}
+  block.append(grid);
+  const other=document.createElement('input');other.className='choice-other';other.placeholder='Autre réponse ou précision libre…';other.setAttribute('aria-label','Autre réponse : '+question);other.value=saved[i]?.other||'';block.append(other);
+  host.append(block);
+ });
+}
+function serialSectorAnswers(){readSectorInputs();return JSON.parse(JSON.stringify(sectorAnswers));}
+function sectorSummary(r){
+ const all=r.sectorAnswers||{};const group=sectorGroup(r.sector);
+ const groups=Object.entries(all).filter(([k,v])=>Array.isArray(v)&&v.some(a=>a&&((a.selected||[]).length||a.other)));
+ if(!groups.length)return 'Non renseigné';
+ return groups.map(([g,values])=>{
+  const qs=SECTOR_QUESTIONS[g]||[];
+  return g+'\n'+values.map((a,i)=>{
+   if(!a||!(a.selected?.length||a.other))return '';
+   const question=qs[i]?.[0]||'Question '+(i+1);
+   return '- '+question+'\n  '+[...(a.selected||[]),...(a.other?[a.other]:[])].join(' ; ');
+  }).filter(Boolean).join('\n');
+ }).join('\n\n');
+}
+const sectOrig=choiceControls.get('sector');
+if(sectOrig){
+ for(const b of sectOrig.inputs)b.addEventListener('change',renderSectorQuestions);
+ sectOrig.other.addEventListener('input',renderSectorQuestions);
+}
+
+
+function isPersonal(r){return !!r&&r.projectKind==='personal';}
+function recordLabel(r){return isPersonal(r)?'Personnel':(r.client||'Client');}
+function updateKindChrome(){
+ const mode=$('#projectKind')?.value==='personal'?'personal':'client',personal=mode==='personal';
+ all('.commercial-field').forEach(el=>el.classList.toggle('hidden',personal));
+ const client=$('[data-key="client"]');if(client)client.required=!personal;
+ const info=$('#projectModeInfo');if(info)info.textContent=personal?'Projet personnel : cahier des charges, prompts intégrés et configuration licence propriétaire/Cloud. Aucun devis, facture, paiement ni abonnement.':'Projet client : découverte, cahier des charges, devis, suivi commercial, factures et demandes de licence.';
+ all('[data-commercial="1"]').forEach(el=>el.classList.toggle('hidden-mode',personal));
+ const quoteBtn=$('#toQuote');if(quoteBtn)quoteBtn.classList.toggle('hidden',personal);
+}
+function newPersonalRecord(){newRecord();$('#projectKind').value='personal';updateKindChrome();}
+$('#projectKind').addEventListener('change',updateKindChrome);
+$('#addPersonal').onclick=$('#newPersonalBtn').onclick=$('#quickPersonal').onclick=newPersonalRecord;
+$('#quickClient').onclick=()=>newRecord();
+
+function newRecord(){activeId=null;sectorAnswers={};currentSectorGroup='';all('[data-key]').forEach(el=>{el.value=el.tagName==='SELECT'?el.options[0]?.value||'':'';});$('[data-key="languages"]').value='Français\nMalagasy';for(const c of choiceControls.values())c.restore('');choiceControls.get('languages')?.restore('Français\nMalagasy');renderSectorQuestions();$('#saveMessage').textContent='Nouveau dossier (non enregistré).';$('#saveBanner').classList.add('hidden');show('editor');updateKindChrome();}
+function readForm(){const r={};all('[data-key]').forEach(el=>r[el.dataset.key]=el.value.trim());return r;}
+function fillForm(r){sectorAnswers=(r.sectorAnswers&&typeof r.sectorAnswers==='object'&&!Array.isArray(r.sectorAnswers))?JSON.parse(JSON.stringify(r.sectorAnswers)):{};currentSectorGroup='';all('[data-key]').forEach(el=>el.value=r[el.dataset.key]??'');for(const [k,c] of choiceControls)c.restore(r[k]??'');renderSectorQuestions();updateKindChrome();}
+function saveNotice(message,kind='info',target='saveBanner'){
+ const area=document.getElementById(target);
+ if(!area)return;
+ area.classList.remove('hidden','is-error','is-success');
+ if(kind==='error')area.classList.add('is-error');
+ if(kind==='success')area.classList.add('is-success');
+ area.textContent=message;
+ if(target==='saveBanner')$('#saveMessage').textContent=message;
+}
+function save(){
+ // Tous les projets peuvent être enregistrés comme brouillon, même si l'entretien n'est pas terminé.
+ const data=readForm();
+ data.projectKind=data.projectKind==='personal'?'personal':'client';
+ const title=document.querySelector('[data-key="project"]');
+ title.classList.remove('field-invalid');
+ if(!data.project){
+   const message='Nom du projet obligatoire. Les autres champs peuvent être complétés plus tard : ce dossier sera alors un brouillon.';
+   saveNotice(message,'error');title.classList.add('field-invalid');title.focus();title.scrollIntoView({behavior:'smooth',block:'center'});return false;
+ }
+ if(activeId&&data.projectKind==='personal'){
+   const original=records.find(r=>r.id===activeId);
+   if(original&&!isPersonal(original)){
+     saveNotice('Ce dossier client possède un historique commercial. Pour éviter de le masquer, créez un nouveau projet personnel.','error');return false;
+   }
+ }
+ if(data.projectKind==='personal')for(const key of ['client','contact','channel','budget','notes'])data[key]='';
+ try{data.sectorAnswers=serialSectorAnswers();}catch(e){saveNotice('Les réponses sectorielles n’ont pas pu être préparées : '+e.message,'error');return false;}
+ const now=new Date().toISOString();
+ const formerId=activeId,formerRecords=records;
+ let nextId=formerId,updated;
+ if(formerId){
+   const i=formerRecords.findIndex(r=>r.id===formerId);
+   if(i<0){saveNotice('Dossier introuvable. Aucun enregistrement effectué. Ouvre à nouveau le dossier depuis la liste.','error');return false;}
+   updated=formerRecords.map((r,j)=>i===j?{...r,...data,updatedAt:now}:r);
+ }else{
+   nextId=globalThis.crypto?.randomUUID?.()||'BM-'+Date.now()+'-'+Math.random().toString(36).slice(2);
+   updated=[{...data,id:nextId,createdAt:now,updatedAt:now},...formerRecords];
+ }
+ try{
+   records=updated;storageSave();
+   const saved=JSON.parse(localStorage.getItem(DB)||'null');
+   if(!Array.isArray(saved)||!saved.some(r=>r.id===nextId&&r.project===data.project))throw new Error('Le dossier n’a pas pu être relu après écriture.');
+   activeId=nextId;
+   const missing=[];
+   if(data.projectKind==='client'&&!data.client)missing.push('client');
+   if(!data.problem)missing.push('objectif / problème');
+   const label=missing.length?'Brouillon enregistré (à compléter : '+missing.join(', ')+')':'Dossier enregistré';
+   const message='✓ '+label+' : « '+data.project+' » · '+new Date(now).toLocaleString('fr-FR')+'. Sauvegarde locale confirmée.';
+   saveNotice(message,'success');saveNotice(message,'success','listSaveBanner');
+   render();updateKindChrome();return true;
+ }catch(e){
+   records=formerRecords;activeId=formerId;
+   let detail='';try{detail=e.message||String(e);}catch{}
+   saveNotice('Échec de sauvegarde : '+detail+'. Les données du formulaire restent affichées. Vérifie les autorisations et l’espace de stockage du navigateur ; exporte tes données existantes si nécessaire.','error');
+   return false;
+ }
+}
+
+function openRecord(id){const r=records.find(x=>x.id===id);if(!r)return;activeId=id;fillForm(r);$('#saveMessage').textContent='Dossier '+r.id;$('#saveBanner').classList.add('hidden');show('editor');updateKindChrome();}
+function deleteRecord(id){const r=records.find(x=>x.id===id);if(!r||!confirm('Supprimer définitivement le dossier « '+r.project+' » ?'))return;records=records.filter(x=>x.id!==id);if(activeId===id)activeId=null;storageSave();render();}
+function renderDashboard(){
+ $('#totalCount').textContent=records.length;$('#personalCount').textContent=records.filter(isPersonal).length;$('#clientCount').textContent=records.filter(r=>!isPersonal(r)).length;$('#approvedCount').textContent=records.filter(r=>r.status==='Validé').length;
+ $('#recent').innerHTML=records.slice(0,6).map(r=>`<div class="list-item"><div><strong>${escapeHTML(r.project)}</strong><small><span class="kind-label">${isPersonal(r)?'Personnel':'Client'}</span>${escapeHTML(recordLabel(r))} · ${escapeHTML(r.status)}</small></div><button class="secondary" data-open="${escapeHTML(r.id)}">Ouvrir</button></div>`).join('')||'<div class="empty">Aucun projet. Créez un projet personnel ou client.</div>';
+}
+function renderList(){const q=$('#search').value.toLowerCase(),status=$('#statusFilter').value,kind=$('#kindFilter').value,items=records.filter(r=>((recordLabel(r)+' '+r.project).toLowerCase().includes(q))&&(!status||r.status===status)&&(!kind||(kind==='personal')===isPersonal(r)));
+ $('#dossierList').innerHTML=items.map(r=>`<div class="list-item"><div><strong>${escapeHTML(r.project)}</strong><small><span class="kind-label">${isPersonal(r)?'Personnel':'Client'}</span>${escapeHTML(recordLabel(r))} · ${escapeHTML(r.status)} · ${r.updatedAt?new Date(r.updatedAt).toLocaleDateString('fr-FR'):'—'}</small></div><div class="toolbar"><button class="secondary" data-open="${escapeHTML(r.id)}">Modifier</button><button class="danger" data-delete="${escapeHTML(r.id)}">Supprimer</button></div></div>`).join('')||'<div class="empty">Aucun projet correspondant.</div>';
+}
+function render(){renderDashboard();renderList();if(view==='document')renderDoc();}
+$('#addBtn').onclick=$('#newBtn').onclick=newRecord;$('#saveBtn').onclick=()=>{if(save())show('dossiers');};$('#docBtn').onclick=()=>{if(save())show('document');};$('#search').oninput=renderList;$('#statusFilter').onchange=renderList;$('#kindFilter').onchange=renderList;document.addEventListener('click',e=>{const o=e.target.closest('[data-open]'),d=e.target.closest('[data-delete]');if(o)openRecord(o.dataset.open);if(d)deleteRecord(d.dataset.delete);});
+const titles=[['projectKind','Type de projet'],['client','Client'],['contact','Contact'],['sector','Secteur'],['problem','Problème métier'],['goals','Objectifs'],['current','Processus existant'],['must','Fonctionnalités prioritaires (MVP)'],['nice','Fonctionnalités phase 2'],['roles','Rôles'],['users','Utilisateurs'],['platform','Plateformes'],['mode','Mode de fonctionnement'],['languages','Langues'],['import','Import de données'],['reports','Rapports et exports'],['security','Sécurité et conformité'],['budget','Budget indicatif'],['deadline','Date cible'],['acceptance','Critères d’acceptation'],['questions','Points ouverts / risques'],['notes','Notes commerciales'],['sectorAnswers','Questionnaire métier adapté au secteur']];
+const personalDocExclude=new Set(['client','contact','channel','budget','notes']);
+function docFields(r){return titles.filter(([key])=>!(isPersonal(r)&&personalDocExclude.has(key)));}
+function docValue(r,k){if(k==='projectKind')return isPersonal(r)?'Application personnelle (sans parcours commercial)':'Application client';return k==='sectorAnswers'?sectorSummary(r):(r[k]||'À préciser');}
+function docText(){const r=records.find(x=>x.id===activeId);if(!r)return 'Sélectionnez d’abord un projet.\n';return `APPFORGE BUSINESS MANAGER — CAHIER DES CHARGES\n${r.project}\nType : ${isPersonal(r)?'Personnel':'Client'}\nVersion de travail · ${new Date().toLocaleDateString('fr-FR')}\nStatut : ${r.status}\n\n`+docFields(r).map(([k,t],i)=>`${i+1}. ${t.toUpperCase()}\n${docValue(r,k)}\n`).join('\n')+`\nVALIDATION\n${isPersonal(r)?'Propriétaire':'Client'} : ____________________ Date : __________\nResponsable du projet : ______________ Date : __________\n\nDocument à valider avant développement.\n`;}
+function renderDoc(){const r=records.find(x=>x.id===activeId);if(!r){$('#docContent').innerHTML='<div class="empty">Sélectionnez un projet depuis la liste.</div>';return;}$('#docContent').innerHTML=`<h2>${escapeHTML(r.project)}</h2><p>AppForge Business Manager · Cahier des charges · ${new Date().toLocaleDateString('fr-FR')} · ${escapeHTML(r.status)}</p>`+docFields(r).map(([k,t],i)=>`<h3>${i+1}. ${escapeHTML(t)}</h3><p style="white-space:pre-wrap">${escapeHTML(docValue(r,k))}</p>`).join('')+`<h3>Validation</h3><p>${isPersonal(r)?'Propriétaire':'Client'} : __________________________ Date : __________</p><p>Responsable du projet : __________________ Date : __________</p>`;}
+$('#printBtn').onclick=()=>window.print();$('#txtBtn').onclick=()=>download('cahier-des-charges.txt',docText());
+$('#exportBtn').onclick=()=>{download('appforge-business-manager-backup-'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify({app:'AppForge Business Manager',schema:2,exportedAt:new Date().toISOString(),records,catalogue:bizCatalogue},null,2),'application/json');$('#backupInfo').textContent='Export demandé le '+new Date().toLocaleString('fr-FR');};
+$('#importFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{if(f.size>10*1024*1024)throw Error('Fichier supérieur à 10 Mo');const obj=JSON.parse(await f.text());if(!((obj.app==='AppForge ClientBrief Pro'&&obj.schema===1)||(obj.app==='AppForge Business Manager'&&obj.schema===2))||!Array.isArray(obj.records)||obj.records.length>10000)throw Error('Format non reconnu');if(obj.catalogue!==undefined)bizValidateCatalogue(obj.catalogue);const keys=new Set();for(const r of obj.records){if(!r||typeof r!=='object'||typeof r.id!=='string'||typeof r.client!=='string'||typeof r.project!=='string'||typeof r.problem!=='string'||(r.projectKind!==undefined&&!['client','personal'].includes(r.projectKind))||keys.has(r.id))throw Error('Données invalides');keys.add(r.id);}if(!confirm('Remplacer les '+records.length+' dossiers existants par '+obj.records.length+' dossiers importés ?'))return;localStorage.setItem(DB,JSON.stringify(obj.records));records=obj.records;bizCatalogue=Array.isArray(obj.catalogue)?bizValidateCatalogue(obj.catalogue):[];localStorage.setItem(BIZCAT,JSON.stringify(bizCatalogue));activeId=null;qDraft=null;qRecordId=null;render();$('#backupInfo').textContent='Restauration terminée : '+records.length+' dossiers.';}catch(err){alert('Import refusé : '+err.message);}finally{e.target.value='';}};
+
+/* AppForge v0.5 — devis locaux, calculs MGA sans tarifs implicites */
+const QPRESETS=['Étude et cadrage','Design UX/UI','Développement HTML autonome','Développement Android','Application Windows','Base de données','Tableau de bord','Import / export de données','Licence logicielle','Cloud / synchronisation','Maintenance et support','Formation utilisateurs','Tests et mise en production','Personnalisation / autre module'];
+let qDraft=null,qRecordId=null;
+const qMoney=n=>new Intl.NumberFormat('fr-FR',{maximumFractionDigits:0}).format(Math.round(n))+' MGA';
+const qLimit=(x,min,max)=>{const n=Number(x);return Number.isFinite(n)&&n>=min&&n<=max?n:null;};
+const qNum=x=>Number.isFinite(Number(x))?Number(x):0;
+function qEmpty(){return {number:'',status:'Brouillon',date:new Date().toISOString().slice(0,10),validity:30,tax:0,deposit:30,terms:'',notes:'',items:[]};}
+function qCurrent(){const r=records.find(x=>x.id===activeId);return isPersonal(r)?null:r;}
+function qLoad(){const r=qCurrent();if(!r){qDraft=null;qRecordId=null;return;}if(qRecordId===r.id&&qDraft)return;qRecordId=r.id;qDraft=structuredClone(r.quote&&typeof r.quote==='object'?r.quote:qEmpty());if(!Array.isArray(qDraft.items))qDraft.items=[];qApply();}
+function qApply(){if(!qDraft)return;for(const [key,id] of Object.entries({number:'quoteNumber',status:'quoteStatus',date:'quoteDate',validity:'quoteValidity',tax:'quoteTax',deposit:'quoteDeposit',terms:'quoteTerms',notes:'quoteNotes'}))$('#'+id).value=qDraft[key]??'';qRenderRows();}
+function qRead(){if(!qDraft)return;for(const [key,id] of Object.entries({number:'quoteNumber',status:'quoteStatus',date:'quoteDate',validity:'quoteValidity',tax:'quoteTax',deposit:'quoteDeposit',terms:'quoteTerms',notes:'quoteNotes'}))qDraft[key]=$('#'+id).value;}
+function qCalc(q){const result={once:0,month:0,year:0,taxOnce:0,taxMonth:0,taxYear:0,grandOnce:0,grandMonth:0,grandYear:0,deposit:0,balance:0};if(!q)return result;const tax=qLimit(q.tax,0,100);const dep=qLimit(q.deposit,0,100);if(tax===null||dep===null)throw Error('Taux de taxe ou acompte invalide (0 à 100 %).');for(const item of q.items){const qty=qLimit(item.qty,0.01,1000000),unit=qLimit(item.unit,0,1e12),discount=qLimit(item.discount,0,100);if(qty===null||unit===null||discount===null)throw Error('Quantité, prix ou remise incorrect dans un poste.');const amount=Math.round(qty*unit*(1-discount/100));if(!Number.isSafeInteger(amount))throw Error('Montant trop élevé.');const field=item.period==='Mensuel'?'month':item.period==='Annuel'?'year':'once';result[field]+=amount;if(!Number.isSafeInteger(result[field]))throw Error('Total dépassant la capacité de calcul.');}for(const [suffix,prefix] of [['Once','once'],['Month','month'],['Year','year']]){result['tax'+suffix]=Math.round(result[prefix]*tax/100);result['grand'+suffix]=result[prefix]+result['tax'+suffix];}result.deposit=Math.round(result.grandOnce*dep/100);result.balance=result.grandOnce-result.deposit;return result;}
+function qRenderRows(){const host=$('#quoteRows');host.replaceChildren();if(!qDraft)return;for(let i=0;i<qDraft.items.length;i++){const item=qDraft.items[i];const tr=document.createElement('tr');const fields=[['name','text'],['qty','number'],['unit','number'],['discount','number']];for(const [key,type] of fields){const td=document.createElement('td'),inp=document.createElement('input');inp.type=type;inp.value=item[key]??'';inp.setAttribute('aria-label',key+' poste '+(i+1));if(type==='number'){inp.min=key==='qty'?'0.01':'0';inp.step=key==='qty'?'0.01':key==='discount'?'0.01':'1';if(key==='discount')inp.max='100';}if(key==='name')inp.maxLength=240;inp.addEventListener('input',()=>{item[key]=inp.value;qRecalc();});td.append(inp);tr.append(td);}const period=document.createElement('td'),select=document.createElement('select');for(const label of ['Unique','Mensuel','Annuel']){const opt=document.createElement('option');opt.textContent=label;opt.value=label;select.append(opt);}select.value=item.period||'Unique';select.addEventListener('change',()=>{item.period=select.value;qRecalc();});period.append(select);tr.append(period);const sum=document.createElement('td');sum.dataset.amount=i;tr.append(sum);const action=document.createElement('td');action.className='hidden-print';const del=document.createElement('button');del.textContent='Supprimer';del.className='danger';del.onclick=()=>{if(!confirm('Supprimer ce poste du devis ?'))return;qDraft.items.splice(i,1);qRenderRows();};action.append(del);tr.append(action);host.append(tr);}qRecalc();}
+function qRecalc(){if(!qDraft)return;qRead();try{const tot=qCalc(qDraft);$('#quoteMsg').textContent='';for(const [i,item] of qDraft.items.entries()){const qty=qLimit(item.qty,.01,1e6),unit=qLimit(item.unit,0,1e12),disc=qLimit(item.discount,0,100);const cell=document.querySelector('[data-amount="'+i+'"]');if(cell)cell.textContent=qty===null||unit===null||disc===null?'Valeur invalide':qMoney(qty*unit*(1-disc/100));}$('#quoteTotals').textContent='Initial : '+qMoney(tot.grandOnce)+' (dont taxe '+qMoney(tot.taxOnce)+')\nMensuel : '+qMoney(tot.grandMonth)+' (dont taxe '+qMoney(tot.taxMonth)+')\nAnnuel : '+qMoney(tot.grandYear)+' (dont taxe '+qMoney(tot.taxYear)+')\nAcompte initial : '+qMoney(tot.deposit)+' · Solde initial : '+qMoney(tot.balance);qPreview(tot);}catch(e){$('#quoteTotals').textContent='Calcul impossible : '+e.message;$('#quotePreview').replaceChildren();$('#quoteMsg').textContent=e.message;}}
+function qPreview(tot){const r=qCurrent(),q=qDraft;if(!r||!q)return;const expires=new Date((q.date||'2026-01-01')+'T12:00:00');if(Number.isFinite(expires.getTime()))expires.setDate(expires.getDate()+Number(q.validity||30));const expiry=Number.isFinite(expires.getTime())?expires.toLocaleDateString('fr-FR'):'À préciser';const rows=q.items.map((x,i)=>`<tr><td>${i+1}. ${escapeHTML(x.name||'Prestation non définie')}</td><td>${escapeHTML(x.qty)}</td><td>${qMoney(qNum(x.unit))}</td><td>${escapeHTML(x.discount)} %</td><td>${escapeHTML(x.period||'Unique')}</td><td>${qMoney(Math.round(qNum(x.qty)*qNum(x.unit)*(1-qNum(x.discount)/100)))}</td></tr>`).join('');$('#quotePreview').innerHTML=`<h2>APPFORGE BUSINESS MANAGER · DEVIS</h2><p>Made in Madagascar · N° ${escapeHTML(q.number||'À compléter')} · ${escapeHTML(q.status)}</p><div class="quote-preview-grid"><div><strong>Client</strong><p>${escapeHTML(r.client)}<br>${escapeHTML(r.contact||'')}<br>${escapeHTML(r.project)}</p></div><div><strong>Date</strong><p>${escapeHTML(q.date)}<br>Validité : ${escapeHTML(q.validity)} jours<br>Expire le : ${escapeHTML(expiry)}</p></div></div><table><thead><tr><th>Prestation</th><th>Qté</th><th>PU MGA</th><th>Remise</th><th>Fréquence</th><th>Montant MGA</th></tr></thead><tbody>${rows}</tbody></table><p class="total">Total initial TTC / taxes incluses : ${qMoney(tot.grandOnce)}<br>Mensuel : ${qMoney(tot.grandMonth)}<br>Annuel : ${qMoney(tot.grandYear)}</p><p class="subdued small">Taxe appliquée : ${escapeHTML(q.tax)} %. Les montants mensuels et annuels ne sont pas inclus dans le total initial. Vérifier le régime fiscal applicable avant envoi.</p><p><strong>Acompte initial (${escapeHTML(q.deposit)} %) : ${qMoney(tot.deposit)}</strong> · Solde initial : ${qMoney(tot.balance)}</p><h3>Conditions commerciales</h3><p style="white-space:pre-wrap">${escapeHTML(q.terms||'À convenir')}</p><h3>Notes et exclusions</h3><p style="white-space:pre-wrap">${escapeHTML(q.notes||'Aucune précision')}</p><p><strong>Paiement actuellement proposé :</strong> MVola Madagascar au 034 85 874 58, avec référence et validation manuelle avant activation.</p><p>Accord du client : ______________________ Date : __________</p><p class="small subdued">Devis sous réserve de validation du périmètre et des conditions contractuelles.</p>`;}
+function renderQuote(){const r=qCurrent();if(!r){$('#quoteMsg').textContent='Sélectionnez un dossier enregistré dans « Projets et dossiers ». Le devis est associé à ce dossier.';$('#quotePreview').replaceChildren();$('#quoteRows').replaceChildren();$('#quoteTotals').textContent='';return;}qLoad();$('#quoteMsg').textContent='Dossier sélectionné : '+r.client+' — '+r.project+' · Les changements doivent être enregistrés.';qRecalc();}
+$('#quotePick').onclick=()=>show('dossiers');$('#toQuote').onclick=()=>{if(save())show('quote');};
+$('#quoteAdd').onclick=()=>{if(!qCurrent()){renderQuote();return;}qLoad();const name=$('#quotePreset').value||'Nouvelle prestation';qDraft.items.push({name,qty:1,unit:0,discount:0,period:'Unique'});$('#quotePreset').value='';qRenderRows();};
+for(const id of ['quoteNumber','quoteStatus','quoteDate','quoteValidity','quoteTax','quoteDeposit','quoteTerms','quoteNotes'])$('#'+id).addEventListener('input',qRecalc);
+function qValidate(){const r=qCurrent();if(!r||!qDraft)throw Error('Sélectionnez un dossier.');qRead();if(!qDraft.number.trim()||qDraft.number.length>70)throw Error('Numéro de devis obligatoire (70 caractères maximum).');if(!/^\d{4}-\d{2}-\d{2}$/.test(qDraft.date)||!Number.isFinite(new Date(qDraft.date+'T12:00:00').getTime()))throw Error('Date du devis invalide.');if(qLimit(qDraft.validity,1,365)===null)throw Error('Validité : 1 à 365 jours.');if(!qDraft.items.length)throw Error('Ajoutez au moins un poste.');for(const item of qDraft.items){if(!String(item.name||'').trim())throw Error('Une prestation n’a pas de nom.');if(String(item.name).length>240)throw Error('Nom de prestation trop long.');}return qCalc(qDraft);}
+$('#quoteSave').onclick=()=>{try{qValidate();const r=qCurrent();r.quote=structuredClone(qDraft);r.updatedAt=new Date().toISOString();storageSave();render();$('#quoteMsg').textContent='Devis enregistré dans le dossier '+r.project+'.';}catch(e){$('#quoteMsg').textContent='Enregistrement refusé : '+e.message;}};
+$('#quotePrint').onclick=()=>{try{const tot=qValidate();qPreview(tot);document.body.classList.add('printing-quote');window.print();}catch(e){$('#quoteMsg').textContent='Impression refusée : '+e.message;}};
+window.addEventListener('afterprint',()=>document.body.classList.remove('printing-quote'));
+$('#quoteCSV').onclick=()=>{try{qValidate();const r=qCurrent(),q=qDraft;const esc=v=>'"'+String(v??'').replace(/"/g,'""')+'"';const csv=[['Devis','Client','Prestation','Quantité','PU MGA','Remise %','Périodicité','Montant MGA'].join(';'),...q.items.map(x=>[q.number,r.client,x.name,x.qty,x.unit,x.discount,x.period,Math.round(qNum(x.qty)*qNum(x.unit)*(1-qNum(x.discount)/100))].map(esc).join(';'))].join('\r\n');download('devis-'+q.number.replace(/[^a-zA-Z0-9_-]/g,'_')+'.csv','\ufeff'+csv,'text/csv;charset=utf-8');}catch(e){$('#quoteMsg').textContent='Export refusé : '+e.message;}};
+const oldOpenRecord=openRecord;openRecord=function(id){qRecordId=null;qDraft=null;oldOpenRecord(id);};
+const oldNewRecord=newRecord;newRecord=function(){qRecordId=null;qDraft=null;oldNewRecord();};
+
+/* AppForge v0.5 — CRM & demandes commerciales de licences. Local only. */
+const CRMSTAGES=['Prospect','Qualification','Découverte','Proposition envoyée','Négociation','Gagné','Perdu','En réalisation','Livré','Support'];
+const cmoney=x=>new Intl.NumberFormat('fr-FR',{maximumFractionDigits:0}).format(Math.round(x||0));
+const cblank=()=>({stage:'Prospect',priority:'Normale',owner:'',next:'',action:'',reason:'',activities:[],payments:[]});
+const lblank=()=>({plan:'À définir',cloud:'À définir',devices:1,quota:100,syncPolicy:'offline-first',appCode:'',appVersion:'',request:'À qualifier',reference:'',notes:''});
+let crmActive=null,licActive=null;
+function crmSelected(){return records.find(r=>r.id===$('#crmRecordPick').value&&!isPersonal(r))||null;}
+function licSelected(){return records.find(r=>r.id===$('#licRecordPick').value)||null;}
+function selectFill(id,chosen){const el=$('#'+id);if(!el)return;el.replaceChildren();const empty=document.createElement('option');empty.value='';empty.textContent='Choisir un projet';el.append(empty);const allowed=records.filter(r=>!['crmRecordPick','bizRecordPick'].includes(id)||!isPersonal(r));for(const r of allowed){const opt=document.createElement('option');opt.value=r.id;opt.textContent=(isPersonal(r)?'[Personnel] ':'[Client] ')+(r.client?r.client+' — ':'')+r.project;el.append(opt);}if(allowed.some(x=>x.id===chosen))el.value=chosen;else if(allowed.some(x=>x.id===activeId))el.value=activeId;else if(allowed[0])el.value=allowed[0].id;}
+function crmSafe(r){const c=r.crm&&typeof r.crm==='object'&&!Array.isArray(r.crm)?r.crm:{};return {...cblank(),...c,activities:Array.isArray(c.activities)?c.activities:[],payments:Array.isArray(c.payments)?c.payments:[]};}
+function licSafe(r){const l=r.licenseRequest&&typeof r.licenseRequest==='object'&&!Array.isArray(r.licenseRequest)?r.licenseRequest:{};return {...lblank(),...l};}
+function crmNumbers(){let pipeline=0,accepted=0,paid=0;for(const r of records){if(isPersonal(r))continue;const c=crmSafe(r);if(!['Perdu','Livré','Support'].includes(c.stage))pipeline++;
+if(c.stage==='Gagné'&&r.quote){try{const total=qCalc(r.quote);accepted+=total.grandOnce||0;}catch(e){/* invalid old quote ignored */}}
+for(const p of c.payments){if(p.status==='Vérifié manuellement'&&Number.isFinite(Number(p.amount))&&Number(p.amount)>0)paid+=Number(p.amount);}}
+$('#crmPipelineCount').textContent=pipeline;$('#crmPipelineValue').textContent=cmoney(accepted);$('#crmPaymentTotal').textContent=cmoney(paid);
+}
+function crmRender(){crmNumbers();const keep=$('#crmRecordPick').value||crmActive||activeId;selectFill('crmRecordPick',keep);crmShowSelection();}
+function crmShowSelection(){const r=crmSelected();$('#crmWorkspace').classList.toggle('hidden',!r);$('#crmEmpty').classList.toggle('hidden',!!r);if(!r)return;crmActive=r.id;const c=crmSafe(r);
+for(const [k,id] of Object.entries({stage:'crmStage',priority:'crmPriority',owner:'crmOwner',next:'crmNext',action:'crmAction',reason:'crmReason'}))$('#'+id).value=c[k]??'';
+crmRenderActivity(r,c);crmRenderPayments(r,c);}
+function crmRenderActivity(r,c){const node=$('#crmActivities');node.replaceChildren();if(!c.activities.length){node.textContent='Aucune interaction enregistrée.';return;}for(const [i,a] of c.activities.entries()){
+const line=document.createElement('div');line.className='crm-line';const title=document.createElement('strong');title.textContent=(a.date||'')+' · '+(a.type||'Interaction');const detail=document.createElement('p');detail.className='row-notes';detail.textContent=a.note||'';const who=document.createElement('small');who.textContent='Saisi par : '+(a.owner||'Non précisé');const del=document.createElement('button');del.className='secondary';del.textContent='Supprimer';del.onclick=()=>{if(!confirm('Supprimer cette interaction ?'))return;const current=crmSafe(r);current.activities.splice(i,1);r.crm=current;r.updatedAt=new Date().toISOString();storageSave();crmShowSelection();};line.append(title,detail,who,del);node.append(line);}}
+function crmRenderPayments(r,c){const node=$('#crmPayments');node.replaceChildren();if(!c.payments.length)node.textContent='Aucun paiement déclaré.';
+for(const [i,p] of c.payments.entries()){const line=document.createElement('div');line.className='crm-line';const title=document.createElement('strong');title.textContent=cmoney(p.amount)+' MGA · '+(p.date||'')+' · '+(p.method||'MVola');const desc=document.createElement('p');desc.textContent='Référence : '+(p.reference||'Non renseignée')+' · État : '+(p.status||'À vérifier');
+const select=document.createElement('select');select.setAttribute('aria-label','Validation manuelle paiement');['À vérifier','Vérifié manuellement','Refusé / annulé'].forEach(st=>{const opt=document.createElement('option');opt.value=st;opt.textContent=st;select.append(opt);});select.value=p.status||'À vérifier';select.onchange=()=>{if(select.value==='Vérifié manuellement'&&!confirm('Confirmer que vous avez personnellement contrôlé ce paiement hors de l’application auprès de MVola ?')){select.value=p.status||'À vérifier';return;}const current=crmSafe(r);current.payments[i].status=select.value;r.crm=current;r.updatedAt=new Date().toISOString();storageSave();crmRender();};const del=document.createElement('button');del.className='secondary';del.textContent='Supprimer';del.onclick=()=>{if(!confirm('Supprimer cette déclaration de paiement ?'))return;const current=crmSafe(r);current.payments.splice(i,1);r.crm=current;r.updatedAt=new Date().toISOString();storageSave();crmRender();};line.append(title,desc,select,del);node.append(line);}
+const paid=c.payments.filter(p=>p.status==='Vérifié manuellement').reduce((a,p)=>a+(Number(p.amount)||0),0);$('#crmPaymentSummary').textContent='Total déclaré vérifié manuellement : '+cmoney(paid)+' MGA. Aucune vérification automatique.';
+}
+$('#crmRecordPick').addEventListener('change',crmShowSelection);$('#crmNewRecord').onclick=newRecord;
+$('#crmSave').onclick=()=>{const r=crmSelected();if(!r)return;const current=crmSafe(r);for(const [k,id] of Object.entries({stage:'crmStage',priority:'crmPriority',owner:'crmOwner',next:'crmNext',action:'crmAction',reason:'crmReason'}))current[k]=$('#'+id).value.trim();r.crm=current;r.updatedAt=new Date().toISOString();try{storageSave();crmRender();$('#crmMessage').textContent='Suivi commercial enregistré.';}catch(e){$('#crmMessage').textContent='Échec de sauvegarde : '+e.message;}};
+$('#crmAddActivity').onclick=()=>{const r=crmSelected();if(!r)return;const note=prompt('Compte rendu de l’interaction (obligatoire) :');if(note===null)return;if(!note.trim()||note.length>1500){$('#crmMessage').textContent='Saisissez un compte rendu de 1 à 1500 caractères.';return;}const type=prompt('Type : appel, réunion, e-mail, WhatsApp, visite…','Appel')||'Interaction';const c=crmSafe(r);c.activities.unshift({id:crypto.randomUUID(),date:new Date().toISOString().slice(0,10),type:type.slice(0,80),owner:$('#crmOwner').value.slice(0,100),note:note.trim()});r.crm=c;r.updatedAt=new Date().toISOString();storageSave();crmRender();};
+$('#crmAddPayment').onclick=()=>{const r=crmSelected();if(!r)return;const amount=prompt('Montant reçu déclaré en MGA (entier positif) :');if(amount===null)return;const n=Number(amount);if(!Number.isSafeInteger(n)||n<=0||n>1e12){$('#crmMessage').textContent='Montant invalide : entier positif inférieur à 1 000 milliards MGA.';return;}const ref=prompt('Référence MVola (ne pas indiquer de code PIN ou secret) :','');if(ref===null)return;if(ref.length>120){$('#crmMessage').textContent='Référence limitée à 120 caractères.';return;}const c=crmSafe(r);c.payments.unshift({id:crypto.randomUUID(),date:new Date().toISOString().slice(0,10),amount:n,method:'MVola',reference:ref.trim(),status:'À vérifier'});r.crm=c;r.updatedAt=new Date().toISOString();storageSave();crmRender();};
+function csvRows(rows){return '\ufeff'+rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(';')).join('\r\n');}
+$('#crmExport').onclick=()=>{const lines=[['Client','Projet','Étape','Priorité','Responsable','Relance','Action','Motif','Paiements vérifiés MGA']];for(const r of records){if(isPersonal(r))continue;const c=crmSafe(r);const paid=c.payments.filter(p=>p.status==='Vérifié manuellement').reduce((a,p)=>a+(Number(p.amount)||0),0);lines.push([r.client,r.project,c.stage,c.priority,c.owner,c.next,c.action,c.reason,paid]);}download('appforge-crm.csv',csvRows(lines),'text/csv;charset=utf-8');};
+function licRender(){const keep=$('#licRecordPick').value||licActive||activeId;selectFill('licRecordPick',keep);licShowSelection();}
+function licShowSelection(){const r=licSelected();$('#licWorkspace').classList.toggle('hidden',!r);$('#licEmpty').classList.toggle('hidden',!!r);if(!r)return;licActive=r.id;const l=licSafe(r),personal=isPersonal(r);$('#licKindInfo').textContent=personal?'Application personnelle : licence « Propriétaire », sans devis, MVola ni contrat commercial. Licence serveur propriétaire possible uniquement après connexion authentifiée.':'Application client : paiement MVola à vérifier manuellement avant activation sur le backend Business Manager.';
+$('#licToCRM').classList.toggle('hidden',personal);
+for(const [k,id] of Object.entries({plan:'licPlan',cloud:'licCloud',devices:'licDevices',request:'licRequest',reference:'licReference',notes:'licNotes',appCode:'licAppCode',appVersion:'licAppVersion',quota:'licQuota',syncPolicy:'licSyncPolicy'}))$('#'+id).value=l[k]??'';
+if(personal){$('#licPlan').value='Propriétaire';$('#licRequest').value='Préparation interne (personnel)';}$('#licPlan').disabled=personal;$('#licRequest').disabled=personal;
+} 
+$('#licRecordPick').addEventListener('change',()=>{licShowSelection();if(typeof cloudAuthStatus==='function'&&cloudAuthStatus())cloudFetchLicenses().catch(e=>cloudMsg('Statut indisponible : '+e.message));});$('#licToCRM').onclick=()=>{const r=licSelected();if(!r)return;crmActive=r.id;show('crm');$('#crmRecordPick').value=r.id;crmShowSelection();};
+function licPayload(r){const l=licSafe(r);return {schema:'appforge-license-request/1',kind:isPersonal(r)?'personal':'client',projectId:r.id,projectName:r.project,client:isPersonal(r)?null:(r.client||null),appCode:l.appCode||'',appVersion:l.appVersion||'',plan:l.plan,cloud:l.cloud,deviceLimit:l.devices,quotaMb:l.quota,syncPolicy:l.syncPolicy,requestStatus:l.request,reference:l.reference,createdAt:new Date().toISOString(),serverVerified:false,serverActivated:false,source:'AppForge Business Manager · requête locale non exécutée'};}
+$('#licSave').onclick=()=>{const r=licSelected();if(!r)return;const devices=Number($('#licDevices').value),quota=Number($('#licQuota').value),appCode=$('#licAppCode').value.trim(),appVersion=$('#licAppVersion').value.trim();
+if(!Number.isSafeInteger(devices)||devices<1||devices>9999){$('#licMessage').textContent='Nombre d’appareils invalide (1 à 9999).';return;}
+if(!Number.isSafeInteger(quota)||quota<0||quota>100000){$('#licMessage').textContent='Quota Cloud invalide (0 à 100000 Mo).';return;}
+if(appCode&&!/^[A-Z0-9_-]{3,40}$/.test(appCode)){ $('#licMessage').textContent='Product ID invalide : 3 à 40 caractères, lettres majuscules, chiffres, _ et -.';return;}
+if(appVersion.length>40){$('#licMessage').textContent='Version trop longue.';return;}
+const l=licSafe(r);for(const [k,id] of Object.entries({plan:'licPlan',cloud:'licCloud',request:'licRequest',reference:'licReference',notes:'licNotes',appCode:'licAppCode',appVersion:'licAppVersion',syncPolicy:'licSyncPolicy'}))l[k]=$('#'+id).value.trim();l.devices=devices;l.quota=quota;
+if(isPersonal(r)&&l.plan!=='Propriétaire'){ $('#licMessage').textContent='Une application personnelle doit utiliser la licence Propriétaire. La conversion en application client est nécessaire pour une offre payante.';return;}
+if(l.cloud==='Sans Cloud'&&l.syncPolicy==='offline-first'){$('#licMessage').textContent='Choisir « Local uniquement » si le Cloud est désactivé.';return;}
+r.licenseRequest=l;r.updatedAt=new Date().toISOString();try{storageSave();$('#licMessage').textContent='Configuration sauvegardée localement. Licence et Cloud NON activés sur serveur.';}catch(e){$('#licMessage').textContent='Échec : '+e.message;}};
+$('#licJson').onclick=()=>{const r=licSelected();if(!r)return;if(!r.licenseRequest){$('#licMessage').textContent='Enregistrez d’abord la configuration.';return;}download('appforge-license-request-'+r.id.slice(0,10)+'.json',JSON.stringify(licPayload(r),null,2),'application/json');$('#licMessage').textContent='Configuration exportée pour intégration future au serveur ; aucune activation effectuée.';};
+$('#licExport').onclick=()=>{const lines=[['Client','Projet','Offre demandée','Cloud demandé','Appareils souhaités','État commercial','Référence de suivi','Observations']];for(const r of records){if(!r.licenseRequest)continue;const l=licSafe(r);lines.push([r.client,r.project,l.plan,l.cloud,l.devices,l.request,l.reference,l.notes]);}download('appforge-demandes-licences.csv',csvRows(lines),'text/csv;charset=utf-8');};
+/* AppForge v0.6 — gestion commerciale locale (ni paiement, ni activation réelle) */
+const BIZCAT='appforge_clientbrief_catalogue_v06';
+const bizAmount=n=>Number.isSafeInteger(Number(n))&&Number(n)>=0&&Number(n)<=1e12?Number(n):null;
+let bizCatalogue=[];try{bizCatalogue=bizValidateCatalogue(JSON.parse(localStorage.getItem(BIZCAT)||'[]'));}catch(e){bizCatalogue=[];}
+let bizActive=null,bizInvoiceSelected=null;
+const bizToday=()=>new Date().toISOString().slice(0,10);
+const bizId=()=>crypto.randomUUID?crypto.randomUUID():String(Date.now())+'-'+Math.random().toString(36).slice(2);
+function bizValidateCatalogue(rows){if(!Array.isArray(rows)||rows.length>500)throw Error('Catalogue invalide.');for(const x of rows){if(!x||typeof x.id!=='string'||typeof x.name!=='string'||!x.name.trim()||x.name.length>160||bizAmount(x.price)===null||!['Unique','Mensuel','Annuel'].includes(x.period)||typeof x.category!=='string'||x.category.length>60)throw Error('Catalogue invalide.');}return rows;}
+function bizData(r){const b=r.business&&typeof r.business==='object'&&!Array.isArray(r.business)?r.business:{};return {orders:Array.isArray(b.orders)?b.orders:[],invoices:Array.isArray(b.invoices)?b.invoices:[],subs:Array.isArray(b.subs)?b.subs:[]};}
+function bizSave(r,b){const old=r.business;r.business=b;r.updatedAt=new Date().toISOString();try{storageSave();return true;}catch(e){r.business=old;$('#businessMessage').textContent='Impossible de sauvegarder : '+e.message;return false;}}
+function bizSelected(){return records.find(r=>r.id===$('#bizRecordPick').value&&!isPersonal(r))||null;}
+function bizAlert(msg){$('#businessMessage').textContent=msg;}
+function bizStats(){let orders=0,due=0,subs=0;for(const r of records){if(isPersonal(r))continue;const b=bizData(r);for(const o of b.orders)if(o.status!=='Annulée')orders+=Number(o.total)||0;for(const i of b.invoices)if(i.status!=='Annulée')due+=Math.max(0,(Number(i.amount)||0)-(Array.isArray(i.payments)?i.payments.reduce((v,p)=>v+(Number(p.amount)||0),0):0));subs+=b.subs.filter(x=>x.status==='Actif commercialement').length;}$('#bizOrdersTotal').textContent=cmoney(orders)+' MGA';$('#bizInvoicesDue').textContent=cmoney(due)+' MGA';$('#bizSubsCount').textContent=subs;}
+function bizRender(){selectFill('bizRecordPick',$('#bizRecordPick').value||bizActive||activeId);bizCatalogueRender();bizStats();bizShowSelection();}
+function bizCatalogueRender(){const area=$('#catalogList');area.replaceChildren();if(!bizCatalogue.length){area.textContent='Catalogue vide : renseignez vos propres tarifs.';return;}const table=document.createElement('table');table.className='business-table';let tr=document.createElement('tr');for(const h of ['Prestation','Catégorie','Période','Prix MGA','Action']){const th=document.createElement('th');th.textContent=h;tr.append(th);}table.append(tr);for(const x of bizCatalogue){const line=document.createElement('tr');for(const val of [x.name,x.category,x.period,cmoney(x.price)]){const td=document.createElement('td');td.textContent=val;line.append(td);}const td=document.createElement('td'),pick=document.createElement('button');pick.className='secondary';pick.textContent='Ajouter au devis';pick.onclick=()=>{const r=bizSelected();if(!r){bizAlert('Sélectionnez un dossier.');return;}activeId=r.id;qDraft=null;qRecordId=null;show('quote');qLoad();qDraft.items.push({name:x.name,qty:1,unit:x.price,discount:0,period:x.period});qRenderRows();$('#quoteMsg').textContent='Prestation ajoutée au devis non enregistré. Enregistrez le devis pour conserver les modifications.';};const del=document.createElement('button');del.className='danger';del.textContent='Supprimer';del.onclick=()=>{if(!confirm('Supprimer cette prestation du catalogue ?'))return;const old=bizCatalogue;bizCatalogue=bizCatalogue.filter(c=>c.id!==x.id);try{localStorage.setItem(BIZCAT,JSON.stringify(bizCatalogue));bizCatalogueRender();window.__bmOnLocalChange?.();}catch(e){bizCatalogue=old;bizAlert('Stockage impossible.');}};td.append(pick,document.createTextNode(' '),del);line.append(td);table.append(line);}area.append(table);}
+$('#catalogAdd').onclick=()=>{const name=$('#catalogName').value.trim(),price=bizAmount($('#catalogPrice').value),period=$('#catalogPeriod').value,category=$('#catalogCategory').value;if(!name||price===null||$('#catalogPrice').value===''){bizAlert('Saisissez une prestation et un prix MGA valide.');return;}const next=[...bizCatalogue,{id:bizId(),name,price,period,category}];try{bizValidateCatalogue(next);localStorage.setItem(BIZCAT,JSON.stringify(next));bizCatalogue=next;$('#catalogName').value='';$('#catalogPrice').value='';bizCatalogueRender();window.__bmOnLocalChange?.();bizAlert('Prestation enregistrée dans le catalogue.');}catch(e){bizAlert(e.message);}};
+function bizShowSelection(){const r=bizSelected();$('#bizEmpty').classList.toggle('hidden',!!r);$('#businessWorkspace').classList.toggle('hidden',!r);if(!r)return;bizActive=r.id;bizListOrders(r);bizListInvoices(r);bizListSubs(r);}
+$('#bizRecordPick').addEventListener('change',()=>{bizInvoiceSelected=null;bizShowSelection();});
+$('#bizGoQuote').onclick=()=>{const r=bizSelected();if(!r){bizAlert('Sélectionnez un dossier.');return;}activeId=r.id;qDraft=null;qRecordId=null;show('quote');};
+function bizMakeTable(host,heads,rows){host.replaceChildren();if(!rows.length){host.textContent='Aucun enregistrement.';return;}const t=document.createElement('table');t.className='business-table';const thead=document.createElement('tr');for(const h of heads){const th=document.createElement('th');th.textContent=h;thead.append(th);}t.append(thead);for(const cells of rows){const tr=document.createElement('tr');for(const item of cells){const td=document.createElement('td');if(item instanceof Node)td.append(item);else td.textContent=String(item??'');tr.append(td);}t.append(tr);}host.append(t);}
+function bizBtn(label,fn,style='secondary'){const b=document.createElement('button');b.textContent=label;b.className=style;b.onclick=fn;return b;}
+function bizListOrders(r){const b=bizData(r);bizMakeTable($('#orderList'),['Commande','Date','Statut','Montant initial','Référence','Action'],b.orders.map(o=>[o.number,o.date,o.status,cmoney(o.total)+' MGA',o.approval||'—',bizBtn(o.status==='Annulée'?'Annulée':'Annuler',()=>{if(o.status==='Annulée')return;if(b.invoices.some(i=>i.orderId===o.id&&i.status!=='Annulée')){bizAlert('Annulation refusée : une facture active est liée à cette commande.');return;}if(!confirm('Annuler la commande '+o.number+' ?'))return;const next=structuredClone(b);next.orders.find(x=>x.id===o.id).status='Annulée';if(bizSave(r,next)){bizShowSelection();bizStats();}},'secondary')]));const sel=$('#invoiceOrder');sel.replaceChildren();for(const o of b.orders.filter(x=>x.status!=='Annulée')){const opt=document.createElement('option');opt.value=o.id;opt.textContent=o.number+' · '+cmoney(o.total)+' MGA';sel.append(opt);}}
+function bizUniqueNumber(type,num){return records.every(r=>bizData(r)[type].every(x=>x.number!==num));}
+$('#orderFromQuote').onclick=()=>{const r=bizSelected();if(!r)return;const q=r.quote;if(!q||q.status!=='Accepté'){bizAlert('Un devis enregistré et marqué Accepté est nécessaire.');return;}const number=$('#orderNumber').value.trim(),date=$('#orderDate').value,status=$('#orderStatus').value,approval=$('#orderApproval').value.trim();if(!number||number.length>70||!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Number.isFinite(Date.parse(date+'T12:00:00'))){bizAlert('Numéro de commande et date valides obligatoires.');return;}if(!bizUniqueNumber('orders',number)){bizAlert('Ce numéro de commande existe déjà.');return;}if(!approval){bizAlert('Renseignez la référence d’accord client avant création.');return;}let tot;try{tot=qCalc(q);}catch(e){bizAlert('Devis invalide : '+e.message);return;}if(!Number.isSafeInteger(tot.grandOnce)||tot.grandOnce<0){bizAlert('Total initial du devis invalide.');return;}const b=structuredClone(bizData(r));b.orders.push({id:bizId(),number,date,status,approval,quoteNumber:q.number,total:tot.grandOnce,monthly:tot.grandMonth,annual:tot.grandYear,items:structuredClone(q.items),tax:Number(q.tax)||0});if(bizSave(r,b)){bizAlert('Commande créée à partir du devis accepté.');bizShowSelection();bizStats();}};
+function bizInvoicePaid(i){return (i.payments||[]).reduce((v,p)=>v+Number(p.amount),0);}
+function bizListInvoices(r){const b=bizData(r);const today=bizToday();bizMakeTable($('#invoiceList'),['Facture','Émission / échéance','Montant','Solde','État','Actions'],b.invoices.map(i=>{const paid=bizInvoicePaid(i),balance=i.status==='Annulée'?0:Math.max(0,i.amount-paid);const status=i.status==='Annulée'?'Annulée':balance===0?'Soldée':i.due<today?'Échue':'Ouverte';const actions=document.createElement('div');actions.className='toolbar';actions.append(bizBtn('Voir / Imprimer',()=>bizViewInvoice(r,i)));if(i.status!=='Annulée'&&balance>0)actions.append(bizBtn('Paiement',()=>bizPayInvoice(r,i)));if(i.status!=='Annulée'&&paid===0)actions.append(bizBtn('Annuler',()=>{if(!confirm('Annuler cette facture ?'))return;const next=structuredClone(b);next.invoices.find(x=>x.id===i.id).status='Annulée';if(bizSave(r,next)){bizShowSelection();bizStats();}},'secondary'));return [i.number,i.date+' / '+i.due,cmoney(i.amount)+' MGA',cmoney(balance)+' MGA',status,actions];}));}
+$('#invoiceOrder').onchange=()=>{const r=bizSelected();if(!r)return;const o=bizData(r).orders.find(x=>x.id===$('#invoiceOrder').value);if(o)$('#invoiceAmount').value=o.total;};
+$('#invoiceAdd').onclick=()=>{const r=bizSelected();if(!r)return;const b=bizData(r),order=b.orders.find(o=>o.id===$('#invoiceOrder').value&&o.status!=='Annulée');const number=$('#invoiceNumber').value.trim(),date=$('#invoiceDate').value,due=$('#invoiceDue').value,amount=bizAmount($('#invoiceAmount').value);if(!order){bizAlert('Sélectionnez une commande active.');return;}if(!number||number.length>70||!bizUniqueNumber('invoices',number)){bizAlert('Numéro de facture obligatoire et unique.');return;}if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!/^\d{4}-\d{2}-\d{2}$/.test(due)||!Number.isFinite(Date.parse(date+'T12:00:00'))||!Number.isFinite(Date.parse(due+'T12:00:00'))||due<date){bizAlert('Dates de facturation et échéance invalides.');return;}if(amount===null||amount===0||$('#invoiceAmount').value===''){bizAlert('Montant de facture strictement positif obligatoire.');return;}const already=b.invoices.filter(x=>x.orderId===order.id&&x.status!=='Annulée').reduce((a,x)=>a+x.amount,0);if(amount+already>order.total){bizAlert('Dépassement du total initial de la commande. Créer une nouvelle commande pour un complément.');return;}b.invoices.push({id:bizId(),orderId:order.id,number,date,due,amount,note:$('#invoiceNote').value.trim(),status:'Émise',payments:[]});if(bizSave(r,b)){bizAlert('Facture créée. À transmettre après contrôle des mentions légales et fiscales.');bizShowSelection();bizStats();}};
+function bizPayInvoice(r,i){const b=bizData(r),balance=i.amount-bizInvoicePaid(i);const raw=prompt('Montant vérifié manuellement à affecter à cette facture (MGA) :',String(balance));if(raw===null)return;const amount=bizAmount(raw);if(amount===null||amount<=0||amount>balance){bizAlert('Montant supérieur au solde ou invalide.');return;}const ref=prompt('Référence du paiement vérifié (MVola) :','');if(ref===null)return;if(!ref.trim()||ref.length>120){bizAlert('Référence obligatoire (120 caractères max).');return;}if(!confirm('Avez-vous vérifié ce paiement sur le compte MVola, hors de cette application ?'))return;const next=structuredClone(b),invoice=next.invoices.find(x=>x.id===i.id);invoice.payments.push({id:bizId(),amount,reference:ref.trim(),date:bizToday(),method:'MVola',verification:'Déclaration de vérification manuelle'});if(bizSave(r,next)){bizAlert('Paiement affecté à la facture (déclaration manuelle, non vérifiée par une API).');bizShowSelection();bizStats();}}
+function bizViewInvoice(r,i){bizInvoiceSelected=i.id;const b=bizData(r),o=b.orders.find(x=>x.id===i.orderId),paid=bizInvoicePaid(i);$('#invoicePaper').innerHTML='<h2>APPFORGE BUSINESS MANAGER · FACTURE</h2><p>Made in Madagascar · '+escapeHTML(i.number)+'</p><p><strong>Client :</strong> '+escapeHTML(r.client)+' · '+escapeHTML(r.project)+'</p><p><strong>Commande :</strong> '+escapeHTML(o?.number||'Référence inconnue')+'</p><p>Date : '+escapeHTML(i.date)+' · Échéance : '+escapeHTML(i.due)+'</p><p>Objet : '+escapeHTML(i.note||'Prestations selon commande')+'</p><h3>Total : '+cmoney(i.amount)+' MGA</h3><p>Montant affecté : '+cmoney(paid)+' MGA · Reste dû : '+cmoney(Math.max(0,i.amount-paid))+' MGA</p><p>Paiement MVola : 034 85 874 58 · Validation manuelle</p><p>Statut : '+escapeHTML(i.status==='Annulée'?'Annulée':paid>=i.amount?'Soldée':'À régler')+'</p><p class="muted">Document de travail : compléter mentions obligatoires de l’émetteur, numéro fiscal, régime de taxes et mentions légales avant émission définitive.</p>';$('#invoicePrint').disabled=false;}
+$('#invoicePrint').onclick=()=>{if(!bizInvoiceSelected)return;document.body.classList.add('printing-invoice');window.print();};
+window.addEventListener('afterprint',()=>document.body.classList.remove('printing-invoice'));
+function bizListSubs(r){const b=bizData(r);bizMakeTable($('#subList'),['Formule','Prix / période','Échéance','État','Contrat','Actions'],b.subs.map(x=>{const select=document.createElement('select');for(const value of ['Prévu','Actif commercialement','Suspendu','Résilié']){const opt=document.createElement('option');opt.value=value;opt.textContent=value;select.append(opt);}select.value=x.status;select.onchange=()=>{if(!confirm('Modifier l’état commercial ? Ceci ne change pas la licence réelle.')){select.value=x.status;return;}const next=structuredClone(b);next.subs.find(s=>s.id===x.id).status=select.value;if(bizSave(r,next)){bizShowSelection();bizStats();}};const wrap=document.createElement('div');wrap.append(select,bizBtn('Échéance +1 période',()=>{if(x.status==='Résilié'){bizAlert('Abonnement résilié.');return;}const next=structuredClone(b),item=next.subs.find(s=>s.id===x.id),dt=new Date(item.next+'T12:00:00');if(!Number.isFinite(dt.getTime())){bizAlert('Date invalide.');return;}const oldDay=dt.getDate();dt.setDate(1);dt.setMonth(dt.getMonth()+(item.period==='Annuel'?12:1));const last=new Date(dt.getFullYear(),dt.getMonth()+1,0).getDate();dt.setDate(Math.min(oldDay,last));const d=dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');if(!confirm('Reporter l’échéance de '+x.next+' à '+d+' ? Aucun paiement ne sera créé.'))return;item.next=d;if(bizSave(r,next))bizShowSelection();}));return [x.name,cmoney(x.amount)+' MGA / '+x.period,x.next,x.status,x.ref||'—',wrap];}));}
+$('#subAdd').onclick=()=>{const r=bizSelected();if(!r)return;const name=$('#subName').value.trim(),amount=bizAmount($('#subAmount').value),next=$('#subNext').value;if(!name||name.length>160||amount===null||$('#subAmount').value===''||!/^\d{4}-\d{2}-\d{2}$/.test(next)||!Number.isFinite(Date.parse(next+'T12:00:00'))){bizAlert('Nom, montant et date d’échéance valides obligatoires.');return;}const b=structuredClone(bizData(r));b.subs.push({id:bizId(),name,amount,period:$('#subPeriod').value,next,status:$('#subStatus').value,ref:$('#subRef').value.trim()});if(bizSave(r,b)){bizAlert('Abonnement commercial enregistré (aucune licence activée).');bizShowSelection();bizStats();$('#subName').value='';$('#subAmount').value='';}};
+$('#bizExport').onclick=()=>{const lines=[['Type','Client','Projet','Référence','Date','Échéance','Statut','Montant MGA','Paiements facture MGA','Période']];for(const r of records){if(isPersonal(r))continue;const b=bizData(r);for(const o of b.orders)lines.push(['Commande',r.client,r.project,o.number,o.date,'',o.status,o.total,'','Unique']);for(const i of b.invoices)lines.push(['Facture',r.client,r.project,i.number,i.date,i.due,i.status,i.amount,bizInvoicePaid(i),'Unique']);for(const x of b.subs)lines.push(['Abonnement',r.client,r.project,x.name,'',x.next,x.status,x.amount,'',x.period]);}download('appforge-gestion-commerciale.csv',csvRows(lines),'text/csv;charset=utf-8');};
+$('#orderDate').value=bizToday();$('#invoiceDate').value=bizToday();$('#invoiceDue').value=bizToday();$('#subNext').value=bizToday();
+
+/* Business Manager v1.3 — génération directe des prompts ; aucun couplage à autre produit indépendant */
+let prodActive=null;
+function prodSelected(){return records.find(r=>r.id===$('#prodRecordPick').value)||null;}
+function prodRender(){selectFill('prodRecordPick',$('#prodRecordPick').value||prodActive||activeId);prodShowSelection();}
+function prodShowSelection(){const r=prodSelected();$('#prodEmpty').classList.toggle('hidden',!!r);$('#prodWorkspace').classList.toggle('hidden',!r);if(!r)return;prodActive=r.id;$('#prodSummary').textContent=(isPersonal(r)?'Personnel':'Client')+' · '+(r.project||'Projet sans nom')+' · Cahier : '+(r.status||'Brouillon')+' · Prompts générés : '+(Array.isArray(r.prompts)?r.prompts.length:0);$('#promptPreview').value='';$('#prodMessage').textContent='';promptRenderHistory(r);}
+$('#prodRecordPick').addEventListener('change',prodShowSelection);
+const PROMPT_TARGETS={android:'Android Studio : Kotlin, Jetpack Compose, Room, Gradle, API 23 + 29. Projet Android natif compilable.',html:'HTML standalone : un fichier HTML/CSS/JavaScript, compatible Chrome/Edge, stockage local robuste.',web:'Application Web : frontend responsive, API serveur authentifiée, base de données SQL, tests.',windows:'Windows portable : interface desktop, stockage local, fichiers et exports sécurisés.',dashboard:'Dashboard BI : KPI traçables, filtres, analyses, drill-down et exports.',custom:'Plateforme/stack à préciser selon le cahier des charges.'};
+const PROMPT_PURPOSES={build:'CONSTRUIRE une application fonctionnelle',fix:'CORRIGER et faire évoluer une application existante sans régression',audit:'AUDITER, TESTER et FIABILISER',deploy:'PRÉPARER la livraison et documenter les contrôles'};
+function promptStr(s){return String(s??'').trim()||'À préciser avant développement';}
+function promptSector(r){const list=[];for(const [group,answers] of Object.entries(r.sectorAnswers||{})){if(!answers||typeof answers!=='object')continue;for(const [question,choices] of Object.entries(answers)){const ans=Array.isArray(choices)?choices.join(', '):String(choices??'');if(ans.trim())list.push(`- ${group} / ${question} : ${ans}`);}}return list.join('\n')||'À compléter avec le client';}
+function promptBuild(r,target,purpose,notes){if(!r||!r.id)throw new Error('Projet non enregistré.');const approved=r.status==='Validé',personal=isPersonal(r),lic=licSafe(r);
+const parts=[`# PROMPT DE DÉVELOPPEMENT — ${promptStr(r.project)}`,`Projet : ${personal?'personnel':'client'} | État du cahier : ${r.status||'Découverte'} | Généré le : ${new Date().toISOString().slice(0,10)}`,
+'## Mission',PROMPT_PURPOSES[purpose]||PROMPT_PURPOSES.build,
+'## Environnement cible',PROMPT_TARGETS[target]||PROMPT_TARGETS.custom,
+'## Règles obligatoires',
+'- Priorité : application opérationnelle, données cohérentes, sécurité réelle, performance et UX responsive. Ne pas produire une simple maquette.',
+'- Ne pas inventer des flux API, des identifiants, des paiements validés, des états de licence, des autorisations ou des résultats de tests.',
+'- Toute action présentée dans l’interface doit fonctionner, ou être clairement désactivée avec explication.',
+'- Séparer domaine, données, calculs, états, interface et validations. Gestion des erreurs et reprise après incident.',
+'- Valider les entrées, échapper les sorties non fiables, éviter XSS, SQL injection et clés secrètes dans le frontend.',
+'- L’application doit être testée sur ses flux critiques : sauvegardes, recherche, calculs, import/export, écrans, sécurité et cas limites.',
+'- Les modifications d’un projet existant doivent conserver les fonctionnalités validées et les données historiques.',
+'- AppForge V3 : fonctionnement offline-first si applicable, sauvegarde locale et partage natif Drive sans OAuth pour Android, PIN 4 chiffres avec biométrie prioritaire et secours sur Android lorsque applicable, chiffrement du stockage sensible, pas de PWA.',
+'- Pour les fonctionnalités Cloud et licences, utiliser un Worker central AppForge V3 existant (Cloudflare Workers + D1) : contrôle serveur, appareils autorisés, jetons courts, quotas et révocations. Aucun secret embarqué.',
+'## Cahier des charges — source',
+`Nom du projet : ${promptStr(r.project)}`,
+`Secteur : ${promptStr(r.sector)}`,
+...(personal?['Mode : projet personnel. N’ajouter ni devis, ni factures, ni flux MVola sans demande explicite.']:[`Client : ${promptStr(r.client)}`,`Contact : ${promptStr(r.contact)}`]),
+`Problème à résoudre : ${promptStr(r.problem)}`,
+`Objectifs : ${promptStr(r.goals)}`,
+`Outils/processus existants : ${promptStr(r.current)}`,
+`Fonctionnalités MVP : ${promptStr(r.must)}`,
+`Fonctions futures : ${promptStr(r.nice)}`,
+`Rôles : ${promptStr(r.roles)}`,
+`Nombre utilisateurs : ${promptStr(r.users)}`,
+`Plateformes demandées : ${promptStr(r.platform)}`,
+`Mode connecté / offline : ${promptStr(r.mode)}`,
+`Langues : ${promptStr(r.languages)}`,
+`Import : ${promptStr(r.import)}`,
+`KPI / rapports / exports : ${promptStr(r.reports)}`,
+`Sécurité / conformité : ${promptStr(r.security)}`,
+`Échéance : ${promptStr(r.deadline)}`,
+`Critères de recette : ${promptStr(r.acceptance)}`,
+`Points ouverts / risques : ${promptStr(r.questions)}`,
+'## Questionnaires sectoriels',promptSector(r),
+'## Licence et Cloud (configuration demandée, sans présumer activation)',
+`App ID : ${promptStr(lic.appCode)} | Version : ${promptStr(lic.appVersion)} | Offre : ${personal?'Propriétaire':promptStr(lic.plan)} | Cloud : ${promptStr(lic.cloud)} | Appareils : ${lic.devices||1} | Quota Mo : ${lic.quota??0} | Sync : ${promptStr(lic.syncPolicy)}`,
+'## Travail attendu',
+'1. Résumer le besoin et identifier explicitement les ambiguïtés bloquantes.',
+'2. Proposer architecture technique et schéma de données avec règles d’intégrité.',
+'3. Détailler les écrans, les workflows, les droits et les comportements hors connexion.',
+'4. Implémenter le code fonctionnel, les validations, l’import/export, la sauvegarde et les fonctions métier.',
+'5. Produire tests unitaires/intégration et plan de recette, sans prétendre avoir testé ce qui ne l’est pas.',
+'6. Détailler installation, configuration, sécurité, versionnement et livrables réels.',
+'7. Fournir un tableau de traçabilité exigences → modules → cas de test et signaler les éléments non couverts.',
+...(notes.trim()?['## Instructions spécifiques supplémentaires',notes.trim()]:[]),
+approved?'Statut : cahier des charges VALIDÉ (selon suivi local ; vérifier l’accord client).':'AVERTISSEMENT : cahier des charges NON VALIDÉ. Génération de travail, ne pas considérer les exigences comme approuvées.'
+];return parts.join('\n\n');}
+function promptRenderHistory(r){const dest=$('#promptHistory');dest.replaceChildren();const list=Array.isArray(r.prompts)?r.prompts:[];if(!list.length){dest.textContent='Aucun prompt généré pour ce projet.';return;}for(const p of [...list].reverse()){const line=document.createElement('div');line.className='prompt-history-row';const label=document.createElement('span');label.textContent=`v${p.version} · ${p.createdAt?.slice(0,16)||''} · ${p.target||''} · ${p.purpose||''}`;const actions=document.createElement('div');actions.className='toolbar';const open=document.createElement('button');open.className='secondary';open.textContent='Ouvrir';open.onclick=()=>{$('#promptPreview').value=p.text;$('#prodMessage').textContent=`Prompt v${p.version} chargé.`;};const save=document.createElement('button');save.className='secondary';save.textContent='Exporter';save.onclick=()=>download(`prompt-${(r.project||'projet').replace(/[^a-z0-9_-]/gi,'-').slice(0,38)}-v${p.version}.md`,p.text,'text/markdown;charset=utf-8');actions.append(open,save);line.append(label,actions);dest.append(line);}}
+$('#promptGenerate').onclick=()=>{const r=prodSelected();if(!r)return;const notes=$('#promptInstructions').value;try{const result=promptBuild(r,$('#promptTarget').value,$('#promptPurpose').value,notes);const prev=Array.isArray(r.prompts)?r.prompts:[],version=Math.max(0,...prev.map(p=>Number(p.version)||0))+1;const entry={version,createdAt:new Date().toISOString(),target:$('#promptTarget').value,purpose:$('#promptPurpose').value,text:result};if(!Array.isArray(r.prompts))r.prompts=[];r.prompts.push(entry);r.updatedAt=new Date().toISOString();try{storageSave();}catch(e){r.prompts.pop();$('#prodMessage').textContent='Impossible de sauvegarder : '+e.message;return;}$('#promptPreview').value=result;$('#prodMessage').textContent=`Prompt v${version} généré et enregistré localement (${result.length} caractères). Il doit être relu.`;promptRenderHistory(r);$('#prodSummary').textContent=(isPersonal(r)?'Personnel':'Client')+' · '+r.project+' · Prompts générés : '+r.prompts.length;}catch(e){$('#prodMessage').textContent='Génération impossible : '+e.message;}};
+$('#promptCopy').onclick=async()=>{const v=$('#promptPreview').value;if(!v){$('#prodMessage').textContent='Générez ou ouvrez un prompt avant de copier.';return;}try{await navigator.clipboard.writeText(v);$('#prodMessage').textContent='Prompt copié.';}catch(e){$('#prodMessage').textContent='Copie refusée par le navigateur. Sélectionnez le texte et utilisez Ctrl+C.';$('#promptPreview').focus();$('#promptPreview').select();}};
+$('#promptMarkdown').onclick=()=>{const r=prodSelected(),v=$('#promptPreview').value;if(!r||!v){$('#prodMessage').textContent='Aucun prompt à exporter.';return;}download('appforge-prompt-'+(r.project||'projet').replace(/[^a-z0-9_-]/gi,'-').slice(0,40)+'.md',v,'text/markdown;charset=utf-8');$('#prodMessage').textContent='Prompt exporté en Markdown.';};
+
+/* Cloud AppForge V3 : intégration des routes confirmées dans les sources Worker/SDK. */
+/* Intégration directe au contrat public source du Worker central AppForge Cloud V3. */
+const BM_WORKER='https://appforge-license-api.lalainaadclick.workers.dev';
+/* L’URL d’API est fixée dans le programme ; aucune préférence utilisateur ne peut la remplacer. */
+const BM_API_BASE_PREF='appforge_bm_api_base_v16';
+const BM_LEGACY_WORKER_PATTERN=/https:\/\/appforge-license-api\.[a-z0-9-]+\.workers\.dev\/?/gi;
+function bmMigrateLegacyWorkerSettings(){
+ const migrated=[];
+ try{
+  // Ne pas altérer : projets, clés de chiffrement, preuves chiffrées, empreintes et snapshots.
+  const keys=[];
+  for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k)keys.push(k);}
+  for(const key of keys){
+   if(!/(appforge|business.?manager|clientbrief|^bm[_-])/i.test(key))continue;
+   if(!/(api|worker|endpoint|server|setting|pref|config|base.?url)/i.test(key))continue;
+   if(/(entitlement|secret|token|password|private|cipher|vault|record|snapshot|backup|install|shadow)/i.test(key))continue;
+   const old=localStorage.getItem(key);
+   if(typeof old!=='string'||!old.includes('appforge-license-api.'))continue;
+   const updated=old.replace(BM_LEGACY_WORKER_PATTERN,match=>BM_WORKER+(match.endsWith('/')?'/':''));
+   if(updated!==old){localStorage.setItem(key,updated);migrated.push(key);}
+  }
+  localStorage.setItem(BM_API_BASE_PREF,BM_WORKER);
+ }catch(error){console.warn('Migration des préférences API incomplète; URL embarquée imposée.',error?.name||'StorageError');}
+ return migrated;
+}
+const bmMigratedPreferenceKeys=bmMigrateLegacyWorkerSettings();
+
+// Diagnostic d'observation uniquement, jamais de jeton administrateur dans le frontend.
+let bmHttpAuditReport=null;
+async function bmCheckRoute(method,path,headers={}){
+ const result={method,path,httpStatus:null,allowMethods:null,contentType:null,body:null,error:null};
+ try{
+  const response=await fetch(BM_WORKER+path,{method,headers,cache:'no-store',mode:'cors',signal:AbortSignal.timeout(12000)});
+  result.httpStatus=response.status;
+  result.allowMethods=response.headers.get('Access-Control-Allow-Methods');
+  result.contentType=response.headers.get('Content-Type');
+  const content=await response.text();
+  result.body=content.slice(0,450);
+ }catch(error){result.error=(error&&error.message)||String(error);}
+ return result;
+}
+async function bmRunHttpAudit(){
+ const output=document.getElementById('bmHttpResult'),button=document.getElementById('bmHttpAudit');
+ button.disabled=true;output.textContent='Test HTTP du Worker central en cours (aucun jeton fourni)…';
+ try{
+  const checks=[];
+  for(const [method,path,headers] of [
+   ['GET','/health',{}],['GET','/v1/config',{}],
+   ['OPTIONS','/v1/activate',{'Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'content-type'}],
+   ['OPTIONS','/v1/cloud/token',{'Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'content-type'}],
+   ['GET','/v1/cloud/snapshot?resource=default',{}],
+   ['OPTIONS','/v1/cloud/snapshot?resource=default',{'Access-Control-Request-Method':'PUT','Access-Control-Request-Headers':'authorization,content-type'}],
+   ['GET','/admin/apps',{}],['GET','/admin/licenses',{}]
+  ])checks.push(await bmCheckRoute(method,path,headers));
+  bmHttpAuditReport={generatedAt:new Date().toISOString(),apiBase:BM_WORKER,authenticated:false,destructive:false,productIdVerifiedInD1:false,localPreferenceKeysMigrated:bmMigratedPreferenceKeys,checks};
+  output.textContent=JSON.stringify(bmHttpAuditReport,null,2);
+  document.getElementById('bmHttpExport').disabled=false;
+ }catch(error){output.textContent='Diagnostic interrompu : '+error.message;}
+ finally{button.disabled=false;}
+}
+document.getElementById('bmHttpAudit').onclick=bmRunHttpAudit;
+document.getElementById('bmHttpExport').onclick=()=>{if(bmHttpAuditReport)download('appforge-worker-http-audit-'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify(bmHttpAuditReport,null,2),'application/json');};
+
+const BM_INSTALL_ID_KEY='appforge_bm_install_id_v12';
+const BM_PRODUCT_ID_KEY='appforge_bm_product_id_v12';
+const BM_SYNC_SHADOW_KEY='appforge_bm_sync_shadow_v12';
+const BM_ENTITLEMENT_KEY='appforge_bm_encrypted_entitlement_v15';
+const BM_RESOURCE='business_manager_v1';
+let bmProof=null,bmCloudToken=null,bmCloudExpiry=0,bmActiveProduct=null,bmSyncing=false,bmAutoTimer=null,bmSkipHook=false;
+const bmStatus=s=>{$('#bmCloudStatus').textContent=s;};
+function bmProductId(){const v=$('#bmProductId').value.trim();if(!/^[A-Z0-9_-]{3,40}$/.test(v))throw new Error('Product ID invalide : recopiez EXACTEMENT la valeur D1 en MAJUSCULES (A-Z, 0-9, _ ou -, 3 à 40 caractères).');return v;}
+function bmInstallId(){let v=localStorage.getItem(BM_INSTALL_ID_KEY);if(!v){if(!crypto?.getRandomValues)throw new Error('Web Crypto indisponible.');const raw=crypto.getRandomValues(new Uint8Array(24));v=Array.from(raw).map(x=>x.toString(16).padStart(2,'0')).join('');localStorage.setItem(BM_INSTALL_ID_KEY,v);}return v;}
+function bmLogout(msg){$('#bmCloudPass').value='';bmProof=null;bmCloudToken=null;bmCloudExpiry=0;bmActiveProduct=null;$('#bmLicenseCode').value='';$('#bmAuto').checked=false;if(bmAutoTimer)clearTimeout(bmAutoTimer);bmAutoTimer=null;$('#asideCloudState').textContent='Licence Business : non vérifiée\nCloud D1 : non synchronisé\nStockage : navigateur local';bmStatus(msg||'Session Cloud terminée. Aucune licence serveur confirmée dans cette session.');}
+async function bmRequest(path,method='GET',data,token){const headers={'Accept':'application/json'};if(data!==undefined)headers['Content-Type']='application/json';if(token)headers.Authorization='Bearer '+token;let res;try{res=await fetch(BM_WORKER+path,{method,headers,...(data===undefined?{}:{body:JSON.stringify(data)}),cache:'no-store',signal:AbortSignal.timeout(20000)});}catch(e){throw new Error('Requête impossible (réseau, TLS, CORS ou disponibilité Worker). Aucun état serveur confirmé.');}let payload;try{payload=await res.json();}catch(e){throw new Error('Le serveur a renvoyé HTTP '+res.status+' sans JSON valide.');}if(!res.ok||payload.error){const err=new Error((payload.error||'Erreur serveur')+' (HTTP '+res.status+')');err.httpStatus=res.status;err.payload=payload;throw err;}return payload;}
+function bmShadow(){
+ try{const x=JSON.parse(localStorage.getItem(BM_SYNC_SHADOW_KEY)||'null');
+   // Les anciennes empreintes sans endpoint ne sont pas des preuves de synchronisation sur le nouveau Worker.
+   return x&&typeof x==='object'&&x.worker===BM_WORKER?x:null;
+ }catch{return null;}
+} 
+function bmLocalSnapshot(){return {schema:'appforge-business-manager-v1',records:JSON.parse(JSON.stringify(records)),catalogue:JSON.parse(JSON.stringify(bizCatalogue))};}
+async function bmFingerprint(v){const bytes=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(v)));return Array.from(new Uint8Array(bytes)).map(x=>x.toString(16).padStart(2,'0')).join('');}
+function bmSnapshotValid(x){
+ if(!x||x.schema!=='appforge-business-manager-v1'||!Array.isArray(x.records)||x.records.length>10000)return false;
+ const seen=new Set();for(const r of x.records){if(!r||typeof r!=='object'||typeof r.id!=='string'||r.id.length>120||seen.has(r.id)||typeof r.project!=='string'||typeof r.problem!=='string'||typeof r.client!=='string')return false;seen.add(r.id);}
+ try{bizValidateCatalogue(x.catalogue??[]);}catch{return false;}return true;
+}
+function bmB64(data){let str='';for(const v of data)str+=String.fromCharCode(v);return btoa(str);}
+function bmUn64(data){if(typeof data!=='string'||data.length>700000||!/^[A-Za-z0-9+/]*={0,2}$/.test(data))throw new Error('Enveloppe Cloud chiffrée corrompue.');return Uint8Array.from(atob(data),x=>x.charCodeAt(0));}
+function bmPass(){const v=$('#bmCloudPass').value;if(v.length<12||v.length>200)throw new Error('Saisissez la phrase de chiffrement (12 à 200 caractères). Elle n’est pas un identifiant Cloud.');return v;}
+async function bmDeriveKey(pass,salt){const material=await crypto.subtle.importKey('raw',new TextEncoder().encode(pass),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:220000,hash:'SHA-256'},material,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);}
+async function bmEncrypt(snapshot){const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12)),key=await bmDeriveKey(bmPass(),salt),bytes=new TextEncoder().encode(JSON.stringify(snapshot));const cipher=await crypto.subtle.encrypt({name:'AES-GCM',iv,additionalData:new TextEncoder().encode('appforge-business-manager-v1')},key,bytes);return {schema:'appforge-bm-aes-gcm-v1',kdf:'PBKDF2-SHA256',iterations:220000,salt:bmB64(salt),iv:bmB64(iv),ciphertext:bmB64(new Uint8Array(cipher))};}
+async function bmDecrypt(value){
+ if(!value||typeof value!=='object')throw new Error('La copie Cloud est illisible.');
+ if(value.schema==='appforge-business-manager-v1'){
+   if(!bmSnapshotValid(value))throw new Error('Ancienne copie Cloud au format inattendu.');
+   return value; // transition non destructive depuis v1.2: chaque écriture future chiffre
+ }
+ if(value.schema!=='appforge-bm-aes-gcm-v1'||value.kdf!=='PBKDF2-SHA256'||value.iterations!==220000)throw new Error('Format de chiffrement Cloud non reconnu.');
+ try{
+  const salt=bmUn64(value.salt),iv=bmUn64(value.iv),cipher=bmUn64(value.ciphertext);
+  if(salt.length!==16||iv.length!==12)throw new Error('Paramètres de chiffrement invalides.');
+  const key=await bmDeriveKey(bmPass(),salt),plain=await crypto.subtle.decrypt({name:'AES-GCM',iv,additionalData:new TextEncoder().encode('appforge-business-manager-v1')},key,cipher);
+  const snapshot=JSON.parse(new TextDecoder().decode(plain));if(!bmSnapshotValid(snapshot))throw new Error('Contenu Cloud invalide.');return snapshot;
+ }catch(e){throw new Error('Déchiffrement impossible : phrase incorrecte, sauvegarde corrompue ou format incompatible. Aucune donnée locale modifiée.');}
+}
+async function bmPrepareRestore(x){
+ if(!bmSnapshotValid(x))throw new Error('Snapshot distant invalide : restauration bloquée.');
+ if(!confirm('ATTENTION : restaurer '+x.records.length+' projet(s) Cloud remplace TOUS les dossiers ET le catalogue locaux. Export de sauvegarde JSON avant modification. Continuer ?'))return false;
+ const secureBackup=await bmEncrypt(bmLocalSnapshot());
+ download('business-manager-backup-chiffre-'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify({app:'AppForge Business Manager - Encrypted Backup',schema:3,snapshot:secureBackup},null,2),'application/json;charset=utf-8');
+ const oldRecords=records,oldCatalogue=bizCatalogue,oldRecordsRaw=localStorage.getItem(DB),oldCatalogRaw=localStorage.getItem(BIZCAT);
+ bmSkipHook=true;
+ try{
+  const newer=structuredClone(x.records),nextCatalogue=bizValidateCatalogue(x.catalogue??[]);
+  localStorage.setItem(DB,JSON.stringify(newer));
+  try{localStorage.setItem(BIZCAT,JSON.stringify(nextCatalogue));}catch(e){if(oldRecordsRaw===null)localStorage.removeItem(DB);else localStorage.setItem(DB,oldRecordsRaw);throw e;}
+  records=newer;bizCatalogue=nextCatalogue;activeId=null;render();bizCatalogueRender();if(view==='licensing')licRender();
+ }catch(e){records=oldRecords;bizCatalogue=oldCatalogue;try{if(oldRecordsRaw===null)localStorage.removeItem(DB);else localStorage.setItem(DB,oldRecordsRaw);if(oldCatalogRaw===null)localStorage.removeItem(BIZCAT);else localStorage.setItem(BIZCAT,oldCatalogRaw);}catch{}throw new Error('Restauration locale impossible : '+e.message);}
+ finally{bmSkipHook=false;}
+ return true;
+}
+async function bmToken(force=false){if(!bmProof||!bmActiveProduct)throw new Error('Licence Business Manager non activée dans cette session.');if(!force&&bmCloudToken&&bmCloudExpiry>Date.now()+60000)return bmCloudToken;const data=await bmRequest('/v1/cloud/token','POST',{productId:bmActiveProduct,installationId:bmInstallId(),licenseToken:bmProof});if(!data.ok||data.enabled!==true||!data.token)throw new Error('Le Worker n’a pas accordé de droit Cloud.');bmCloudToken=data.token;bmCloudExpiry=Date.parse(data.expiresAt||'');if(!Number.isFinite(bmCloudExpiry))bmCloudExpiry=Date.now()+5*60000;return bmCloudToken;}
+async function bmFetchSnapshot(token){return bmRequest('/v1/cloud/snapshot?resource='+encodeURIComponent(BM_RESOURCE),'GET',undefined,token);}
+async function bmPutSnapshot(snapshot,revision,token){if(!Number.isInteger(revision)||revision<0)throw new Error('Révision de snapshot invalide.');const body={expectedRevision:revision,snapshot:await bmEncrypt(snapshot)};if(new TextEncoder().encode(JSON.stringify(body)).length>440000)throw new Error('Snapshot supérieur à 440 Ko ; synchronisation refusée sans découpage.');return bmRequest('/v1/cloud/snapshot?resource='+encodeURIComponent(BM_RESOURCE),'PUT',body,token);}
+function bmChoice(remoteRev,reason){const x=prompt(reason+'\nTapez 1 pour RESTAURER la copie Cloud, 2 pour ENVOYER les données locales, ou Annuler pour ne rien modifier.\nRévision Cloud : '+remoteRev);return x==='1'?'remote':x==='2'?'local':null;}
+async function bmSyncNow(silent=false){if(bmSyncing)return;if(!bmProof){if(!silent)bmStatus('Activez ou restaurez votre licence Business Manager avant synchronisation.');return;}if(!navigator.onLine){bmStatus('Hors ligne : les modifications locales sont conservées et seront reprises au retour du réseau si cette session reste active.');return;}bmSyncing=true;if(!silent)bmStatus('Vérification de la licence et lecture de D1…');try{bmPass();
+ await bmCheckEntitlement();const token=await bmToken();const remote=await bmFetchSnapshot(token);const local=bmLocalSnapshot(),hash=await bmFingerprint(local),rev=Number(remote.revision);
+ if(!Number.isSafeInteger(rev)||rev<0)throw new Error('Révision serveur invalide.');
+ const shadow=bmShadow();const sameProduct=shadow?.productId===bmActiveProduct;const knownHash=sameProduct?shadow.hash:null;const knownRev=sameProduct?shadow.revision:null;
+ let action='none',remotePlain=null,wasPlain=false;
+ if(remote.snapshot===null){ if(!local.records.length&&!local.catalogue.length){bmStatus('D1 accessible : aucun projet à synchroniser.');return;}action='local'; }
+ else {
+  wasPlain=remote.snapshot.schema==='appforge-business-manager-v1';remotePlain=await bmDecrypt(remote.snapshot);
+  const remoteHash=await bmFingerprint(remotePlain);
+  if(remoteHash===hash){action='equal';}
+  else if(sameProduct&&knownHash===hash&&knownRev===rev){action='remote';}
+  else if(sameProduct&&knownHash===remoteHash&&knownRev===rev){action='local';}
+  else {action=bmChoice(rev,'Première connexion ou conflit : deux versions différentes existent.');}
+ }
+ if(!action){bmStatus('Conflit non résolu. Aucune donnée écrasée.');return;}
+ if(action==='remote'){if(!await bmPrepareRestore(remotePlain)){bmStatus('Restauration annulée : aucun écrasement.');return;}const rh=await bmFingerprint(remotePlain);localStorage.setItem(BM_SYNC_SHADOW_KEY,JSON.stringify({worker:BM_WORKER,productId:bmActiveProduct,revision:rev,hash:rh}));bmStatus('Copie Cloud restaurée après confirmation. Révision '+rev+'.');return;}
+ if(action==='local'){
+  if(remote.snapshot!==null&&!confirm('Remplacer la copie Cloud par une sauvegarde CHIFFRÉE des données locales ? Révision actuelle : '+rev+'.')){bmStatus('Envoi annulé.');return;}
+  const result=await bmPutSnapshot(local,rev,token);const next=Number(result.revision);if(!result.ok||!Number.isSafeInteger(next)||next<=rev)throw new Error('Écriture Cloud non confirmée par le Worker.');const readback=await bmFetchSnapshot(token);if(Number(readback.revision)!==next||!readback.snapshot)throw new Error('Écriture reçue mais relecture D1 non confirmée.');const check=await bmDecrypt(readback.snapshot);if(await bmFingerprint(check)!==hash)throw new Error('Le contenu relu dans D1 ne correspond pas à la copie envoyée.');localStorage.setItem(BM_SYNC_SHADOW_KEY,JSON.stringify({worker:BM_WORKER,productId:bmActiveProduct,revision:next,hash}));$('#asideCloudState').textContent='Licence Business : vérifiée\nCloud D1 : synchronisé (révision '+next+')\nStockage : local + D1';bmStatus('Synchronisation confirmée par D1 : révision '+next+' (envoi local).');return;
+ }
+ if(action==='equal'){if(wasPlain){bmStatus('Une ancienne copie Cloud non chiffrée existe. Pour la remplacer par un snapshot chiffré, modifiez un dossier, puis synchronisez.');}else{localStorage.setItem(BM_SYNC_SHADOW_KEY,JSON.stringify({worker:BM_WORKER,productId:bmActiveProduct,revision:rev,hash}));bmStatus('Synchronisation vérifiée : données chiffrées identiques, révision '+rev+'.');}}
+ }catch(e){if(e.httpStatus===401||e.httpStatus===403){bmLogout('Accès licence/Cloud refusé par le Worker : '+e.message+' Les données locales sont conservées.');}else if(e.httpStatus===409){bmStatus('Conflit D1 (HTTP 409) : aucune copie écrasée. Relancez la synchronisation pour choisir la version.');}else{bmStatus('Cloud non synchronisé : '+e.message+' Les données locales sont conservées.');}}finally{bmSyncing=false;}}
+$('#bmProductId').value=localStorage.getItem(BM_PRODUCT_ID_KEY)||'';
+$('#bmProductId').addEventListener('change',()=>{if(bmActiveProduct)bmLogout('Produit modifié : réactivation nécessaire.');try{localStorage.setItem(BM_PRODUCT_ID_KEY,bmProductId());}catch(e){bmStatus(e.message);}});
+
+// Only a signed *client* entitlement is saved; encrypted by a user-supplied phrase.
+// An administrator master token is NEVER handled here.
+async function bmEncryptProof(product,proof){
+ const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));
+ const key=await bmDeriveKey(bmPass(),salt);
+ const data=new TextEncoder().encode(JSON.stringify({productId:product,proof,installationId:bmInstallId()}));
+ const encrypted=await crypto.subtle.encrypt({name:'AES-GCM',iv,additionalData:new TextEncoder().encode('appforge-bm-entitlement-v1')},key,data);
+ const envelope={v:1,salt:bmB64(salt),iv:bmB64(iv),cipher:bmB64(new Uint8Array(encrypted))};
+ localStorage.setItem(BM_ENTITLEMENT_KEY,JSON.stringify(envelope));
+ if(localStorage.getItem(BM_ENTITLEMENT_KEY)!==JSON.stringify(envelope))throw new Error('Sauvegarde de preuve chiffrée non confirmée.');
+ return true;
+}
+async function bmDecryptProof(){
+ const raw=localStorage.getItem(BM_ENTITLEMENT_KEY);
+ if(!raw)throw new Error('Aucune preuve chiffrée sauvegardée dans ce navigateur.');
+ const o=JSON.parse(raw);
+ if(!o||o.v!==1)throw new Error('Format de preuve inconnu.');
+ const salt=bmUn64(o.salt),iv=bmUn64(o.iv);if(salt.length!==16||iv.length!==12)throw new Error('Preuve chiffrée corrompue.');
+ let value;try{
+ const key=await bmDeriveKey(bmPass(),salt);
+ const buffer=await crypto.subtle.decrypt({name:'AES-GCM',iv,additionalData:new TextEncoder().encode('appforge-bm-entitlement-v1')},key,bmUn64(o.cipher));
+ value=JSON.parse(new TextDecoder().decode(buffer));
+ }catch{throw new Error('Phrase privée incorrecte ou preuve chiffrée corrompue.');}
+ if(!value||value.installationId!==bmInstallId()||!(/^[A-Z0-9_-]{3,40}$/.test(value.productId))||typeof value.proof!=='string'||value.proof.length>8192)throw new Error('Preuve non liée à cet appareil.');
+ return value;
+}
+function bmRenderVault(){
+ const present=!!localStorage.getItem(BM_ENTITLEMENT_KEY);
+ const el=document.getElementById('bmVaultStatus');if(el)el.textContent=present?'Preuve de licence chiffrée présente. Reprise sous réserve de vérification du Worker.':'Aucune preuve locale chiffrée enregistrée.';
+}
+function bmSetAuthorized(cloudOk){
+ $('#asideCloudState').textContent='Licence Business : confirmée par Worker\nCloud D1 : '+(cloudOk?'droit accordé (pas encore synchronisé)':'droit refusé')+'\nStockage : navigateur local';
+}
+async function bmCheckEntitlement(){
+ if(!bmProof||!bmActiveProduct)throw new Error('Aucune preuve de licence chargée.');
+ const d=await bmRequest('/v1/status','POST',{productId:bmActiveProduct,token:bmProof,installationId:bmInstallId()});
+ if(d.active!==true)throw new Error('Licence non active selon le Worker.');
+ return d;
+}
+async function bmResumeAccess(){
+ bmStatus('Déchiffrement local, puis vérification en ligne du Worker…');
+ const prev=await bmDecryptProof();
+ const d=await bmRequest('/v1/status','POST',{productId:prev.productId,token:prev.proof,installationId:bmInstallId()});
+ if(d.active!==true)throw new Error('Le serveur ne confirme pas le droit.');
+ bmProof=prev.proof;bmActiveProduct=prev.productId;bmCloudToken=null;bmCloudExpiry=0;
+ $('#bmProductId').value=prev.productId;
+ try{await bmToken(true);bmSetAuthorized(true);bmStatus('Licence revérifiée. Jeton Cloud renouvelé côté serveur. Synchronisation disponible.');}
+ catch(e){bmSetAuthorized(false);bmStatus('Licence active mais Cloud refusé / indisponible : '+e.message);}
+ if($('#bmAuto').checked && bmCloudToken)await bmSyncNow(true);
+}
+$('#bmResume').onclick=async()=>{try{await bmResumeAccess();}catch(e){bmLogout('Reprise refusée : '+e.message);}};
+$('#bmForget').onclick=()=>{
+ if(!localStorage.getItem(BM_ENTITLEMENT_KEY)){bmRenderVault();return;}
+ if(!confirm('Effacer la preuve chiffrée de cet appareil ? Les projets sont conservés.'))return;
+ localStorage.removeItem(BM_ENTITLEMENT_KEY);bmLogout('Preuve chiffrée effacée. Les données locales sont conservées.');bmRenderVault();
+};
+$('#bmVerifyCloud').onclick=async()=>{
+ const out=$('#bmCheckStatus');out.textContent='Contrôle du droit et lecture D1 en cours…';
+ try{await bmCheckEntitlement();const token=await bmToken(true);const value=await bmFetchSnapshot(token);if(!Number.isSafeInteger(Number(value.revision)))throw new Error('Révision retournée invalide.');out.textContent='Worker : licence active, jeton renouvelé, lecture D1 confirmée. Révision '+value.revision+'. Aucune écriture réalisée.';}
+ catch(e){out.textContent='Échec de vérification : '+e.message;if(e.httpStatus===401||e.httpStatus===403)bmLogout('Licence ou droit Cloud révoqué / refusé par le Worker.');}
+};
+$('#bmTestRoundTrip').onclick=async()=>{
+ const out=$('#bmCheckStatus');out.textContent='Vérification D1 en cours…';
+ try{
+  await bmCheckEntitlement();const token=await bmToken(true);
+  const resource='business_manager_probe_v15';
+  const read=await bmRequest('/v1/cloud/snapshot?resource='+resource,'GET',undefined,token);
+  const rev=Number(read.revision);if(!Number.isSafeInteger(rev)||rev<0)throw new Error('Révision D1 invalide.');
+  if(!confirm('Écrire un marqueur de test non sensible dans D1 pour vérifier lecture/écriture (ressource '+resource+') ?')){out.textContent='Test annulé : aucune écriture.';return;}
+  const marker={kind:'bm-v15-test',at:new Date().toISOString(),nonce:bmB64(crypto.getRandomValues(new Uint8Array(12)))};
+  const result=await bmRequest('/v1/cloud/snapshot?resource='+resource,'PUT',{expectedRevision:rev,snapshot:marker},token);
+  if(result.ok!==true||Number(result.revision)!==rev+1)throw new Error('PUT D1 non confirmé.');
+  const back=await bmRequest('/v1/cloud/snapshot?resource='+resource,'GET',undefined,token);
+  if(Number(back.revision)!==rev+1||back.snapshot?.nonce!==marker.nonce)throw new Error('Lecture de contrôle D1 discordante.');
+  out.textContent='Test authentifié confirmé : GET révision '+rev+' → PUT révision '+(rev+1)+' → GET identique. Aucune donnée client utilisée.';
+ }catch(e){out.textContent='Test non réussi : '+e.message+(e.httpStatus?' (HTTP '+e.httpStatus+')':'');if(e.httpStatus===401||e.httpStatus===403)bmLogout('Licence/Cloud refusé côté Worker.');}
+};
+bmRenderVault();
+
+
+$('#bmTrial').onclick=async()=>{
+ try{
+  bmPass();const productId=bmProductId();
+  if(bmProof&&!confirm('Une session est déjà active. Démarrer ou retrouver un essai pour ce produit ?'))return;
+  bmStatus('Demande d’essai 72 heures au Worker central…');
+  const d=await bmRequest('/v1/trial','POST',{productId,installationId:bmInstallId()});
+  if(d.ok!==true||d.active!==true||typeof d.token!=='string')throw new Error('Essai non confirmé par le serveur.');
+  bmProof=d.token;bmActiveProduct=productId;
+  bmCloudToken=d.cloudAccess?.enabled===true&&d.cloudAccess.token?d.cloudAccess.token:null;
+  bmCloudExpiry=Date.parse(d.cloudAccess?.expiresAt||'')||0;
+  localStorage.setItem(BM_PRODUCT_ID_KEY,productId);
+  await bmEncryptProof(productId,bmProof);bmRenderVault();bmSetAuthorized(!!bmCloudToken);
+  $('#bmLicenseCode').value='';
+  bmStatus('Essai confirmé par Worker jusqu’au '+(d.expiresAt||'terme serveur')+'. '+(bmCloudToken?'Droit Cloud accordé.':'Cloud non accordé.')+' Preuve chiffrée enregistrée.');
+  if($('#bmAuto').checked&&bmCloudToken)await bmSyncNow(true);
+ }catch(e){bmLogout('Essai non confirmé ou reprise impossible : '+e.message);}
+};
+
+$('#bmHealth').onclick=async()=>{try{const d=await bmRequest('/health');if(d.ok!==true||d.service!=='AppForge License API')throw new Error('Identité du Worker non confirmée.');bmStatus('Worker lalainaadclick joignable : '+d.service+'. Cela ne confirme pas la licence ni le Cloud. Préférences API migrées : '+bmMigratedPreferenceKeys.length+'.');}catch(e){bmStatus('Test HTTP /health échoué : '+e.message);}};
+$('#bmActivate').onclick=async()=>{const code=$('#bmLicenseCode').value.trim().toUpperCase();try{if(code.length<12||code.length>80)throw new Error('Code de licence invalide.');const productId=bmProductId();bmStatus('Activation auprès du Worker central en cours…');const d=await bmRequest('/v1/activate','POST',{productId,installationId:bmInstallId(),code});if(d.ok!==true||!d.token)throw new Error('Activation non confirmée par le Worker.');bmProof=d.token;bmActiveProduct=productId;bmCloudToken=d.cloudAccess?.enabled===true&&d.cloudAccess.token?d.cloudAccess.token:null;bmCloudExpiry=Date.parse(d.cloudAccess?.expiresAt||'')||0;$('#bmLicenseCode').value='';localStorage.setItem(BM_PRODUCT_ID_KEY,productId);$('#asideCloudState').textContent=bmCloudToken?'Licence Business : validée (Worker)\nCloud D1 : autorisé (à synchroniser)\nStockage : local + D1':'Licence Business : validée (Worker)\nCloud D1 : non autorisé\nStockage : navigateur local';bmSetAuthorized(!!bmCloudToken);let saved=false;try{await bmEncryptProof(productId,bmProof);saved=true;bmRenderVault();}catch(e){bmStatus('Licence confirmée par le Worker, mais conservation sécurisée impossible : '+e.message+' La session reste utilisable.');}
+if(saved)bmStatus(bmCloudToken?'Licence confirmée; preuve chiffrée enregistrée. Cloud autorisé, synchronisation à effectuer.':'Licence confirmée; preuve chiffrée enregistrée. Cloud non autorisé.');
+if($('#bmAuto').checked&&bmCloudToken)await bmSyncNow(true);}catch(e){bmLogout('Activation non confirmée : '+e.message);}};
+$('#bmLicenseCheck').onclick=async()=>{try{if(!bmProof||!bmActiveProduct)throw new Error('Aucune activation en mémoire.');const d=await bmCheckEntitlement();bmStatus('Licence active : vérification serveur au '+(d.checkedAt||'maintenant')+'.');}catch(e){bmLogout('Licence non vérifiée : '+e.message);}};
+$('#bmSync').onclick=()=>bmSyncNow(false);
+$('#bmDisconnect').onclick=()=>bmLogout('Session terminée. Code et jetons effacés de la mémoire vive.');
+$('#bmAuto').onchange=()=>{if(!bmProof){$('#bmAuto').checked=false;bmStatus('Activez la licence pour programmer la synchronisation.');return;}try{bmPass();}catch(e){$('#bmAuto').checked=false;bmStatus(e.message);return;}bmStatus($('#bmAuto').checked?'Synchronisation automatique activée pendant cette session uniquement.':'Synchronisation automatique désactivée.');};
+window.__bmOnLocalChange=()=>{if(bmSkipHook||!bmProof||!$('#bmAuto').checked)return;if(bmAutoTimer)clearTimeout(bmAutoTimer);bmAutoTimer=setTimeout(()=>bmSyncNow(true),2200);};
+window.addEventListener('online',()=>{if(bmProof&&$('#bmAuto').checked)bmSyncNow(true);});
+$('#bmExportAdmin').onclick=()=>{const r=licSelected();if(!r){bmStatus('Sélectionnez un projet.');return;}const l=licSafe(r);const payload={kind:'appforge-admin-request-v1',generatedAt:new Date().toISOString(),action:'review-license-request',project:{id:r.id,name:r.project,type:isPersonal(r)?'personal':'client'},request:{productId:String(l.appCode||'').toUpperCase(),plan:l.plan,cloud:l.cloud,requestedQuotaMb:l.quota,requestedDevices:l.devices,paymentReference:isPersonal(r)?null:l.reference||null},note:'NE PAS exécuter automatiquement ; formulaire de demande interne, sans API secret ni preuve de paiement validé.'};download('demande-licence-'+r.id+'.json',JSON.stringify(payload,null,2),'application/json;charset=utf-8');bmStatus('Demande exportée sans secret. Aucune opération de licence serveur déclenchée.');};
+
+
+
+/* v1.7.2 : navigation par historique natif Chrome/Android, sans bouton Retour HTML. */
+const bmMoreButton=$('#bmMore');
+const bmMoreMenu=$('#bmMoreMenu');
+let bmNavHandlingPop=false;
+function bmCloseMore(){bmMoreMenu.classList.add('hidden');bmMoreButton.setAttribute('aria-expanded','false');}
+function bmMenuOpen(){return !bmMoreMenu.classList.contains('hidden');}
+function bmDrawerOpen(){return document.body.classList.contains('mobile-sidebar-open');}
+function bmSetDrawer(open){
+ document.body.classList.toggle('mobile-sidebar-open',!!open);
+ $('#sideBackdrop').classList.toggle('hidden',!open);
+ $('#dockMore').setAttribute('aria-expanded',String(!!open));
+ $('#sidebarToggle').setAttribute('aria-expanded',String(!!open));
+}
+function bmRefreshDock(){
+ document.querySelectorAll('.dock-item[data-go]').forEach(b=>b.classList.toggle('active',b.dataset.go===view));
+ $('#dockMore').classList.toggle('active',bmDrawerOpen());
+}
+function bmCurrentState(){return {bmApp:true,bmView:view};}
+try{history.replaceState(bmCurrentState(),'');}catch(_){}
+const bmOldShow=show;
+show=function(next,opts={}){
+ const previous=view;
+ const hadOverlay=bmMenuOpen()||bmDrawerOpen();
+ bmOldShow(next);
+ if(view!==previous&&!bmNavHandlingPop){
+  try{
+   // An overlay is transient; do not restore it when going back.
+   if(hadOverlay)history.replaceState(bmCurrentState(),'');
+   else history.pushState(bmCurrentState(),'');
+  }catch(_){}
+ }
+ bmSetDrawer(false);bmCloseMore();bmRefreshDock();
+ if(view!==previous)window.scrollTo(0,0);
+};
+function bmOpenMenu(){
+ bmSetDrawer(false);bmMoreMenu.classList.remove('hidden');
+ bmMoreButton.setAttribute('aria-expanded','true');
+ try{history.pushState({...bmCurrentState(),bmOverlay:'menu'},'');}catch(_){}
+}
+function bmOpenDrawer(){
+ bmCloseMore();bmSetDrawer(true);bmRefreshDock();
+ try{history.pushState({...bmCurrentState(),bmOverlay:'drawer'},'');}catch(_){}
+}
+function bmDismissOverlay(){
+ if(!bmMenuOpen()&&!bmDrawerOpen())return;
+ bmCloseMore();bmSetDrawer(false);bmRefreshDock();
+ if(history.state?.bmOverlay){try{history.back();}catch(_){}}
+}
+function bmToggleMenu(){if(bmMenuOpen())bmDismissOverlay();else bmOpenMenu();}
+function bmToggleDrawer(){if(bmDrawerOpen())bmDismissOverlay();else bmOpenDrawer();}
+window.addEventListener('popstate',event=>{
+ bmNavHandlingPop=true;
+ const state=event.state;
+ if(state?.bmApp){
+  bmCloseMore();bmSetDrawer(false);
+  if(state.bmOverlay==='menu'){
+   bmMoreMenu.classList.remove('hidden');bmMoreButton.setAttribute('aria-expanded','true');
+  }else if(state.bmOverlay==='drawer')bmSetDrawer(true);
+  if(state.bmView&&document.getElementById(state.bmView)&&state.bmView!==view)bmOldShow(state.bmView);
+  bmRefreshDock();
+ }
+ bmNavHandlingPop=false;
+});
+bmMoreButton.addEventListener('click',bmToggleMenu);
+document.querySelectorAll('[data-menu-go]').forEach(b=>b.addEventListener('click',()=>show(b.dataset.menuGo)));
+$('#bmMoreLock').addEventListener('click',()=>{bmDismissOverlay();$('#lockBtn').click();});
+document.addEventListener('click',e=>{if(bmMenuOpen()&&!e.target.closest('.bm-more-wrap'))bmDismissOverlay();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){
+ if(bmMenuOpen()||bmDrawerOpen())bmDismissOverlay();
+ else if(history.state?.bmApp&&view!=='dashboard')history.back();
+}});
+$('#sidebarToggle').onclick=()=>{if(matchMedia('(max-width:800px)').matches)bmToggleDrawer();else{document.body.classList.toggle('nav-compact');try{localStorage.setItem('bm-premium-sidebar-compact',document.body.classList.contains('nav-compact')?'1':'0')}catch(_){}}};
+$('#sideClose').onclick=bmDismissOverlay;
+$('#sideBackdrop').onclick=bmDismissOverlay;
+try{if(localStorage.getItem('bm-premium-sidebar-compact')==='1')document.body.classList.add('nav-compact')}catch(_){}
+document.querySelectorAll('[data-launch]').forEach(b=>b.addEventListener('click',()=>show(b.dataset.launch)));
+document.querySelectorAll('.dock-item[data-go]').forEach(b=>b.onclick=()=>show(b.dataset.go));
+$('#dockMore').onclick=bmToggleDrawer;
+addEventListener('resize',()=>{if(!matchMedia('(max-width:800px)').matches&&bmDrawerOpen())bmDismissOverlay();});
+bmRefreshDock();
+
+$('#bmEncryptedImport').onchange=async e=>{
+ const f=e.target.files?.[0];if(!f)return;
+ const out=$('#bmEncryptedImportStatus');
+ try{
+  if(f.size>10*1024*1024)throw new Error('Sauvegarde supérieure à 10 Mo.');
+  const payload=JSON.parse(await f.text());
+  if(payload.app!=='AppForge Business Manager - Encrypted Backup'||payload.schema!==3||!payload.snapshot)throw new Error('Ce fichier n’est pas une sauvegarde chiffrée Business Manager v1.5.1.');
+  const snapshot=await bmDecrypt(payload.snapshot);
+  if(!await bmPrepareRestore(snapshot)){out.textContent='Restauration annulée.';return;}
+  out.textContent='Sauvegarde chiffrée déchiffrée et restaurée, après confirmation.';
+ }catch(err){out.textContent='Import non effectué : '+err.message;}finally{e.target.value='';}
+};
+</script></body></html>

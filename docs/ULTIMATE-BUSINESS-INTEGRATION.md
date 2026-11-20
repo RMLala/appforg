@@ -1,22 +1,19 @@
-# Intégration progressive — Business Manager v1.7.2
+# AppForge Ultimate — Intégration Business Manager v1.7.2
 
-Cette branche prépare la livraison de `modules/business-manager/index.html` comme module HTML isolé, sans modifier le Worker, la D1 ou le Studio actuel.
+## État de la branche
+Le HTML intégral validé par l'utilisateur est ajouté à `modules/business-manager/index.html`.
+Le build Studio copie la source vers `dist/modules/business-manager/index.html` et Capacitor vers les assets Android. Aucun fichier de données personnelles n'est importé.
 
-## Travail réalisé
-- `scripts/build.cjs` embarque le module Business Manager si sa source est présente dans le dépôt.
-- Si la source est absente, le build Studio actuel continue inchangé (aucun faux module ou lien mort).
-- Contrôle élémentaire de la structure HTML avant empaquetage.
+## Navigation
+- Dans Studio, l'entrée « Business Manager » est ajoutée dans la navigation latérale **seulement** lorsque le module est présent.
+- Dans Business Manager, la version **empaquetée seulement** propose « AppForge Studio » dans le menu ⋮, avec retour relatif vers `../../index.html`.
+- Le HTML source autonome v1.7.2 reste strictement inchangé ; son historique Android, ses fonctions, sa protection PIN et son stockage local sont conservés.
+- Le mécanisme de navigation arrière via l'historique Android reste celui de l'application ; il doit être validé sur l'APK Ultimate réelle.
 
-## Source réelle et validation
-- Source locale reçue : `AppForge-Business-Manager-v1.7.2-Retour-Android-Menu-Corrige.html` ; navigation Android validée par l'utilisateur.
-- **À faire** : ajouter cette source complète dans `modules/business-manager/index.html` via un canal GitHub autorisé, puis intégrer l'accès dans la navigation Studio avec gestion correcte du retour Android.
-- La source contient potentiellement des préférences locales et des connexions Cloud : auditer les appels, clés localStorage et Product ID avant toute migration des données. Ne pas importer de données personnelles dans GitHub.
-- Ne pas afficher un menu Business Manager avant que son fichier soit réellement livré.
+## Contrôles automatiques
+Le workflow Android lance `npm run sync`, puis `npm run test:ultimate` : vérification du HTML, du lanceur Studio, de l'entrée retour, de la copie des ressources dans Android, de la cohérence source/bundle et de la syntaxe JavaScript. Il exécute aussi les tests Cloud existants, construit l'APK Debug et les variantes Release signées, et tente les tests de lancement émulateur API 29/33.
 
-## Tests bloquants avant fusion
-1. `npm ci && npm run build` avec et sans module ; vérification des sorties.
-2. Non-régression Studio/PromptiPro, fonctionnement de Business Manager v1.7.2, navigation Retour Android et menu ⋮.
-3. Audit des secrets et de l'authentification admin, séparation des espaces de stockage, sauvegarde et restauration.
-4. Test Android réel, D1 avec licence dédiée, puis APK Debug et deux APK Release signées.
+## Limites et recette restante
+Les audits automatisés et démarrages d'émulateur ne remplacent pas un test fonctionnel sur téléphone. À vérifier sur l'APK Ultimate : ouverture Studio → Business Manager → Studio, retours Android, menu ⋮, PIN, persistance locale, sauvegarde et restauration, absence d'altération des données Studio, ainsi que les flux Cloud avec une licence de test dédiée. Ne pas déclarer D1/R2 ni la licence fonctionnels sans preuves authentifiées.
 
-Ne pas fusionner cette PR avant intégration réelle et recette. Aucun déploiement de production demandé.
+Aucun changement dans le Worker Cloudflare, D1, R2 ni les données de production. Cette PR n'entraîne aucune migration ou suppression de stockage local.

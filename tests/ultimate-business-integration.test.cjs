@@ -31,7 +31,8 @@ test('Responsive navigation stays available from mobile through tablet breakpoin
   assert.ok(html.includes('@media(max-width:1000px){.layout{display:block!important;padding-bottom:78px!important}#mainNav.af-side{display:none!important}.af-bottom-nav{'));
   assert.ok(html.includes('@media(min-width:1001px){.af-bottom-nav,.af-more-sheet,.af-more-backdrop{display:none!important}}'));
   assert.ok(!html.includes('@media(max-width:760px){.layout{display:block!important;padding-bottom:78px!important}#mainNav.af-side{display:none!important}.af-bottom-nav{'));
-  assert.ok(html.includes('hamburger.onclick=e=>{e.preventDefault();e.stopPropagation();plus.click()}'));
+  assert.ok(html.includes("if(window.matchMedia('(min-width:1001px)').matches){const layout=document.querySelector('.layout');const collapsed=layout.classList.toggle('af-nav-collapsed')"));
+  assert.ok(html.includes('else plus.click()'));
 });
 
 test('The integrated module uses Studio state and preserves legacy Business Manager data during migration', () => {

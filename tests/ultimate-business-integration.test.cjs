@@ -29,7 +29,7 @@ test('Studio Ultimate embeds Business Manager in its own navigation without exte
   const distIndex = path.join(root, 'dist/index.html');
   assert.ok(fs.existsSync(distIndex), 'Run npm run build before this assertion.');
   const studio = fs.readFileSync(distIndex, 'utf8');
-  assert.ok(studio.includes('<title>AppForge Studio Ultimate — 15.8.8</title>'));
+  assert.ok(studio.includes('<title>AppForge Studio Ultimate — 15.8.9</title>'));
   assert.ok(studio.includes('id="ultimate-business-launcher"'));
   assert.ok(studio.includes('id="ultimate-business-frame"'));
   assert.ok(studio.includes('value="https://appforge-license-api.lalainaadclick.workers.dev" readonly'));

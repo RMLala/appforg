@@ -10,6 +10,7 @@ migrations_dir = "migrations"
 
 [vars]
 DAILY_API_LIMIT = "50000"
+BM_OWNER_PRODUCT_ID = "APPFORGE-STUDIO"
 TRIAL_HOURS = "72"
 # Secrets are configured with Wrangler and never committed:
 # ADMIN_API_TOKEN, LICENSE_SIGNING_PRIVATE_JWK, CODE_HASH_PEPPER

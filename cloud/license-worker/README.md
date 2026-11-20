@@ -9,6 +9,8 @@ Cloudflare Worker + D1 API for product registration, activation, trials, signed 
 3. Configure `ADMIN_API_TOKEN`, `LICENSE_SIGNING_PRIVATE_JWK` and `CODE_HASH_PEPPER` as Wrangler secrets. Never put these values in the frontend or repository.
 4. Run `npm run deploy` and verify `/health` and `/v1/config`.
 
+Le provisionnement produit depuis Business Manager utilise `POST /v1/admin/products` et `POST /v1/admin/products/list`. Ces routes exigent une preuve signée liée à l’appareil, rattachée à une licence propriétaire active du produit `BM_OWNER_PRODUCT_ID` (valeur initiale : `APPFORGE-STUDIO`). Elles n’exposent pas `ADMIN_API_TOKEN` au navigateur. Les autres routes d’administration restent protégées par `ADMIN_API_TOKEN`.
+
 Migration `0005_admin_crud.sql` adds non-destructive deletion markers. The API now supports modifying or deleting products and license metadata. Deleting an issued license revokes it immediately and hides it from the normal list while retaining its activation/history rows. Deleting a product with license history archives it; a product with no history can be physically removed.
 
 The Worker is source-controlled here; this push does not deploy it to Cloudflare. The AppForge front end displays a clear API error until the deployed Worker has migration 0005 and these routes.

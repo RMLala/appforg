@@ -118,8 +118,6 @@ jobs:
             adb shell uiautomator dump /sdcard/appforge-before.xml >/dev/null
             adb pull /sdcard/appforge-before.xml appforge-before.xml >/dev/null
             python3 -c 'import xml.etree.ElementTree as ET, subprocess; r=ET.parse("appforge-before.xml").getroot(); n=next((n for n in r.iter("node") if "ouvrir toutes les rubriques" in (n.attrib.get("content-desc","")+" "+n.attrib.get("text","")).lower()),None); assert n is not None, "Studio menu button is absent from Android accessibility tree"; p=list(map(int,n.attrib["bounds"].strip("[]").replace("][",",").split(","))); x=(p[0]+p[2])//2; y=(p[1]+p[3])//2; subprocess.run(["adb","shell","input","tap",str(x),str(y)],check=True)'
-            read -r MENU_X MENU_Y < /tmp/appforge-menu-point
-            adb shell input tap "$MENU_X" "$MENU_Y"
             sleep 2
             adb shell uiautomator dump /sdcard/appforge-menu-open.xml >/dev/null
             adb pull /sdcard/appforge-menu-open.xml appforge-menu-open.xml >/dev/null

@@ -18,13 +18,13 @@ const bundledBusinessHtml=businessHtml.replace(businessMenuAnchor,businessMenuAn
 const safeBusinessHtml=JSON.stringify(bundledBusinessHtml).replace(/</g,'\\u003c').replace(/>/g,'\\u003e').replace(/&/g,'\\u0026');
 // Studio's navigation is rebuilt at runtime. Keep the launcher outside the replaced sidebar.
 const launchMarkup='<button type="button" hidden id="ultimate-business-launcher" aria-controls="ultimate-business-frame" aria-label="Ouvrir Business Manager">Business Manager</button>';
-if(!studioHtml.includes('</body>'))throw new Error('Studio body closing tag missing');
-studioHtml=studioHtml.replace('</body>',launchMarkup+'</body>');
+if(!studioHtml.trimEnd().endsWith('</html>')||studioHtml.lastIndexOf('</body>')<0)throw new Error('Studio final body closing tag missing');
+studioHtml=studioHtml.slice(0,studioHtml.lastIndexOf('</body>'))+launchMarkup+studioHtml.slice(studioHtml.lastIndexOf('</body>'));
 const integrationStart='<style id="ultimate-business-style">#ultimate-business-frame{display:none;position:fixed;inset:0;width:100vw;height:100vh;height:100dvh;border:0;z-index:10000;background:#0b1020}#ultimate-business-frame.is-active{display:block}body.ultimate-business-open .shell{display:none!important}</style><iframe id="ultimate-business-frame" title="Business Manager intégré à AppForge Studio Ultimate" aria-label="Business Manager intégré" referrerpolicy="no-referrer"></iframe><script id="ultimate-business-runtime">(()=>{const shell=document.querySelector(".shell");const frame=document.getElementById("ultimate-business-frame");const launcher=document.getElementById("ultimate-business-launcher");if(!shell||!frame||!launcher)throw new Error("Ultimate Business Manager integration is incomplete");const businessDocument=';
 const integrationEnd=';let opened=false;function closeBusiness(updateHistory){if(!opened)return;opened=false;frame.classList.remove("is-active");document.body.classList.remove("ultimate-business-open");document.title="AppForge Studio Ultimate — 15.8.8";if(updateHistory&&history.state&&history.state.appforgeBusinessManager){try{history.back()}catch(_){}}}function openBusiness(){if(opened)return;if(!frame.hasAttribute("srcdoc"))frame.srcdoc=businessDocument;opened=true;frame.classList.add("is-active");document.body.classList.add("ultimate-business-open");document.title="Business Manager — AppForge Studio Ultimate";try{history.pushState({appforgeBusinessManager:true},"","#business-manager")}catch(_){}}launcher.addEventListener("click",openBusiness);window.addEventListener("message",event=>{if(event.source===frame.contentWindow&&event.data&&event.data.type==="appforge-ultimate-studio-home")closeBusiness(true)});window.addEventListener("popstate",()=>closeBusiness(false));window.addEventListener("keydown",e=>{if(e.key==="Escape"&&opened)closeBusiness(true)});})();</script>';
 const integrationMarkup=integrationStart+safeBusinessHtml+integrationEnd;
 if(!studioHtml.includes('</body>'))throw new Error('Studio body closing tag missing');
-studioHtml=studioHtml.replace('</body>',integrationMarkup+'</body>');
+studioHtml=studioHtml.slice(0,studioHtml.lastIndexOf('</body>'))+integrationMarkup+studioHtml.slice(studioHtml.lastIndexOf('</body>'));
 const dist=path.join(root,'dist');
 fs.mkdirSync(dist,{recursive:true});
 fs.writeFileSync(path.join(dist,'index.html'),studioHtml);

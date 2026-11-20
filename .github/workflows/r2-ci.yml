@@ -1,0 +1,35 @@
+name: AppForge R2 integration
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'cloud/license-worker/**'
+      - '.github/workflows/r2-ci.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'cloud/license-worker/**'
+      - '.github/workflows/r2-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  r2-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check Worker and R2 module syntax
+        run: |
+          node --check cloud/license-worker/src/index.js
+          node --check cloud/license-worker/src/r2-files.js
+      - name: Test R2 isolation, quotas, conflicts and overwrite safeguards
+        run: node --test cloud/license-worker/src/r2-files.test.mjs
+      - name: Verify private bucket binding and non-destructive migration
+        run: |
+          grep -q 'binding = "FILE_BUCKET"' cloud/license-worker/wrangler.toml
+          grep -q 'bucket_name = "appforge-cloud-files"' cloud/license-worker/wrangler.toml
+          grep -q 'CREATE TABLE IF NOT EXISTS cloud_files' cloud/license-worker/migrations/0008_cloud_files_r2.sql

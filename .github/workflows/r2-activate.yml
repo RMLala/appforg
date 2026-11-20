@@ -1,0 +1,86 @@
+name: Activate AppForge private R2 (manual)
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type ACTIVER-R2 to authorize bucket creation, D1 migration 0008 and Worker deployment'
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  r2-production:
+    if: ${{ inputs.confirm == 'ACTIVER-R2' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate Cloudflare credentials without disclosing them
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN" || (echo "::error::Secret CLOUDFLARE_API_TOKEN absent"; exit 1)
+          test -n "$CLOUDFLARE_ACCOUNT_ID" || (echo "::error::Secret CLOUDFLARE_ACCOUNT_ID absent"; exit 1)
+      - name: Install Wrangler
+        working-directory: cloud/license-worker
+        run: npm install --no-audit --no-fund
+      - name: Check private R2 bucket, create only if missing
+        working-directory: cloud/license-worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          buckets=$(npx wrangler r2 bucket list)
+          if printf '%s\n' "$buckets" | grep -Fq 'appforge-cloud-files'; then
+            echo 'Private R2 bucket already exists.'
+          else
+            npx wrangler r2 bucket create appforge-cloud-files
+          fi
+      - name: Inspect pending D1 production migrations; refuse unexpected ones
+        working-directory: cloud/license-worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          pending=$(npx wrangler d1 migrations list appforge-licenses --remote)
+          printf '%s\n' "$pending"
+          if printf '%s\n' "$pending" | grep -E '000[0-7]_[^[:space:]]*\\.sql|0009_[^[:space:]]*\\.sql'; then
+            echo '::error::Existing unapplied D1 migrations require separate review. No production migration/deploy.'
+            exit 1
+          fi
+      - name: Apply additive D1 R2 metadata migration
+        working-directory: cloud/license-worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx wrangler d1 migrations apply appforge-licenses --remote
+      - name: Verify R2 D1 metadata table exists
+        working-directory: cloud/license-worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx wrangler d1 execute appforge-licenses --remote --command="SELECT name FROM sqlite_master WHERE type='table' AND name='cloud_files';"
+      - name: Deploy existing central Worker with private R2 binding
+        working-directory: cloud/license-worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx wrangler deploy
+      - name: Check public health and private endpoint authentication
+        shell: bash
+        run: |
+          set -euo pipefail
+          API='https://appforge-license-api.lalainaadclick.workers.dev'
+          curl --fail --silent --show-error "$API/health" >/dev/null
+          curl --fail --silent --show-error "$API/v1/config" >/dev/null
+          status=$(curl --silent --output /dev/null --write-out '%{http_code}' "$API/v1/cloud/file?fileId=probe")
+          test "$status" = '401' || (echo "::error::Private R2 route must reject unauthenticated reads; got $status"; exit 1)
+          echo 'Worker deployed and unauthenticated R2 access rejected. Authenticated R2 read/write still needs a dedicated test licence.'

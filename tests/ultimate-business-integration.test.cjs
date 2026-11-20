@@ -36,6 +36,17 @@ test('Responsive navigation stays available from mobile through tablet breakpoin
   assert.ok(html.includes('else plus.click()'));
 });
 
+test('Shared menu initializes with Android WebView-compatible DOM methods', () => {
+  const html = fs.readFileSync(path.join(root, 'AppForge_Studio_V15_7_Questionnaire_Client.html'), 'utf8');
+  const start = html.indexOf('<script id="appforge-navigation-final">');
+  const end = html.indexOf('</script>', start);
+  assert.ok(start >= 0 && end > start, 'Shared Studio navigation script exists');
+  const nav = html.slice(start, end);
+  assert.doesNotMatch(nav, /\\.replaceChildren\\(|\\.append\\(/);
+  assert.match(nav, /hamburger\\.setAttribute\\('aria-label','Ouvrir toutes les rubriques'\\)/);
+  assert.match(nav, /Business Manager/);
+});
+
 test('Business Manager dashboard tiles remain clickable and route inside Studio', () => {
   const build = fs.readFileSync(path.join(root, 'scripts/build.cjs'), 'utf8');
   const html = fs.readFileSync(source, 'utf8');

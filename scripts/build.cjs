@@ -8,7 +8,7 @@ const capacitorTag='<script src="capacitor.js"></script><script>if(window.Capaci
 let studioHtml=fs.readFileSync(source,'utf8').replace('</head>',capacitorTag+'</head>');
 const titleStart=studioHtml.indexOf('<title>'),titleEnd=studioHtml.indexOf('</title>',titleStart);
 if(titleStart<0||titleEnd<0)throw new Error('Studio title missing');
-studioHtml=studioHtml.slice(0,titleStart)+'<title>AppForge Studio Ultimate — 15.8.11</title>'+studioHtml.slice(titleEnd+8);
+studioHtml=studioHtml.slice(0,titleStart)+'<title>AppForge Studio Ultimate — 15.8.12</title>'+studioHtml.slice(titleEnd+8);
 studioHtml=studioHtml.replace('<h1>AppForge <span style="color:var(--b)">V15.8</span></h1>','<h1>AppForge <span style="color:var(--b)">Studio Ultimate</span></h1>');
 const businessHtml=fs.readFileSync(businessSource,'utf8');
 if(!businessHtml.toLowerCase().includes('<html')||!businessHtml.toLowerCase().includes('</html>'))throw new Error('Invalid Business Manager HTML source');
@@ -75,4 +75,4 @@ fs.writeFileSync(path.join(dist,'index.html'),studioHtml);
 fs.copyFileSync(path.join(root,'node_modules/@capacitor/core/dist/capacitor.js'),path.join(dist,'capacitor.js'));
 const sdk=path.join(root,'cloud/license-worker/client/appforge-cloud-sync.js'),sdkOut=path.join(dist,'cloud/license-worker/client/appforge-cloud-sync.js');
 fs.mkdirSync(path.dirname(sdkOut),{recursive:true});fs.copyFileSync(sdk,sdkOut);fs.copyFileSync(path.join(root,'cloud/license-worker/README.md'),path.join(dist,'cloud/license-worker/README.md'));
-console.log('AppForge Studio Ultimate 15.8.11 : Business Manager monté dans la navigation et le stockage Studio.');
+console.log('AppForge Studio Ultimate 15.8.12 : Business Manager monté dans la navigation et le stockage Studio.');

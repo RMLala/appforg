@@ -121,6 +121,7 @@ jobs:
             adb pull /sdcard/appforge-precheck.png appforge-precheck.png >/dev/null
             adb logcat -d -b crash > appforge-crash-precheck.log
             adb logcat -d -s chromium:E cr_Console:E > appforge-webview-precheck.log
+            cat appforge-webview-precheck.log
             adb shell uiautomator dump /sdcard/appforge-before.xml >/dev/null 2>&1 || echo "uiautomator dump unavailable"
             adb pull /sdcard/appforge-before.xml appforge-before.xml >/dev/null 2>&1 || echo "accessibility XML unavailable"
             if [ -s appforge-before.xml ]; then cat appforge-before.xml; else echo "ACCESSIBILITY_XML_MISSING"; fi
@@ -132,7 +133,7 @@ jobs:
             adb logcat -d -b crash > appforge-crash.log
             adb logcat -d -s AndroidRuntime:E > appforge-androidruntime.log
             adb logcat -d -s chromium:E cr_Console:E > appforge-webview-errors.log
-            if grep -Ei 'Uncaught SyntaxError|Unexpected token|Uncaught ReferenceError' appforge-webview-errors.log; then echo 'WebView JavaScript error detected'; exit 1; fi
+            if grep -Ei 'Uncaught|TypeError:|ReferenceError:|SyntaxError:|not a function' appforge-webview-errors.log; then echo 'WebView JavaScript error detected'; exit 1; fi
             cat appforge-crash.log appforge-androidruntime.log
             ! grep -F 'FATAL EXCEPTION' appforge-crash.log appforge-androidruntime.log
             adb shell pidof mg.appforge.studio | grep -q '[0-9]'

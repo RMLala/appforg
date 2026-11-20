@@ -42,7 +42,7 @@ test('Studio Ultimate embeds Business Manager in its own navigation without exte
   assert.ok(runtimeStart >= 0 && runtimeEnd > runtimeStart);
   const runtime = studio.slice(runtimeStart + '<script id="ultimate-business-runtime">'.length, runtimeEnd);
   assert.ok(runtime, 'Expected the Business Manager navigation runtime.');
-  assert.doesNotThrow(() => new vm.Script(runtime[1]));
+  assert.doesNotThrow(() => new vm.Script(runtime));
 });
 
 test('Capacitor package keeps the same-origin module asset for data continuity', () => {
@@ -71,5 +71,5 @@ test('Business Manager and integrated navigation scripts parse', () => {
   assert.ok(runtimeStart >= 0 && runtimeEnd > runtimeStart);
   const runtime = studio.slice(runtimeStart + '<script id="ultimate-business-runtime">'.length, runtimeEnd);
   assert.ok(runtime);
-  assert.doesNotThrow(() => new vm.Script(runtime[1]));
+  assert.doesNotThrow(() => new vm.Script(runtime));
 });

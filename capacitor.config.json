@@ -1,6 +1,6 @@
 {
   "appId": "mg.appforge.studio",
-  "appName": "AppForge Studio",
+  "appName": "AppForge Studio Ultimate",
   "webDir": "dist",
   "server": {
     "androidScheme": "https"

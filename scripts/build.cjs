@@ -6,7 +6,12 @@ if(fs.existsSync(businessSource)){
   if(!businessHtml.includes('<html')||!businessHtml.includes('</html>'))throw new Error('Invalid Business Manager HTML source');
   const businessDest=path.join(root,'dist','modules/business-manager/index.html');
   fs.mkdirSync(path.dirname(businessDest),{recursive:true});
-  fs.writeFileSync(businessDest,businessHtml);
+  // Only the packaged copy gets a way back to Studio; standalone source stays unchanged.
+  const businessMenuAnchor='<div class="bm-more-menu hidden" id="bmMoreMenu" role="menu">';
+  if(!businessHtml.includes(businessMenuAnchor))throw new Error('Business Manager navigation anchor missing');
+  const studioReturn='<a id="ultimate-studio-home" href="../../index.html" role="menuitem" style="display:block;padding:11px 12px;color:inherit;text-decoration:none;font-size:13px">✦ AppForge Studio</a>';
+  const bundledBusinessHtml=businessHtml.replace(businessMenuAnchor,businessMenuAnchor+studioReturn);
+  fs.writeFileSync(businessDest,bundledBusinessHtml);
   // Add an accessible entry only when the actual module is packaged.
   const studioIndex=path.join(root,'dist','index.html');
   const studioHtml=fs.readFileSync(studioIndex,'utf8');

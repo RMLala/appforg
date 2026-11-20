@@ -42,7 +42,13 @@ test('Android assets include the exact Business Manager source after Capacitor s
   if (!fs.existsSync(source)) return;
   const androidModule = path.join(root, 'android/app/src/main/assets/public/modules/business-manager/index.html');
   assert.ok(fs.existsSync(androidModule), 'Capacitor Android assets must include the module');
-  assert.equal(fs.readFileSync(androidModule, 'utf8'), fs.readFileSync(source, 'utf8'));
+  const distModule = path.join(root, 'dist/modules/business-manager/index.html');
+  assert.ok(fs.existsSync(distModule));
+  const packaged = fs.readFileSync(distModule, 'utf8');
+  assert.equal(fs.readFileSync(androidModule, 'utf8'), packaged);
+  assert.ok(packaged.includes('id="ultimate-studio-home"'));
+  assert.ok(packaged.includes('href="../../index.html"'));
+  assert.ok(!fs.readFileSync(source, 'utf8').includes('id="ultimate-studio-home"'), 'Standalone source remains unchanged');
 });
 
 test('Business Manager interactive JavaScript parses and mobile controls exist', () => {

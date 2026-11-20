@@ -96,6 +96,8 @@ jobs:
         with:
           name: AppForge-Studio-Ultimate-15.8.12-Signed-Release-API23-API29
           path: release-output
+      - name: Install screenshot comparison dependency
+        run: python3 -m pip install --user --disable-pip-version-check Pillow
       - name: Enable Android emulator hardware acceleration
         run: |
           if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; else echo 'KVM device unavailable; emulator will use software rendering'; fi

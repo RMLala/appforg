@@ -1,26 +1,42 @@
-const fs=require('node:fs');const path=require('node:path');const root=path.resolve(__dirname,'..');const source=path.join(root,'AppForge_Studio_V15_7_Questionnaire_Client.html');const html=fs.readFileSync(source,'utf8').replace('</head>','<script src="capacitor.js"></script><script>if(window.Capacitor?.registerPlugin)document.documentElement.style.visibility="hidden"</script></head>');const prompti=fs.readFileSync(path.join(root,'PromptiPro.html'),'utf8').replace('</head>','<script src="capacitor.js"></script><script>if(window.Capacitor?.registerPlugin)document.documentElement.style.visibility="hidden"</script></head>');fs.mkdirSync(path.join(root,'dist'),{recursive:true});fs.writeFileSync(path.join(root,'dist','index.html'),html);fs.writeFileSync(path.join(root,'dist','PromptiPro.html'),prompti);fs.copyFileSync(path.join(root,'node_modules/@capacitor/core/dist/capacitor.js'),path.join(root,'dist','capacitor.js'));const sdk=path.join(root,'cloud/license-worker/client/appforge-cloud-sync.js'),sdkOut=path.join(root,'dist','cloud/license-worker/client/appforge-cloud-sync.js');fs.mkdirSync(path.dirname(sdkOut),{recursive:true});fs.copyFileSync(sdk,sdkOut);fs.copyFileSync(path.join(root,'cloud/license-worker/README.md'),path.join(root,'dist','cloud/license-worker/README.md'));
-// Business Manager remains a separate offline-first HTML module. Never copy user data.
+const fs=require('node:fs');
+const path=require('node:path');
+const root=path.resolve(__dirname,'..');
+const source=path.join(root,'AppForge_Studio_V15_7_Questionnaire_Client.html');
 const businessSource=path.join(root,'modules/business-manager/index.html');
-if(fs.existsSync(businessSource)){
-  const businessHtml=fs.readFileSync(businessSource,'utf8');
-  if(!businessHtml.includes('<html')||!businessHtml.includes('</html>'))throw new Error('Invalid Business Manager HTML source');
-  const businessDest=path.join(root,'dist','modules/business-manager/index.html');
-  fs.mkdirSync(path.dirname(businessDest),{recursive:true});
-  // Only the packaged copy gets a way back to Studio; standalone source stays unchanged.
-  const businessMenuAnchor='<div class="bm-more-menu hidden" id="bmMoreMenu" role="menu">';
-  if(!businessHtml.includes(businessMenuAnchor))throw new Error('Business Manager navigation anchor missing');
-  const studioReturn='<a id="ultimate-studio-home" href="../../index.html" role="menuitem" style="display:block;padding:11px 12px;color:inherit;text-decoration:none;font-size:13px">✦ AppForge Studio</a>';
-  const bundledBusinessHtml=businessHtml.replace(businessMenuAnchor,businessMenuAnchor+studioReturn);
-  fs.writeFileSync(businessDest,bundledBusinessHtml);
-  // Add an accessible entry only when the actual module is packaged.
-  const studioIndex=path.join(root,'dist','index.html');
-  const studioHtml=fs.readFileSync(studioIndex,'utf8');
-  // Insert a normal sidebar destination, not a floating overlay that hides content.
-  const launchMarkup='<div class="nav-label" id="ultimate-business-label">BUSINESS MANAGER</div><a id="ultimate-business-launcher" href="modules/business-manager/index.html" style="display:flex;align-items:center;min-height:44px;padding:10px 12px;border-radius:10px;color:var(--t);text-decoration:none;font-size:12px">▣ &nbsp; Business Manager</a>';
-  const navAnchor='<aside class="nav" id="mainNav" aria-label="Menu principal">';
-  if(!studioHtml.includes(navAnchor))throw new Error('Studio navigation anchor missing: refusing incomplete integration');
-  if(!studioHtml.includes('id="ultimate-business-launcher"'))fs.writeFileSync(studioIndex,studioHtml.replace(navAnchor,navAnchor+launchMarkup));
-  if(!fs.existsSync(businessDest))throw new Error('Business Manager missing from build output');
-}else{
-  console.log('Ultimate: Business Manager module not yet present; existing Studio build preserved.');
-}console.log('AppForge Studio 15.8.8 : HTML Android et PromptiPro prêts.');
+if(!fs.existsSync(businessSource))throw new Error('Business Manager source is required for AppForge Studio Ultimate.');
+const capacitorTag='<script src="capacitor.js"></script><script>if(window.Capacitor?.registerPlugin)document.documentElement.style.visibility="hidden"</script>';
+let studioHtml=fs.readFileSync(source,'utf8').replace('</head>',capacitorTag+'</head>');
+studioHtml=studioHtml.replace('<title>AppForge Studio V15.8 — Commerce &amp; Design</title>','<title>AppForge Studio Ultimate — 15.8.8</title>');
+studioHtml=studioHtml.replace('<h1>AppForge <span style="color:var(--b)">V15.8</span></h1>','<h1>AppForge <span style="color:var(--b)">Studio Ultimate</span></h1>');
+const prompti=fs.readFileSync(path.join(root,'PromptiPro.html'),'utf8').replace('</head>',capacitorTag+'</head>');
+const businessHtml=fs.readFileSync(businessSource,'utf8');
+if(!businessHtml.toLowerCase().includes('<html')||!businessHtml.toLowerCase().includes('</html>'))throw new Error('Invalid Business Manager HTML source');
+const businessMenuAnchor='<div class="bm-more-menu hidden" id="bmMoreMenu" role="menu">';
+if(!businessHtml.includes(businessMenuAnchor))throw new Error('Business Manager navigation anchor missing');
+const studioReturn='<a id="ultimate-studio-home" href="#" role="menuitem" style="display:block;padding:11px 12px;color:inherit;text-decoration:none;font-size:13px" onclick="event.preventDefault();window.parent.postMessage({type:\'appforge-ultimate-studio-home\'},\'*\')">✦ AppForge Studio Ultimate</a>';
+const bundledBusinessHtml=businessHtml.replace(businessMenuAnchor,businessMenuAnchor+studioReturn);
+const safeBusinessHtml=JSON.stringify(bundledBusinessHtml).replace(/</g,'\\u003c').replace(/>/g,'\\u003e').replace(/&/g,'\\u0026');
+const navAnchor='<aside class="nav" id="mainNav" aria-label="Menu principal">';
+if(!studioHtml.includes(navAnchor))throw new Error('Studio navigation anchor missing: refusing incomplete integration');
+const launchMarkup='<div class="nav-label" id="ultimate-business-label">APPFORGE STUDIO ULTIMATE</div><button type="button" class="ultimate-business-launcher" id="ultimate-business-launcher" aria-controls="ultimate-business-frame" aria-label="Ouvrir le module Business Manager">▣ &nbsp; Business Manager</button>';
+studioHtml=studioHtml.replace(navAnchor,navAnchor+launchMarkup);
+const integrationStart='<style id="ultimate-business-style">#ultimate-business-frame{display:none;position:fixed;inset:0;width:100vw;height:100vh;height:100dvh;border:0;z-index:10000;background:#0b1020}#ultimate-business-frame.is-active{display:block}body.ultimate-business-open .shell{display:none!important}</style><iframe id="ultimate-business-frame" title="Business Manager intégré à AppForge Studio Ultimate" aria-label="Business Manager intégré" referrerpolicy="no-referrer"></iframe><script id="ultimate-business-runtime">(()=>{const shell=document.querySelector(".shell");const frame=document.getElementById("ultimate-business-frame");const launcher=document.getElementById("ultimate-business-launcher");if(!shell||!frame||!launcher)throw new Error("Ultimate Business Manager integration is incomplete");const businessDocument=';
+const integrationEnd=';let opened=false;function closeBusiness(updateHistory){if(!opened)return;opened=false;frame.classList.remove("is-active");document.body.classList.remove("ultimate-business-open");document.title="AppForge Studio Ultimate — 15.8.8";if(updateHistory&&history.state&&history.state.appforgeBusinessManager){try{history.back()}catch(_){}}}function openBusiness(){if(opened)return;if(!frame.hasAttribute("srcdoc"))frame.srcdoc=businessDocument;opened=true;frame.classList.add("is-active");document.body.classList.add("ultimate-business-open");document.title="Business Manager — AppForge Studio Ultimate";try{history.pushState({appforgeBusinessManager:true},"","#business-manager")}catch(_){}}launcher.addEventListener("click",openBusiness);window.addEventListener("message",event=>{if(event.source===frame.contentWindow&&event.data&&event.data.type==="appforge-ultimate-studio-home")closeBusiness(true)});window.addEventListener("popstate",()=>closeBusiness(false));})();</script>';
+const integrationMarkup=integrationStart+safeBusinessHtml+integrationEnd;
+if(!studioHtml.includes('</body>'))throw new Error('Studio body closing tag missing');
+studioHtml=studioHtml.replace('</body>',integrationMarkup+'</body>');
+const dist=path.join(root,'dist');
+fs.mkdirSync(dist,{recursive:true});
+fs.writeFileSync(path.join(dist,'index.html'),studioHtml);
+fs.writeFileSync(path.join(dist,'PromptiPro.html'),prompti);
+fs.copyFileSync(path.join(root,'node_modules/@capacitor/core/dist/capacitor.js'),path.join(dist,'capacitor.js'));
+const sdk=path.join(root,'cloud/license-worker/client/appforge-cloud-sync.js');
+const sdkOut=path.join(dist,'cloud/license-worker/client/appforge-cloud-sync.js');
+fs.mkdirSync(path.dirname(sdkOut),{recursive:true});
+fs.copyFileSync(sdk,sdkOut);
+fs.copyFileSync(path.join(root,'cloud/license-worker/README.md'),path.join(dist,'cloud/license-worker/README.md'));
+// Keep the original same-origin module route inside the Android/web bundle for storage continuity and rollback.
+const businessDest=path.join(dist,'modules/business-manager/index.html');
+fs.mkdirSync(path.dirname(businessDest),{recursive:true});
+fs.writeFileSync(businessDest,bundledBusinessHtml);
+console.log('AppForge Studio Ultimate 15.8.8 : application intégrée générée.');

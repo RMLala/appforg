@@ -43,7 +43,7 @@ test('Studio Ultimate embeds Business Manager in its own navigation without exte
   const runtimeStart = studio.indexOf('<script id="ultimate-business-runtime">');
   const runtimeEnd = studio.indexOf('</script>', runtimeStart);
   assert.ok(runtimeStart >= 0 && runtimeEnd > runtimeStart);
-  const priorScriptOpen = studio.lastIndexOf('<script', runtimeStart);
+  const priorScriptOpen = studio.lastIndexOf('<script', runtimeStart - 1);
   const priorScriptClose = studio.lastIndexOf('</script>', runtimeStart);
   assert.ok(priorScriptClose > priorScriptOpen, 'Ultimate runtime must be a document-level script, outside embedded templates.');
   assert.ok(studio.lastIndexOf('</body>') > runtimeEnd, 'Ultimate runtime must be before the final body close.');

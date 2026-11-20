@@ -782,9 +782,9 @@ async function bmCreateManagedProduct(){
   const result=await bmRequest('/v1/admin/products','POST',{productId,name,licenseToken:bmProof,installationId:bmInstallId()});
   if(result.ok!==true||result.productId!==productId)throw new Error('La création n’a pas été confirmée par le Worker.');
   $('#bmNewProductId').value='';$('#bmNewProductName').value='';
-  await bmLoadProducts();
   $('#licAppCode').value=productId;
-  $('#bmProductStatus').textContent='Produit '+productId+' créé dans D1 et chargé dans la gestion des licences.';
+  try{await bmLoadProducts();$('#bmProductStatus').textContent='Produit '+productId+' créé dans D1 et chargé dans la gestion des licences.';}
+  catch(refreshError){$('#bmProductStatus').textContent='Création D1 confirmée pour '+productId+' ; actualisation de la liste à relancer : '+refreshError.message;}
  }catch(error){$('#bmProductStatus').textContent='Création non confirmée : '+error.message;}
  finally{button.disabled=false;}
 }

@@ -913,7 +913,8 @@ async function bmResumeAccess(){
  $('#bmProductId').value=prev.productId;
  try{await bmToken(true);bmSetAuthorized(true);bmStatus('Licence revérifiée. Jeton Cloud renouvelé côté serveur. Synchronisation disponible.');}
  catch(e){bmSetAuthorized(false);bmStatus('Licence active mais Cloud refusé / indisponible : '+e.message);}
- if($('#bmAuto').checked && bmCloudToken)await bmSyncNow(true);
+ try{await bmLoadProducts();}catch(e){$('#bmProductStatus').textContent='Chargement des produits réservé au propriétaire : '+e.message;}
+  if($('#bmAuto').checked && bmCloudToken)await bmSyncNow(true);
 }
 $('#bmResume').onclick=async()=>{try{await bmResumeAccess();}catch(e){bmLogout('Reprise refusée : '+e.message);}};
 $('#bmForget').onclick=()=>{

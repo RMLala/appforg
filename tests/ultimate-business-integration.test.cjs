@@ -54,6 +54,8 @@ test('Studio navigation and Business Manager runtime parse and remain in the sam
   assert.match(runtime, /data-studio-page="cloudsync"/);
   assert.match(runtime, /appforgeProjectLicenseContext/);
   assert.match(runtime, /admin\/licenses\?productId=/);
+  assert.match(runtime, /customerName\|\|''/);
+  assert.match(runtime, /paymentReference\|\|''/);
   assert.match(runtime, /admin\/licenses\/.*\/cloud/);
   assert.match(runtime, /rights\.maxBytes/);
   assert.match(moduleScript, /filter\(p=>p\.status==='Vérifié manuellement'/);

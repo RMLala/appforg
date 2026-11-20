@@ -37,6 +37,16 @@ test('The integrated module uses Studio state and preserves legacy Business Mana
   assert.ok(build.includes('project.businessManager=JSON.parse(JSON.stringify(record))'));
 });
 
+test('Legacy Studio commercial records are joined to the common project only by explicit IDs', () => {
+  const build = fs.readFileSync(path.join(root, 'scripts/build.cjs'), 'utf8');
+  assert.match(build, /state\.catalog\.filter\(app=>String\(app\.projectId\|\|''\)===String\(project\.id\)\)/);
+  assert.match(build, /state\.sales\.filter\(sale=>appIds\.has\(String\(sale\.applicationId\)\)\)/);
+  assert.match(build, /state\.payments\.filter\(payment=>saleIds\.has\(String\(payment\.saleId\)\)\)/);
+  assert.match(build, /delete persisted\.studioLegacyCommercial/);
+  assert.match(build, /Affaires historiques du Studio liées à ce projet/);
+  assert.match(build, /non validé\(s\) ici/);
+});
+
 test('Studio navigation and Business Manager runtime parse and remain in the same document', () => {
   const studio = fs.readFileSync(distPath, 'utf8');
   const runtimeStart = studio.indexOf('<script id="appforge-business-manager-integration">');

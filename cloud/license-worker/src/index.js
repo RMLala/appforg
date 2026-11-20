@@ -98,7 +98,7 @@ async function cloudQuota(req, env) {
 }
 // R2 binary file route: the same signed licence/device checks as D1 snapshots.
 async function cloudFilesRoute(req, env, url) {
-  const match = (req.headers.get('Authorization') || '').match(/^Bearer\\s+([^\\s]+)$/i);
+  const match = (req.headers.get('Authorization') || '').match(/^Bearer\s+([^\s]+)$/i);
   if (!match) return json({ error: 'Jeton Cloud manquant.' }, 401);
   let claims;
   try { claims = await verifySignedToken(env, match[1]); }

@@ -115,6 +115,30 @@ jobs:
             adb shell am force-stop mg.appforge.studio
             adb shell am start -n mg.appforge.studio/.MainActivity
             sleep 25
+            adb shell uiautomator dump /sdcard/appforge-before.xml >/dev/null
+            adb pull /sdcard/appforge-before.xml appforge-before.xml >/dev/null
+            python3 - <<'PY'
+            import re
+            import xml.etree.ElementTree as ET
+            root=ET.parse('appforge-before.xml').getroot()
+            node=next((n for n in root.iter('node') if 'ouvrir le menu' in (n.attrib.get('content-desc','')+' '+n.attrib.get('text','')).lower()),None)
+            if node is None:
+              raise SystemExit('Studio menu button is absent from the Android accessibility tree')
+            bounds=re.search(r'\\[(\\d+),(\\d+)\\]\\[(\\d+),(\\d+)\\]',node.attrib.get('bounds',''))
+            if bounds is None:
+              raise SystemExit('Studio menu button has no tappable bounds')
+            x=(int(bounds.group(1))+int(bounds.group(3)))//2
+            y=(int(bounds.group(2))+int(bounds.group(4)))//2
+            open('/tmp/appforge-menu-point','w').write(f'{x} {y}')
+            PY
+            read -r MENU_X MENU_Y < /tmp/appforge-menu-point
+            adb shell input tap "$MENU_X" "$MENU_Y"
+            sleep 2
+            adb shell uiautomator dump /sdcard/appforge-menu-open.xml >/dev/null
+            adb pull /sdcard/appforge-menu-open.xml appforge-menu-open.xml >/dev/null
+            grep -F 'Business Manager' appforge-menu-open.xml
+            adb shell screencap -p /sdcard/appforge-interaction.png
+            adb pull /sdcard/appforge-interaction.png appforge-interaction.png >/dev/null
             adb logcat -d -b crash > appforge-crash.log
             adb logcat -d -s AndroidRuntime:E > appforge-androidruntime.log
             adb logcat -d -s chromium:E cr_Console:E > appforge-webview-errors.log

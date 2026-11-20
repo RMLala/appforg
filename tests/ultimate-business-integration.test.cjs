@@ -37,3 +37,22 @@ test('Ultimate build exposes a working sidebar link only when Business Manager i
     assert.ok(!studio.includes('id="ultimate-business-launcher"'), 'Never display a broken Business Manager link');
   }
 });
+
+test('Android assets include the exact Business Manager source after Capacitor sync', () => {
+  if (!fs.existsSync(source)) return;
+  const androidModule = path.join(root, 'android/app/src/main/assets/public/modules/business-manager/index.html');
+  assert.ok(fs.existsSync(androidModule), 'Capacitor Android assets must include the module');
+  assert.equal(fs.readFileSync(androidModule, 'utf8'), fs.readFileSync(source, 'utf8'));
+});
+
+test('Business Manager interactive JavaScript parses and mobile controls exist', () => {
+  if (!fs.existsSync(source)) return;
+  const html = fs.readFileSync(source, 'utf8');
+  assert.ok(html.includes('id="dockMore"'));
+  assert.ok(html.includes('id="bmMore"'));
+  assert.ok(html.includes("addEventListener('popstate'"));
+  const scripts = [...html.matchAll(/<script(?:\\s[^>]*)?>([\\s\\S]*?)<\\/script>/gi)];
+  assert.ok(scripts.length > 0, 'Expected inline JavaScript');
+  const vm = require('node:vm');
+  for (const match of scripts) assert.doesNotThrow(() => new vm.Script(match[1]));
+});

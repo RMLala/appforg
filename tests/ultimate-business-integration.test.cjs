@@ -54,6 +54,16 @@ test('Studio HTML does not expose nested script tags inside questionnaire JavaSc
   assert.ok(source.slice(start,end).includes(String.raw`\u003cscript`),'Encoded nested script opener must be present');
 });
 
+test('Ultimate runtime is inserted AFTER the embedded CRM questionnaire template', () => {
+  const dist=fs.readFileSync(path.join(root,'dist/index.html'),'utf8');
+  const crm=dist.indexOf('const crmQEsc=');
+  const runtime=dist.indexOf('<script id="ultimate-business-runtime">');
+  const nav=dist.indexOf('<script id="appforge-navigation-final">');
+  assert.ok(crm>=0 && nav>crm && runtime>nav,'Runtime must be after all source scripts, not inside CRM string');
+  assert.ok(dist.lastIndexOf('</body>')>runtime,'Runtime must be inside the final document body');
+  assert.equal((dist.match(/<script id="ultimate-business-runtime">/g)||[]).length,1);
+});
+
 test('Ultimate navigation survives dynamic sidebar rebuild and includes Business in bottom dock', () => {
   const source = fs.readFileSync(path.join(root,'AppForge_Studio_V15_7_Questionnaire_Client.html'),'utf8');
   const build = fs.readFileSync(path.join(root,'scripts/build.cjs'),'utf8');

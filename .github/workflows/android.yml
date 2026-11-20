@@ -124,7 +124,13 @@ jobs:
             node=next((n for n in root.iter('node') if 'ouvrir le menu' in (n.attrib.get('content-desc','')+' '+n.attrib.get('text','')).lower()),None)
             if node is None:
               raise SystemExit('Studio menu button is absent from the Android accessibility tree')
-            bounds=re.search(r'\\[(\\d+),(\\d+)\\]\\[(\\d+),(\\d+)\\]',node.attrib.get('bounds',''))
+            bounds=node.attrib.get('bounds','')
+            try:
+              first,second=bounds.strip('[]').split('][')
+              x1,y1=map(int,first.split(','))
+              x2,y2=map(int,second.split(','))
+            except Exception:
+              raise SystemExit('Studio menu button has no tappable bounds')
             if bounds is None:
               raise SystemExit('Studio menu button has no tappable bounds')
             x=(int(bounds.group(1))+int(bounds.group(3)))//2
@@ -156,6 +162,9 @@ jobs:
           name: AppForge-Studio-Ultimate-15.8.11-Android-${{ matrix.api-level }}-launch-evidence
           path: |
             appforge-smoke.png
+            appforge-interaction.png
+            appforge-before.xml
+            appforge-menu-open.xml
             appforge-crash.log
             appforge-androidruntime.log
             appforge-webview-errors.log

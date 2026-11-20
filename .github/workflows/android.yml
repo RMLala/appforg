@@ -125,15 +125,7 @@ jobs:
             adb shell uiautomator dump /sdcard/appforge-before.xml >/dev/null 2>&1 || echo "uiautomator dump unavailable"
             adb pull /sdcard/appforge-before.xml appforge-before.xml >/dev/null 2>&1 || echo "accessibility XML unavailable"
             if [ -s appforge-before.xml ]; then cat appforge-before.xml; else echo "ACCESSIBILITY_XML_MISSING"; fi
-            menu_opened=0
-            for tap_x in 227 302; do
-              adb shell input tap "$tap_x" 177
-              sleep 1
-              adb shell screencap -p /sdcard/appforge-interaction.png
-              adb pull /sdcard/appforge-interaction.png appforge-interaction.png >/dev/null
-              if python3 -c 'from PIL import Image,ImageChops; a=Image.open("appforge-precheck.png").convert("RGB"); b=Image.open("appforge-interaction.png").convert("RGB"); h=ImageChops.difference(a,b).histogram(); changed=sum(v for i,v in enumerate(h) if i%256!=0); print("Changed pixels",changed); raise SystemExit(0 if changed>20000 else 1)'; then echo "Menu opened at x=$tap_x"; menu_opened=1; break; fi
-            done
-            test "$menu_opened" = "1"
+            python3 -c 'import subprocess,time; from PIL import Image,ImageChops; before=Image.open("appforge-precheck.png").convert("RGB"); changed=lambda: sum(v for i,v in enumerate(ImageChops.difference(before,Image.open("appforge-interaction.png").convert("RGB")).histogram()) if i%256!=0); candidates=(227,302); hit=next((x for x in candidates if (subprocess.run(["adb","shell","input","tap",str(x),"177"],check=True),time.sleep(1),subprocess.run(["adb","shell","screencap","-p","/sdcard/appforge-interaction.png"],check=True),subprocess.run(["adb","pull","/sdcard/appforge-interaction.png","appforge-interaction.png"],check=True),changed())[4]>20000),None); print("Menu tap",hit); assert hit is not None'
             sleep 2
             adb shell screencap -p /sdcard/appforge-interaction.png
             adb pull /sdcard/appforge-interaction.png appforge-interaction.png >/dev/null

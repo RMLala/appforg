@@ -29,7 +29,7 @@ test('Studio Ultimate embeds Business Manager in its own navigation without exte
   const distIndex = path.join(root, 'dist/index.html');
   assert.ok(fs.existsSync(distIndex), 'Run npm run build before this assertion.');
   const studio = fs.readFileSync(distIndex, 'utf8');
-  assert.ok(studio.includes('<title>AppForge Studio Ultimate — 15.8.8</title>'));
+  assert.ok(studio.includes('<title>AppForge Studio Ultimate — 15.8.10</title>'));
   assert.ok(studio.includes('id="ultimate-business-launcher"'));
   assert.ok(studio.includes('id="ultimate-business-frame"'));
   assert.ok(studio.includes('bmProductManager'));
@@ -104,4 +104,23 @@ test('Business Manager and integrated navigation scripts parse', () => {
   const runtime = studio.slice(runtimeStart + '<script id="ultimate-business-runtime">'.length, runtimeEnd);
   assert.ok(runtime);
   assert.doesNotThrow(() => new vm.Script(runtime));
+});
+
+
+test('Cloud UI offers explicit local retention and recovery of previous owner identity', () => {
+ const source=fs.readFileSync(path.join(root,'AppForge_Studio_V15_7_Questionnaire_Client.html'),'utf8');
+ assert.ok(source.includes('id="afSyncKeepLocal"'));
+ assert.ok(source.includes('id="afSyncSnapshotRestore"'));
+ assert.ok(source.includes("'appforge_studio_cloud_owner_v1'"));
+ assert.ok(source.includes('Aucune nouvelle licence ne sera créée automatiquement'));
+ assert.ok(source.includes('afWorkerCentral'));
+ assert.ok(source.includes('https://appforge-license-api.lalainaadclick.workers.dev'));
+});
+
+test('Ultimate launch remains Studio-first and Business is only opened on explicit action', () => {
+ const build=fs.readFileSync(path.join(root,'scripts/build.cjs'),'utf8');
+ assert.ok(build.includes('let opened=false'));
+ assert.ok(build.includes('launcher.addEventListener("click",openBusiness)'));
+ assert.ok(build.includes('function closeBusiness(updateHistory)'));
+ assert.ok(build.includes('studioHtml.lastIndexOf(\'</body>\')'));
 });

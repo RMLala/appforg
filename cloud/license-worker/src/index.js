@@ -1,8 +1,10 @@
+import { r2Files, r2Usage } from './r2-files.js';
 const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Authorization, Content-Type",
-  "Access-Control-Max-Age": "86400"
+  "Access-Control-Allow-Headers": "Authorization, Content-Type, X-AppForge-Expected-Revision",
+  "Access-Control-Max-Age": "86400",
+  "Access-Control-Expose-Headers": "X-AppForge-Revision, X-AppForge-SHA256, Content-Length"
 };
 const enc = new TextEncoder();
 const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...CORS, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
@@ -70,11 +72,10 @@ async function cloudToken(req, env) {
   if(!await consumeCloudRequest(env,productId,claims.license,rights.requestsDay))return json({error:"Quota journalier Cloud atteint."},429);
   return json({ ok: true, ...(await issueCloudToken(env, productId, claims.license, install)), offline: false });
 }
-// Read-only quota metrics for the existing D1 snapshots. R2 usage is deliberately
-// unavailable until an R2 binding and verified object metadata are deployed.
+// Authenticated D1 and R2 quota metrics; R2 requires the private FILE_BUCKET binding and migration 0008.
 async function cloudQuota(req, env) {
   let claims;
-  try { claims = await verifySignedToken(env, req.headers.get("Authorization")?.replace(/^Bearer\\s+/i, "")); }
+  try { claims = await verifySignedToken(env, req.headers.get("Authorization")?.replace(/^Bearer\s+/i, "")); }
   catch { return json({ error: "Jeton Cloud invalide ou expiré." }, 401); }
   if (claims.kind !== "cloud" || !validId(claims.product) || typeof claims.access !== "string" || typeof claims.install !== "string") return json({ error: "Jeton Cloud invalide." }, 403);
   const product = await env.DB.prepare("SELECT status FROM products WHERE product_id=? AND product_id NOT IN (SELECT product_id FROM deleted_products)").bind(claims.product).first();
@@ -93,7 +94,38 @@ async function cloudQuota(req, env) {
   if (!await consumeCloudRequest(env, claims.product, claims.access, rights.requestsDay)) return json({ error: "Quota journalier Cloud atteint." }, 429);
   const usage = await env.DB.prepare("SELECT COALESCE(SUM(length(CAST(payload AS BLOB))),0) AS usedBytes,COUNT(*) AS snapshotCount FROM cloud_snapshots WHERE access_id=? AND product_id=?").bind(claims.access, claims.product).first();
   const usedBytes = Number(usage?.usedBytes || 0), maxBytes = Number(rights.maxBytes || 0);
-  return json({ ok: true, checkedAt: new Date().toISOString(), d1: { usedBytes, maxBytes, availableBytes: Math.max(0,maxBytes-usedBytes), snapshotCount: Number(usage?.snapshotCount || 0), percentUsed: maxBytes > 0 ? Math.round(10000*usedBytes/maxBytes)/100 : null }, r2: { available: false, usedBytes: null, maxBytes: null, fileCount: null, reason: "not_configured" } });
+  return json({ ok: true, checkedAt: new Date().toISOString(), d1: { usedBytes, maxBytes, availableBytes: Math.max(0,maxBytes-usedBytes), snapshotCount: Number(usage?.snapshotCount || 0), percentUsed: maxBytes > 0 ? Math.round(10000*usedBytes/maxBytes)/100 : null }, r2: await r2Usage(env, claims) });
+}
+// R2 binary file route: the same signed licence/device checks as D1 snapshots.
+async function cloudFilesRoute(req, env, url) {
+  const match = (req.headers.get('Authorization') || '').match(/^Bearer\\s+([^\\s]+)$/i);
+  if (!match) return json({ error: 'Jeton Cloud manquant.' }, 401);
+  let claims;
+  try { claims = await verifySignedToken(env, match[1]); }
+  catch { return json({ error: 'Jeton Cloud invalide ou expiré.' }, 401); }
+  if (claims.kind !== 'cloud' || !validId(claims.product) || typeof claims.access !== 'string' || typeof claims.install !== 'string')
+    return json({ error: 'Jeton Cloud invalide.' }, 403);
+  const product = await env.DB.prepare('SELECT status FROM products WHERE product_id=? AND product_id NOT IN (SELECT product_id FROM deleted_products)')
+    .bind(claims.product).first();
+  if (!product || product.status !== 'active') return json({ error: 'Application désactivée.' }, 403);
+  if (claims.scope === 'trial') {
+    const trial = await env.DB.prepare('SELECT expires_at FROM trials WHERE product_id=? AND installation_hash=?')
+      .bind(claims.product, claims.install).first();
+    if (!trial || claims.access !== 'trial:' + claims.install || Date.parse(trial.expires_at) <= Date.now())
+      return json({ error: 'Essai expiré.' }, 403);
+  } else if (claims.scope === 'license') {
+    const license = await env.DB.prepare('SELECT status,paid_confirmed,expires_at FROM licenses WHERE id=? AND product_id=?')
+      .bind(claims.access,claims.product).first();
+    if (!license || license.status !== 'active' || !license.paid_confirmed || (license.expires_at && Date.parse(license.expires_at) <= Date.now()))
+      return json({ error: 'Licence inactive.' }, 403);
+    const activation = await env.DB.prepare('SELECT id FROM activations WHERE license_id=? AND installation_hash=?')
+      .bind(claims.access,claims.install).first();
+    if (!activation) return json({ error: 'Appareil non autorisé.' }, 403);
+  } else return json({ error: 'Portée Cloud invalide.' }, 403);
+  const rights = await cloudRights(env,claims.product,claims.access,claims.scope);
+  if (!rights.enabled) return json({ error: 'Accès Cloud désactivé.' }, 403);
+  if (!await consumeCloudRequest(env,claims.product,claims.access,rights.requestsDay)) return json({ error: 'Quota journalier Cloud atteint.' }, 429);
+  return r2Files(req,env,url,claims);
 }
 async function cloudSnapshot(req, env, url) {
   let claims; try { claims = await verifySignedToken(env, req.headers.get("Authorization")?.replace(/^Bearer\s+/i, "")); } catch { return json({ error: "Jeton Cloud invalide ou expiré." }, 401); }
@@ -278,6 +310,7 @@ async function handle(req, env) {
   if (path === "/v1/status" && req.method === "POST") return checkStatus(req, env);
   if (path === "/v1/cloud/token" && req.method === "POST") return cloudToken(req, env);
   if (path === "/v1/cloud/quota" && req.method === "GET") return cloudQuota(req, env);
+  if ((path === '/v1/cloud/file' && ['GET','PUT'].includes(req.method)) || (path === '/v1/cloud/files' && req.method === 'GET')) return cloudFilesRoute(req,env,url);
   if (path === "/v1/cloud/snapshot" && ["GET", "PUT"].includes(req.method)) return cloudSnapshot(req, env, url);
   if (path === "/v1/admin/products/list" && req.method === "POST") {
     let data; try { data = await body(req); } catch { return json({ error: "JSON invalide." }, 400); }

@@ -7,7 +7,7 @@ android {
         applicationId "mg.appforge.studio"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 168
+        versionCode 169
         versionName "15.8.8"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {

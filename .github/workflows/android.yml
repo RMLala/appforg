@@ -131,10 +131,8 @@ jobs:
               x2,y2=map(int,second.split(','))
             except Exception:
               raise SystemExit('Studio menu button has no tappable bounds')
-            if bounds is None:
-              raise SystemExit('Studio menu button has no tappable bounds')
-            x=(int(bounds.group(1))+int(bounds.group(3)))//2
-            y=(int(bounds.group(2))+int(bounds.group(4)))//2
+            x=(x1+x2)//2
+            y=(y1+y2)//2
             open('/tmp/appforge-menu-point','w').write(f'{x} {y}')
             PY
             read -r MENU_X MENU_Y < /tmp/appforge-menu-point

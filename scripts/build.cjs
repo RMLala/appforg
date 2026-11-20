@@ -6,7 +6,7 @@ const businessSource=path.join(root,'modules/business-manager/index.html');
 if(!fs.existsSync(businessSource))throw new Error('Business Manager source is required for AppForge Studio Ultimate.');
 const capacitorTag='<script src="capacitor.js"></script><script>if(window.Capacitor?.registerPlugin)document.documentElement.style.visibility="hidden"</script>';
 let studioHtml=fs.readFileSync(source,'utf8').replace('</head>',capacitorTag+'</head>');
-studioHtml=studioHtml.replace('<title>AppForge Studio V15.8 — Commerce &amp; Design</title>','<title>AppForge Studio Ultimate — 15.8.8</title>');
+const titleStart=studioHtml.indexOf('<title>');const titleEnd=studioHtml.indexOf('</title>',titleStart);if(titleStart<0||titleEnd<0)throw new Error('Studio title missing');studioHtml=studioHtml.slice(0,titleStart)+'<title>AppForge Studio Ultimate — 15.8.8</title>'+studioHtml.slice(titleEnd+8);
 studioHtml=studioHtml.replace('<h1>AppForge <span style="color:var(--b)">V15.8</span></h1>','<h1>AppForge <span style="color:var(--b)">Studio Ultimate</span></h1>');
 const prompti=fs.readFileSync(path.join(root,'PromptiPro.html'),'utf8').replace('</head>',capacitorTag+'</head>');
 const businessHtml=fs.readFileSync(businessSource,'utf8');

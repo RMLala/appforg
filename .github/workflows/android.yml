@@ -121,7 +121,7 @@ jobs:
             import re
             import xml.etree.ElementTree as ET
             root=ET.parse('appforge-before.xml').getroot()
-            node=next((n for n in root.iter('node') if 'ouvrir le menu' in (n.attrib.get('content-desc','')+' '+n.attrib.get('text','')).lower()),None)
+            node=next((n for n in root.iter('node') if 'ouvrir toutes les rubriques' in (n.attrib.get('content-desc','')+' '+n.attrib.get('text','')).lower()),None)
             if node is None:
               raise SystemExit('Studio menu button is absent from the Android accessibility tree')
             bounds=node.attrib.get('bounds','')

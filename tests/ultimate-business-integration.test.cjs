@@ -51,8 +51,9 @@ test('Business Manager interactive JavaScript parses and mobile controls exist',
   assert.ok(html.includes('id="dockMore"'));
   assert.ok(html.includes('id="bmMore"'));
   assert.ok(html.includes("addEventListener('popstate'"));
-  const scripts = [...html.matchAll(/<script(?:\\s[^>]*)?>([\\s\\S]*?)<\\/script>/gi)];
-  assert.ok(scripts.length > 0, 'Expected inline JavaScript');
+  const start = html.indexOf('<script>');
+  const end = html.lastIndexOf('</script>');
+  assert.ok(start >= 0 && end > start, 'Expected inline JavaScript');
   const vm = require('node:vm');
-  for (const match of scripts) assert.doesNotThrow(() => new vm.Script(match[1]));
+  assert.doesNotThrow(() => new vm.Script(html.slice(start + '<script>'.length, end)));
 });

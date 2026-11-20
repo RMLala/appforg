@@ -25,6 +25,15 @@ test('Business Manager is packaged inside the single AppForge Studio shell', () 
   assert.ok(studio.includes('Générateur avancé'));
 });
 
+
+test('Responsive navigation stays available from mobile through tablet breakpoints', () => {
+  const html = fs.readFileSync(path.join(root, 'AppForge_Studio_V15_7_Questionnaire_Client.html'), 'utf8');
+  assert.match(html, /@media\\(max-width:1000px\\)\\{\\.layout\\{display:block!important;padding-bottom:78px!important\\}#mainNav\\.af-side\\{display:none!important\\}\\.af-bottom-nav\\{/);
+  assert.match(html, /@media\\(min-width:1001px\\)\\{\\.af-bottom-nav,\\.af-more-sheet,\\.af-more-backdrop\\{display:none!important\\}\\}/);
+  assert.doesNotMatch(html, /@media\\(max-width:760px\\)\\{\\.layout\\{display:block!important;padding-bottom:78px!important/);
+  assert.match(html, /hamburger\\.onclick=e=>\\{e\\.preventDefault\\(\\);e\\.stopPropagation\\(\\);plus\\.click\\(\\)\\}/);
+});
+
 test('The integrated module uses Studio state and preserves legacy Business Manager data during migration', () => {
   const build = fs.readFileSync(path.join(root, 'scripts/build.cjs'), 'utf8');
   assert.ok(build.includes('appforge_clientbrief_v01'));

@@ -35,6 +35,19 @@ test('Responsive navigation stays available from mobile through tablet breakpoin
   assert.ok(html.includes('else plus.click()'));
 });
 
+test('Business Manager dashboard tiles remain clickable and route inside Studio', () => {
+  const build = fs.readFileSync(path.join(root, 'scripts/build.cjs'), 'utf8');
+  const html = fs.readFileSync(source, 'utf8');
+  assert.ok(html.includes('data-launch="dossiers"'));
+  assert.ok(html.includes('data-launch="business"'));
+  assert.ok(html.includes('data-launch="production"'));
+  assert.ok(html.includes('data-launch="licensing"'));
+  assert.ok(build.includes("root.querySelectorAll('[data-launch]')"));
+  assert.ok(build.includes("if(target==='licensing')window.goto?.('licenses')"));
+  assert.ok(build.includes("else if(target==='backup')window.goto?.('cloudsync')"));
+  assert.ok(!build.includes("bmMarkup=bmMarkup.replace(/<button"));
+});
+
 test('The integrated module uses Studio state and preserves legacy Business Manager data during migration', () => {
   const build = fs.readFileSync(path.join(root, 'scripts/build.cjs'), 'utf8');
   assert.ok(build.includes('appforge_clientbrief_v01'));

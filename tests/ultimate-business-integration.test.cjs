@@ -51,7 +51,7 @@ test('Studio HTML does not expose nested script tags inside questionnaire JavaSc
   const end = source.indexOf('const crmQEsc=',start);
   assert.ok(start>=0 && end>start,'CRM questionnaire source exists');
   assert.doesNotMatch(source.slice(start,end),/<script(?=[\\s>])/i,'Nested script openers must be encoded in JS literals');
-  assert.match(source.slice(start,end),/\\\\u003cscript/i);
+  assert.ok(source.slice(start,end).includes(String.raw`\u003cscript`),'Encoded nested script opener must be present');
 });
 
 test('Ultimate navigation survives dynamic sidebar rebuild and includes Business in bottom dock', () => {

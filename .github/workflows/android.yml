@@ -124,7 +124,7 @@ jobs:
             adb shell uiautomator dump /sdcard/appforge-before.xml >/dev/null 2>&1 || echo "uiautomator dump unavailable"
             adb pull /sdcard/appforge-before.xml appforge-before.xml >/dev/null 2>&1 || echo "accessibility XML unavailable"
             if [ -s appforge-before.xml ]; then cat appforge-before.xml; else echo "ACCESSIBILITY_XML_MISSING"; fi
-            python3 -c 'import os,xml.etree.ElementTree as ET,subprocess; from PIL import Image; im=Image.open("appforge-precheck.png"); fallback=(224,175); p=fallback
+            python3 -c 'import os,xml.etree.ElementTree as ET,subprocess; from PIL import Image; im=Image.open("appforge-precheck.png"); fallback=(round(im.width*0.28),round(im.height*0.09)); p=fallback; print('Fallback menu tap',p,'screen',im.size)
             if os.path.exists("appforge-before.xml"):
              r=ET.parse("appforge-before.xml").getroot(); ns=list(r.iter("node")); print("UIA_ROOT",r.attrib); print("UIA_NODES",[(x.attrib.get("resource-id"),x.attrib.get("content-desc"),x.attrib.get("text"),x.attrib.get("bounds"),x.attrib.get("clickable")) for x in ns]); n=next((x for x in ns if "menutoggle" in x.attrib.get("resource-id","").lower() or "ouvrir toutes les rubriques" in (x.attrib.get("content-desc","")+" "+x.attrib.get("text","")).lower() or "ouvrir le menu" in (x.attrib.get("content-desc","")+" "+x.attrib.get("text","")).lower() or "☰" in x.attrib.get("text","")),None)
              if n:

@@ -127,8 +127,8 @@ jobs:
             if os.path.exists("appforge-before.xml"):
              r=ET.parse("appforge-before.xml").getroot(); ns=list(r.iter("node")); n=next((x for x in ns if "ouvrir toutes les rubriques" in (x.attrib.get("content-desc","")+" "+x.attrib.get("text","")).lower() or "ouvrir le menu" in (x.attrib.get("content-desc","")+" "+x.attrib.get("text","")).lower()),None)
              if n:
-              import re; vals=list(map(int,re.findall(r"-?\\d+",n.attrib.get("bounds",""))))
-              rv=list(map(int,re.findall(r"-?\\d+",r.attrib.get("bounds",""))))
+              import re; vals=list(map(int,re.findall(r"-?\d+",n.attrib.get("bounds",""))))
+              rv=list(map(int,re.findall(r"-?\d+",r.attrib.get("bounds",""))))
               if len(vals)==4:
                sx=im.width/max(1,(rv[2]-rv[0])) if len(rv)==4 else 1; sy=im.height/max(1,(rv[3]-rv[1])) if len(rv)==4 else 1
                p=(round(((vals[0]+vals[2])/2-(rv[0] if len(rv)==4 else 0))*sx),round(((vals[1]+vals[3])/2-(rv[1] if len(rv)==4 else 0))*sy))

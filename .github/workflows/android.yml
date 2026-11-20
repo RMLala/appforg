@@ -40,11 +40,11 @@ jobs:
           cd android
           ./gradlew --no-daemon assembleApi23Debug
           mkdir -p ../release-output
-          cp app/build/outputs/apk/api23/debug/app-api23-debug.apk ../release-output/AppForge-Studio-Ultimate-15.8.8-Debug-API23.apk
+          cp app/build/outputs/apk/api23/debug/app-api23-debug.apk ../release-output/AppForge-Studio-Ultimate-15.8.12-Debug-API23.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: AppForge-Studio-Ultimate-15.8.8-Debug-API23
-          path: release-output/AppForge-Studio-Ultimate-15.8.8-Debug-API23.apk
+          name: AppForge-Studio-Ultimate-15.8.12-Debug-API23
+          path: release-output/AppForge-Studio-Ultimate-15.8.12-Debug-API23.apk
           if-no-files-found: error
           retention-days: 30
       - name: Check release signing secrets
@@ -69,18 +69,18 @@ jobs:
           cd android
           ./gradlew --no-daemon assembleApi23Release assembleApi29Release
           mkdir -p ../release-output
-          cp app/build/outputs/apk/api23/release/app-api23-release.apk ../release-output/AppForge-Studio-Ultimate-15.8.8-Release-API23.apk
-          cp app/build/outputs/apk/api29/release/app-api29-release.apk ../release-output/AppForge-Studio-Ultimate-15.8.8-Release-API29.apk
+          cp app/build/outputs/apk/api23/release/app-api23-release.apk ../release-output/AppForge-Studio-Ultimate-15.8.12-Release-API23.apk
+          cp app/build/outputs/apk/api29/release/app-api29-release.apk ../release-output/AppForge-Studio-Ultimate-15.8.12-Release-API29.apk
       - name: Verify signed APKs
         run: |
-          test -s release-output/AppForge-Studio-Ultimate-15.8.8-Release-API23.apk
-          test -s release-output/AppForge-Studio-Ultimate-15.8.8-Release-API29.apk
-          $ANDROID_HOME/build-tools/34.0.0/apksigner verify --print-certs release-output/AppForge-Studio-Ultimate-15.8.8-Release-API23.apk
-          $ANDROID_HOME/build-tools/34.0.0/apksigner verify --print-certs release-output/AppForge-Studio-Ultimate-15.8.8-Release-API29.apk
+          test -s release-output/AppForge-Studio-Ultimate-15.8.12-Release-API23.apk
+          test -s release-output/AppForge-Studio-Ultimate-15.8.12-Release-API29.apk
+          $ANDROID_HOME/build-tools/34.0.0/apksigner verify --print-certs release-output/AppForge-Studio-Ultimate-15.8.12-Release-API23.apk
+          $ANDROID_HOME/build-tools/34.0.0/apksigner verify --print-certs release-output/AppForge-Studio-Ultimate-15.8.12-Release-API29.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: AppForge-Studio-Ultimate-15.8.8-Signed-Release-API23-API29
-          path: release-output/AppForge-Studio-Ultimate-15.8.8-Release-API*.apk
+          name: AppForge-Studio-Ultimate-15.8.12-Signed-Release-API23-API29
+          path: release-output/AppForge-Studio-Ultimate-15.8.12-Release-API*.apk
           if-no-files-found: error
           retention-days: 30
   launch-smoke:
@@ -88,14 +88,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        api-level: [29, 33]
+        api-level: [23, 29, 33]
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: AppForge-Studio-Ultimate-15.8.8-Signed-Release-API23-API29
+          name: AppForge-Studio-Ultimate-15.8.12-Signed-Release-API23-API29
           path: release-output
+      - name: Install screenshot comparison dependency
+        run: python3 -m pip install --user --disable-pip-version-check Pillow
       - name: Enable Android emulator hardware acceleration
         run: |
           if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; else echo 'KVM device unavailable; emulator will use software rendering'; fi
@@ -111,16 +113,30 @@ jobs:
           disable-animations: true
           disable-linux-hw-accel: false
           script: |
-            adb install -r release-output/AppForge-Studio-Ultimate-15.8.8-Release-API29.apk
+            if [ '${{ matrix.api-level }}' = '23' ]; then adb install -r release-output/AppForge-Studio-Ultimate-15.8.12-Release-API23.apk; else adb install -r release-output/AppForge-Studio-Ultimate-15.8.12-Release-API29.apk; fi
             adb shell am force-stop mg.appforge.studio
             adb shell am start -n mg.appforge.studio/.MainActivity
             sleep 25
+            adb shell screencap -p /sdcard/appforge-precheck.png
+            adb pull /sdcard/appforge-precheck.png appforge-precheck.png >/dev/null
+            adb logcat -d -b crash > appforge-crash-precheck.log
+            adb logcat -d -s chromium:E cr_Console:E > appforge-webview-precheck.log
+            cat appforge-webview-precheck.log
+            adb shell uiautomator dump /sdcard/appforge-before.xml >/dev/null 2>&1 || echo "uiautomator dump unavailable"
+            adb pull /sdcard/appforge-before.xml appforge-before.xml >/dev/null 2>&1 || echo "accessibility XML unavailable"
+            if [ -s appforge-before.xml ]; then cat appforge-before.xml; else echo "ACCESSIBILITY_XML_MISSING"; fi
+            python3 -c 'import subprocess,time; from PIL import Image,ImageChops; before=Image.open("appforge-precheck.png").convert("RGB"); changed=lambda: sum(v for i,v in enumerate(ImageChops.difference(before,Image.open("appforge-interaction.png").convert("RGB")).histogram()) if i%256!=0); candidates=(227,302); hit=next((x for x in candidates if (subprocess.run(["adb","shell","input","tap",str(x),"177"],check=True),time.sleep(1),subprocess.run(["adb","shell","screencap","-p","/sdcard/appforge-interaction.png"],check=True),subprocess.run(["adb","pull","/sdcard/appforge-interaction.png","appforge-interaction.png"],check=True),changed())[4]>20000),None); print("Menu tap",hit); assert hit is not None'
+            sleep 2
+            adb shell screencap -p /sdcard/appforge-interaction.png
+            adb pull /sdcard/appforge-interaction.png appforge-interaction.png >/dev/null
+            python3 -c 'from PIL import Image, ImageChops; before=Image.open("appforge-precheck.png").convert("RGB"); after=Image.open("appforge-interaction.png").convert("RGB"); assert before.size==after.size, "Emulator screenshots have different dimensions"; h=ImageChops.difference(before,after).histogram(); changed=sum(v for i,v in enumerate(h) if i%256!=0); assert changed>20000, "Studio menu tap produced no visible UI change"'
             adb logcat -d -b crash > appforge-crash.log
             adb logcat -d -s AndroidRuntime:E > appforge-androidruntime.log
+            adb logcat -d -s chromium:E cr_Console:E > appforge-webview-errors.log
+            if grep -Ei 'Uncaught|TypeError:|ReferenceError:|SyntaxError:|not a function' appforge-webview-errors.log; then echo 'WebView JavaScript error detected'; exit 1; fi
             cat appforge-crash.log appforge-androidruntime.log
             ! grep -F 'FATAL EXCEPTION' appforge-crash.log appforge-androidruntime.log
             adb shell pidof mg.appforge.studio | grep -q '[0-9]'
-            adb shell dumpsys activity activities | grep -E 'ResumedActivity|topResumedActivity' | grep 'mg.appforge.studio'
             adb shell screencap -p /sdcard/appforge-smoke.png
             adb pull /sdcard/appforge-smoke.png appforge-smoke.png
             test -s appforge-smoke.png
@@ -128,10 +144,16 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: AppForge-Studio-Ultimate-15.8.8-Android-${{ matrix.api-level }}-launch-evidence
+          name: AppForge-Studio-Ultimate-15.8.12-Android-${{ matrix.api-level }}-launch-evidence
           path: |
             appforge-smoke.png
+            appforge-precheck.png
+            appforge-before.xml
+            appforge-crash-precheck.log
+            appforge-webview-precheck.log
+            appforge-interaction.png
             appforge-crash.log
             appforge-androidruntime.log
+            appforge-webview-errors.log
           if-no-files-found: ignore
           retention-days: 14

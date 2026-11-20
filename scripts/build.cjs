@@ -17,7 +17,6 @@ const mainStart=businessHtml.indexOf('<main class="panel">'),mainEnd=businessHtm
 const scriptStart=businessHtml.indexOf('<script>'),scriptEnd=businessHtml.lastIndexOf('</script>');
 if(!styleMatch||mainStart<0||mainEnd<mainStart||scriptStart<0||scriptEnd<scriptStart)throw new Error('Business Manager component anchors missing');
 let bmMarkup=businessHtml.slice(mainStart+'<main class="panel">'.length,mainEnd);
-bmMarkup=bmMarkup.replace(/<button\b(?=[^>]*data-launch="(?:licensing|backup)")[^>]*>[\s\S]*?<\/button>/g,'');
 bmMarkup=bmMarkup.replace('<section class="hidden" id="editor">','<section class="hidden" id="editor"><div class="bm-project-tabs hidden" id="bmProjectTabs" role="tablist" aria-label="Onglets du projet"><button class="nav active" data-project-tab="conception" type="button">Conception</button><button class="nav" data-project-tab="commercial" data-commercial="1" type="button">Commercial</button><button class="nav" data-project-tab="livraisons" type="button">Livraisons</button><button class="nav" data-project-tab="licences" type="button">Licences</button></div>');
 let bmScript=businessHtml.slice(scriptStart+'<script>'.length,scriptEnd);
 // The Studio owns the only lock, shell, navigation, storage and back stack.
@@ -31,6 +30,7 @@ const importStart=bmScript.indexOf("$('#bmEncryptedImport').onchange",oldNavStar
 if(oldNavStart<0||importStart<0)throw new Error('Business Manager navigation migration anchors missing');
 bmScript=bmScript.slice(0,oldNavStart)+`const bmViewStack=[];window.AppForgeBusinessManager={show(name){show(name)},back(){if(bmViewStack.length)show(bmViewStack.pop(),true);else window.AppForgeStudioBack?.()},currentView:()=>view,getRecords:()=>records,refresh(){render();bizCatalogueRender()}};
 root.querySelectorAll('.bm-module-nav [data-view]').forEach(button=>button.addEventListener('click',()=>show(button.dataset.view)));
+root.querySelectorAll('[data-launch]').forEach(button=>button.addEventListener('click',()=>{const target=button.dataset.launch;if(target==='licensing')window.goto?.('licenses');else if(target==='backup')window.goto?.('cloudsync');else show(target)}));
 `+bmScript.slice(importStart);
 bmScript=bmScript.replace('function show(name){','function show(name,fromBack=false){if(!fromBack&&view!==name)bmViewStack.push(view);');
 bmScript=bmScript.replace("updateKindChrome();}","updateKindChrome();const tabs=root.querySelector('#bmProjectTabs');if(tabs)tabs.classList.toggle('hidden',!activeId||name==='dashboard'||name==='dossiers');}");

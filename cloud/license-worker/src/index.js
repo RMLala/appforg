@@ -147,6 +147,23 @@ async function auth(req, env) {
   const got = req.headers.get("Authorization") || "";
   return safeEqual(got, `Bearer ${env.ADMIN_API_TOKEN || ""}`) && !!env.ADMIN_API_TOKEN;
 }
+async function managerOwner(data, env) {
+  const expectedProduct = String(env.BM_OWNER_PRODUCT_ID || "").trim().toUpperCase();
+  const installationId = String(data?.installationId || "").trim();
+  const licenseToken = String(data?.licenseToken || "").trim();
+  if (!validId(expectedProduct)) return { error: "Administration Business Manager non configurée sur le Worker." , status: 503 };
+  if (installationId.length < 16 || installationId.length > 120 || licenseToken.length > 8192) return { error: "Preuve propriétaire invalide.", status: 400 };
+  let claims;
+  try { claims = await verifySignedToken(env, licenseToken); } catch { return { error: "Preuve propriétaire invalide ou expirée.", status: 401 }; }
+  const installationHash = await digest(installationId);
+  if (claims.v !== 1 || claims.app !== expectedProduct || claims.install !== installationHash || typeof claims.license !== "string" || claims.kind === "trial") return { error: "Cette preuve n’est pas celle du propriétaire Business Manager.", status: 403 };
+  const license = await env.DB.prepare("SELECT status,paid_confirmed,expires_at,COALESCE(license_type,plan) AS license_type FROM licenses WHERE id=? AND product_id=?").bind(claims.license, expectedProduct).first();
+  if (!license || license.status !== "active" || !license.paid_confirmed || license.license_type !== "owner" || (license.expires_at && Date.parse(license.expires_at) <= Date.now())) return { error: "Une licence propriétaire active est requise.", status: 403 };
+  if (claims.exp && Date.parse(claims.exp) <= Date.now()) return { error: "Preuve propriétaire expirée.", status: 401 };
+  const activation = await env.DB.prepare("SELECT id FROM activations WHERE license_id=? AND installation_hash=?").bind(claims.license, installationHash).first();
+  if (!activation) return { error: "Cet appareil n’est plus autorisé.", status: 403 };
+  return { licenseId: claims.license, productId: expectedProduct, installationHash };
+}
 async function dailyUsage(env, add = false, kind = "activation") {
   const day = new Date().toISOString().slice(0, 10);
   const column = kind === "status" ? "status_requests" : kind === "trial" ? "trial_requests" : "activation_requests";
@@ -262,6 +279,23 @@ async function handle(req, env) {
   if (path === "/v1/cloud/token" && req.method === "POST") return cloudToken(req, env);
   if (path === "/v1/cloud/quota" && req.method === "GET") return cloudQuota(req, env);
   if (path === "/v1/cloud/snapshot" && ["GET", "PUT"].includes(req.method)) return cloudSnapshot(req, env, url);
+  if (path === "/v1/admin/products/list" && req.method === "POST") {
+    let data; try { data = await body(req); } catch { return json({ error: "JSON invalide." }, 400); }
+    const owner = await managerOwner(data, env);
+    if (owner.error) return json({ error: owner.error }, owner.status);
+    const { results = [] } = await env.DB.prepare("SELECT product_id AS productId,name,status,created_at AS createdAt FROM products WHERE product_id NOT IN (SELECT product_id FROM deleted_products) ORDER BY name COLLATE NOCASE").all();
+    return json({ items: results, checkedAt: new Date().toISOString() });
+  }
+  if (path === "/v1/admin/products" && req.method === "POST") {
+    let data; try { data = await body(req); } catch { return json({ error: "JSON invalide." }, 400); }
+    const owner = await managerOwner(data, env);
+    if (owner.error) return json({ error: owner.error }, owner.status);
+    const productId = String(data.productId || "").trim().toUpperCase(), name = String(data.name || "").trim();
+    if (!validId(productId) || name.length < 2 || name.length > 80) return json({ error: "Identifiant (3–40 caractères A–Z, 0–9, _ ou -) et nom requis." }, 400);
+    try { await env.DB.prepare("INSERT INTO products(product_id,name,status,created_at) VALUES(?,?, 'active',?)").bind(productId, name, new Date().toISOString()).run(); }
+    catch { return json({ error: "Cet identifiant d’application existe déjà." }, 409); }
+    return json({ ok: true, productId, name, createdBy: owner.licenseId }, 201);
+  }
   if (!path.startsWith("/admin/")) return json({ error: "Route inconnue." }, 404);
   if (!(await auth(req, env))) return json({ error: "Accès administrateur refusé." }, 401);
   if (path === "/admin/usage" && req.method === "GET") return json(await dailyUsage(env));

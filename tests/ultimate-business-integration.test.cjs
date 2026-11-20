@@ -32,6 +32,9 @@ test('Studio Ultimate embeds Business Manager in its own navigation without exte
   assert.ok(studio.includes('<title>AppForge Studio Ultimate — 15.8.8</title>'));
   assert.ok(studio.includes('id="ultimate-business-launcher"'));
   assert.ok(studio.includes('id="ultimate-business-frame"'));
+  assert.ok(studio.includes('value="https://appforge-license-api.lalainaadclick.workers.dev" readonly'));
+  assert.ok(!studio.includes('appforge-license-api.example.workers.dev'));
+  assert.ok(!studio.includes('appforge-cloud-api.appforge-licences-mg.workers.dev'));
   assert.ok(studio.includes('bmProductManager'));
   assert.ok(studio.includes('Créer un produit pour une application'));
   assert.ok(studio.includes('srcdoc'));
@@ -40,6 +43,10 @@ test('Studio Ultimate embeds Business Manager in its own navigation without exte
   const runtimeStart = studio.indexOf('<script id="ultimate-business-runtime">');
   const runtimeEnd = studio.indexOf('</script>', runtimeStart);
   assert.ok(runtimeStart >= 0 && runtimeEnd > runtimeStart);
+  const priorScriptOpen = studio.lastIndexOf('<script', runtimeStart);
+  const priorScriptClose = studio.lastIndexOf('</script>', runtimeStart);
+  assert.ok(priorScriptClose > priorScriptOpen, 'Ultimate runtime must be a document-level script, outside embedded templates.');
+  assert.ok(studio.lastIndexOf('</body>') > runtimeEnd, 'Ultimate runtime must be before the final body close.');
   const runtime = studio.slice(runtimeStart + '<script id="ultimate-business-runtime">'.length, runtimeEnd);
   assert.ok(runtime, 'Expected the Business Manager navigation runtime.');
   assert.doesNotThrow(() => new vm.Script(runtime));

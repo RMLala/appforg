@@ -14,7 +14,7 @@ test('Business Manager is packaged inside the single AppForge Studio shell', () 
   assert.ok(!build.includes('<iframe'));
   assert.ok(!fs.existsSync(path.join(root, 'dist/modules/business-manager/index.html')));
   const studio = fs.readFileSync(distPath, 'utf8');
-  assert.ok(studio.includes('<title>AppForge Studio Ultimate — 15.8.11</title>'));
+  assert.ok(studio.includes('<title>AppForge Studio Ultimate — 15.8.12</title>'));
   assert.ok(studio.includes('id="page-business-manager"'));
   assert.ok(studio.includes('id="appforgeBack"'));
   assert.match(studio, /veil\.id='afNativeLock'/);

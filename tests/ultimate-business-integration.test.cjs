@@ -45,6 +45,19 @@ test('Studio Ultimate embeds Business Manager in its own navigation without exte
   assert.doesNotThrow(() => new vm.Script(runtime));
 });
 
+test('Ultimate navigation survives dynamic sidebar rebuild and includes Business in bottom dock', () => {
+  const source = fs.readFileSync(path.join(root,'AppForge_Studio_V15_7_Questionnaire_Client.html'),'utf8');
+  const build = fs.readFileSync(path.join(root,'scripts/build.cjs'),'utf8');
+  const dist = fs.readFileSync(path.join(root,'dist/index.html'),'utf8');
+  assert.ok(source.includes("['business-manager','▣','Business Manager']"));
+  assert.ok(source.includes("['business-manager','▣','Business']"));
+  assert.ok(source.includes("document.getElementById('ultimate-business-launcher')?.click()"));
+  assert.ok(source.includes("hamburger.onclick="));
+  assert.ok(build.includes('Studio\\'s navigation is rebuilt at runtime'));
+  assert.ok(dist.includes('id="ultimate-business-launcher"'));
+  assert.ok(dist.includes('id="ultimate-business-frame"'));
+});
+
 test('Capacitor package keeps the same-origin module asset for data continuity', () => {
   const distIndex = path.join(root, 'dist/index.html');
   const androidIndex = path.join(root, 'android/app/src/main/assets/public/index.html');

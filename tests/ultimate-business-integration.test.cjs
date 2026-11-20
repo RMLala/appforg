@@ -45,6 +45,15 @@ test('Studio Ultimate embeds Business Manager in its own navigation without exte
   assert.doesNotThrow(() => new vm.Script(runtime));
 });
 
+test('Studio HTML does not expose nested script tags inside questionnaire JavaScript', () => {
+  const source = fs.readFileSync(path.join(root,'AppForge_Studio_V15_7_Questionnaire_Client.html'),'utf8');
+  const start = source.indexOf('const CRM_QUESTIONNAIRE_TEMPLATE = ');
+  const end = source.indexOf('const crmQEsc=',start);
+  assert.ok(start>=0 && end>start,'CRM questionnaire source exists');
+  assert.doesNotMatch(source.slice(start,end),/<script(?=[\\s>])/i,'Nested script openers must be encoded in JS literals');
+  assert.match(source.slice(start,end),/\\\\u003cscript/i);
+});
+
 test('Ultimate navigation survives dynamic sidebar rebuild and includes Business in bottom dock', () => {
   const source = fs.readFileSync(path.join(root,'AppForge_Studio_V15_7_Questionnaire_Client.html'),'utf8');
   const build = fs.readFileSync(path.join(root,'scripts/build.cjs'),'utf8');

@@ -122,7 +122,12 @@ jobs:
             cat appforge-crash.log appforge-androidruntime.log
             ! grep -F 'FATAL EXCEPTION' appforge-crash.log appforge-androidruntime.log
             adb shell pidof mg.appforge.studio | grep -q '[0-9]'
-            adb shell dumpsys window | grep -E 'mCurrentFocus|mFocusedApp' | grep -F 'mg.appforge.studio'
+            FOCUS_INFO="$(adb shell dumpsys window windows | grep -E 'mCurrentFocus|mFocusedApp' || true)"
+            if ! printf '%s\n' "$FOCUS_INFO" | grep -Fq 'mg.appforge.studio'; then
+              FOCUS_INFO="$(adb shell dumpsys activity activities | grep -E 'mResumedActivity|ResumedActivity|topResumedActivity' || true)"
+            fi
+            printf '%s\n' "$FOCUS_INFO"
+            printf '%s\n' "$FOCUS_INFO" | grep -F 'mg.appforge.studio'
             adb shell screencap -p /sdcard/appforge-smoke.png
             adb pull /sdcard/appforge-smoke.png appforge-smoke.png
             test -s appforge-smoke.png

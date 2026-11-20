@@ -52,6 +52,9 @@ test('Studio navigation and Business Manager runtime parse and remain in the sam
   assert.doesNotMatch(moduleScript, /async function hash\(pin,salt\)/);
   assert.match(runtime, /data-studio-page="licenses"/);
   assert.match(runtime, /data-studio-page="cloudsync"/);
+  assert.match(runtime, /appforgeProjectLicenseContext/);
+  assert.match(runtime, /admin\/licenses\?productId=/);
+  assert.match(runtime, /Droit non retourné par le Worker/);
   assert.match(moduleScript, /filter\(p=>p\.status==='Vérifié manuellement'/);
   assert.match(moduleScript, /status:'Vérifié manuellement'/);
   assert.doesNotThrow(() => new vm.Script(moduleScript));

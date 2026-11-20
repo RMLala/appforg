@@ -8,9 +8,18 @@ database_name = "appforge-licenses"
 database_id = "a77521ea-dc78-4b80-b495-405127e275e7"
 migrations_dir = "migrations"
 
+# Private binary backups; bucket must exist in the same Cloudflare account.
+[[r2_buckets]]
+binding = "FILE_BUCKET"
+bucket_name = "appforge-cloud-files"
+
 [vars]
 DAILY_API_LIMIT = "50000"
 BM_OWNER_PRODUCT_ID = "APPFORGE-STUDIO"
 TRIAL_HOURS = "72"
+# R2 bytes per trial, per paid licence, and per binary file.
+R2_TRIAL_MAX_BYTES = "20971520"
+R2_MAX_ACCESS_BYTES = "104857600"
+R2_MAX_FILE_BYTES = "10485760"
 # Secrets are configured with Wrangler and never committed:
 # ADMIN_API_TOKEN, LICENSE_SIGNING_PRIVATE_JWK, CODE_HASH_PEPPER

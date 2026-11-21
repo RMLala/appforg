@@ -1,6 +1,6 @@
 {
   "name": "appforge-studio",
-  "version": "15.8.8",
+  "version": "15.8.13",
   "private": true,
   "description": "AppForge Studio Android",
   "scripts": {
@@ -8,7 +8,8 @@
     "test:cloud": "node --test cloud/license-worker/client/*.test.cjs",
     "sync": "npm run build && cap sync android",
     "open": "cap open android",
-    "test:ultimate": "node --test tests/ultimate-business-integration.test.cjs"
+    "test:ultimate": "node --test tests/ultimate-business-integration.test.cjs",
+    "test:worker": "node --experimental-default-type=module --test cloud/license-worker/src/r2-files.test.mjs cloud/license-worker/tests/cloud-entitlements.test.mjs"
   },
   "dependencies": {
     "@capacitor/android": "7.6.9",

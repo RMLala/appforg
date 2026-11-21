@@ -221,6 +221,11 @@ test('Business migration recreates missing linked projects and merges into exist
   assert.equal(existing.state.projects[0].name, 'Nom validé');
   assert.equal(existing.state.projects[0].businessManager.client, 'Client validé');
   assert.deepEqual(JSON.parse(JSON.stringify(existing.state.projects[0].businessManager.business.orders.map(x => x.id))).sort(), ['new-order', 'old-order']);
+
+  const recovered = runMigration({ projects: [], businessRecords: [], businessCatalogue: [], businessDataMigrated: true }, JSON.stringify([{ id:'legacy-recovered', project:'Dossier récupéré après migration précédente' }]));
+  assert.equal(recovered.ok, true);
+  assert.equal(recovered.state.projects.length, 1);
+  assert.equal(recovered.state.projects[0].name, 'Dossier récupéré après migration précédente');
 });
 
 test('Business migration preserves invalid legacy data and does not set its completion flag', () => {

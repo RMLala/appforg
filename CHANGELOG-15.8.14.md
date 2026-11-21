@@ -10,6 +10,8 @@
 - L’import JSON et la restauration chiffrée passent par le stockage commun Studio, avec vérification après écriture et retour arrière lorsque possible.
 - Les onglets du projet sont liés au dossier sélectionné ; l’onglet Commercial est masqué pour les projets personnels.
 
+- Si la lecture du stockage échoue, les modifications, suppressions et mises à jour du catalogue sont bloquées et un message visible prévient l’utilisateur au lieu de risquer une réécriture vide.
+
 ## Version Android
 - versionName : 15.8.14
 - versionCode : 175

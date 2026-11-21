@@ -75,7 +75,7 @@ function migrateBusinessData(){
  const pending=[],seen=new Set();
  for(const record of [...next.businessRecords,...legacy]){
   if(!record||typeof record!=='object'||Array.isArray(record)){window.AppForgeBusinessMigrationError='Migration interrompue : un ancien dossier est invalide. Les données sources sont conservées.';return false;}
-  const key=record.studioProjectId!=null?'project:'+String(record.studioProjectId):record.id!=null?'record:'+String(record.id):'json:'+JSON.stringify(record);
+  const key='json:'+JSON.stringify(record);
   if(!seen.has(key)){seen.add(key);pending.push(record);}
  }
  const mergeExisting=(source,current)=>{
@@ -100,7 +100,7 @@ function migrateBusinessData(){
  let generated=0;
  for(const record of pending){
   const requestedId=record.studioProjectId!=null&&String(record.studioProjectId).trim()?record.studioProjectId:null;
-  let project=requestedId===null?null:next.projects.find(item=>String(item.id)===String(requestedId));
+  let project=requestedId===null?(record.id==null?null:next.projects.find(item=>String(item.businessManager?.id||'')===String(record.id))):next.projects.find(item=>String(item.id)===String(requestedId));
   if(!project){
    let id=requestedId===null?Date.now()+next.projects.length+generated:requestedId;
    while(next.projects.some(item=>String(item.id)===String(id)))id=Date.now()+next.projects.length+(++generated);
@@ -116,8 +116,14 @@ function migrateBusinessData(){
   if(!project.idea)project.idea=record.problem||'';
   if(!project.status)project.status=record.status||'À démarrer';
  }
- const catalogueRows=[...next.businessCatalogue,...catalogue],catalogueSeen=new Set();
- next.businessCatalogue=catalogueRows.filter(item=>{const key=item&&typeof item==='object'&&item.id!=null?'id:'+String(item.id):'json:'+JSON.stringify(item);if(catalogueSeen.has(key))return false;catalogueSeen.add(key);return true;});
+ const catalogueRows=[];
+ for(const item of [...next.businessCatalogue,...catalogue]){
+  const id=item&&typeof item==='object'&&item.id!=null?String(item.id):null;
+  const at=id===null?-1:catalogueRows.findIndex(old=>old&&typeof old==='object'&&old.id!=null&&String(old.id)===id);
+  if(at<0){if(!catalogueRows.some(old=>JSON.stringify(old)===JSON.stringify(item)))catalogueRows.push(item);}
+  else catalogueRows[at]=mergeExisting(catalogueRows[at],item);
+ }
+ next.businessCatalogue=catalogueRows;
  next.businessRecords=[];
  next.businessDataMigrated=true;
  let serialized,previousRaw;

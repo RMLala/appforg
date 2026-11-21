@@ -1,0 +1,18 @@
+# AppForge Studio Ultimate 15.8.14
+
+## Corrections fonctionnelles
+- Corrige la sauvegarde Business Manager : la vérification relit désormais les dossiers depuis le stockage commun AppForge Studio, et non depuis l’ancienne clé locale.
+- Corrige l’affichage des messages de validation et d’erreur dans le composant Business Manager intégré au Shadow DOM.
+- La suppression d’un dossier est répercutée dans la liste de projets Studio ; un dossier supprimé ne doit plus réapparaître après redémarrage.
+- L’import JSON et la restauration chiffrée passent par le stockage commun Studio, avec vérification après écriture et retour arrière lorsque possible.
+- Les onglets du projet sont liés au dossier sélectionné ; l’onglet Commercial est masqué pour les projets personnels.
+
+## Version Android
+- versionName : 15.8.14
+- versionCode : 175
+- APK Release API23 et API29 à reconstruire et retester après validation CI.
+
+## Limites toujours ouvertes
+- L’interface d’envoi de pièces jointes R2, les noms de fichiers d’origine, leur rattachement au projet et l’affichage des quotas R2 ne sont pas encore livrés.
+- Le test fonctionnel exhaustif de tous les boutons reste à compléter ; les tests automatisés ciblent les régressions identifiées.
+- Le retour physique Android doit encore être validé sur appareil réel.

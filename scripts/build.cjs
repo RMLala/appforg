@@ -105,7 +105,7 @@ function migrateBusinessData(){
   const requestedId=record.studioProjectId!=null&&String(record.studioProjectId).trim()?record.studioProjectId:null;
   let project=requestedId===null?null:next.projects.find(item=>String(item.id)===String(requestedId));
   if(!project&&record.id!=null)project=next.projects.find(item=>String(item.businessManager?.id||'')===String(record.id));
-  if(!project&&record.id==null){const key=migrationFingerprint(record);project=next.projects.find(item=>item.businessManager?._appforgeLegacyMigrationKey===key)||next.projects.find(item=>item.businessManager&&fingerprint(item.businessManager)===fingerprint(record));}
+  if(!project&&record.id==null){const key=migrationFingerprint(record);project=next.projects.find(item=>item._appforgeLegacyMigrationKey===key)||next.projects.find(item=>item.businessManager&&fingerprint(item.businessManager)===fingerprint(record));}
   if(!project){
    let id=requestedId===null?Date.now()+next.projects.length+generated:requestedId;
    while(next.projects.some(item=>String(item.id)===String(id)))id=Date.now()+next.projects.length+(++generated);
@@ -113,7 +113,7 @@ function migrateBusinessData(){
    next.projects.push(project);generated++;
   }
   const incoming={...record,studioProjectId:String(project.id)};
-  if(requestedId===null&&record.id==null)incoming._appforgeLegacyMigrationKey=migrationFingerprint(record);
+  if(requestedId===null&&record.id==null)project._appforgeLegacyMigrationKey=migrationFingerprint(record);
   delete incoming.studioLegacyCommercial;
   const existing=project.businessManager&&typeof project.businessManager==='object'&&!Array.isArray(project.businessManager)?project.businessManager:{};
   project.businessManager=mergeExisting(incoming,existing);

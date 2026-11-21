@@ -347,6 +347,8 @@ test('Business Manager save, delete, import and restore use the shared Studio pr
   assert.match(build, /saveBusinessRecords\(newer,nextCatalogue\)/);
   assert.match(build, /state\.projects=nextProjects/);
   assert.ok(build.includes('bmScript += "\\nstorageLoad();render();";'));
+  assert.ok(build.includes('refresh(){storageLoad();render();bizCatalogueRender()}'));
+  assert.ok(build.includes("if(id==='business-manager')window.AppForgeBusinessManager?.refresh()"));
 });
 
 test('Shared Business Manager project store persists deletions instead of resurrecting removed projects', () => {

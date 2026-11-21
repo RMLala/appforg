@@ -135,6 +135,15 @@ test('Studio Cloud restoration is selective, integrity-checked, and backed up lo
   assert.match(cloudScript, /crypto\.subtle\.digest\('SHA-256'/);
   assert.match(cloudScript, /idbPut\('backups',backup\)/);
   assert.match(cloudScript, /appforge-studio-cloud-restore/);
+  assert.match(cloudScript, /function mergeCloudData/);
+  assert.match(cloudScript, /cloudSnapshot:remote/);
+  assert.match(cloudScript, /localRaw:\{studio:oldStudioRaw,delivery:oldDeliveryRaw\}/);
+  assert.match(cloudScript, /if\(restoreStudio&&/);
+  assert.match(cloudScript, /if\(restoreDelivery&&/);
+  assert.match(cloudScript, /Les valeurs précédentes ont été rétablies/);
+  assert.match(cloudScript, /markUnlinked/);
+  assert.doesNotMatch(cloudScript, /localStorage\.setItem\('promptforge_v3_state',JSON\.stringify\(remote\.studioState\)\)/);
+  assert.doesNotMatch(cloudScript, /localStorage\.setItem\('appforge_delivery_tracker_v1',JSON\.stringify\(remote\.deliveryTracker\)\)/);
 });
 
 test('Studio design and generator stay in Studio instead of redirecting to PromptiPro', () => {
@@ -163,4 +172,135 @@ test('Studio source has no nested script tags inside the CRM questionnaire templ
   assert.ok(start>=0 && end>start,'CRM questionnaire source exists');
   assert.doesNotMatch(html.slice(start,end),/<script(?=[\\s>])/i);
   assert.ok(html.slice(start,end).includes(String.raw`\u003cscript`));
+});
+
+
+// Migration commerciale : les enregistrements orphelins et les sources invalides ne doivent jamais être supprimés.
+test('Business migration recreates missing linked projects and merges into existing projects', () => {
+  const build = fs.readFileSync(path.join(root, 'scripts/build.cjs'), 'utf8');
+  const start = build.indexOf('function migrateBusinessData(){');
+  const end = build.indexOf('\nfunction toBusinessRecord', start);
+  assert.ok(start >= 0 && end > start, 'Business migration function exists');
+  const migration = build.slice(start, end);
+  function runMigration(state, legacyRaw = '[]', catalogueRaw = '[]', failWrite = false) {
+    const store = new Map([
+      ['promptforge_v3_state', JSON.stringify(state)],
+      ['appforge_clientbrief_v01', legacyRaw],
+      ['appforge_clientbrief_catalogue_v06', catalogueRaw]
+    ]);
+    const localStorage = {
+      getItem(key) { return store.has(key) ? store.get(key) : null; },
+      setItem(key, value) { if (failWrite && key === 'promptforge_v3_state') throw new Error('quota'); store.set(key, String(value)); },
+      removeItem(key) { store.delete(key); }
+    };
+    const window = { AppForgeStudioCloudSync: { markUnlinked() { window.unlinked = true; } } };
+    const context = { state, KEY: 'promptforge_v3_state', localStorage, window };
+    vm.runInNewContext(migration + '\nresult=migrateBusinessData();', context);
+    return { ok: context.result, state, store, window };
+  }
+
+  const orphan = runMigration({
+    projects: [], businessRecords: [{ id: 'legacy-1', studioProjectId: 'project-missing', project: 'Projet historique', business: { orders: [{ id: 'order-1' }] } }],
+    businessCatalogue: [], businessDataMigrated: false
+  });
+  assert.equal(orphan.ok, true);
+  assert.equal(orphan.state.projects.length, 1);
+  assert.equal(String(orphan.state.projects[0].id), 'project-missing');
+  assert.equal(orphan.state.projects[0].businessManager.business.orders[0].id, 'order-1');
+  assert.equal(orphan.state.businessRecords.length, 0);
+  assert.equal(orphan.state.businessDataMigrated, true);
+  assert.equal(orphan.window.unlinked, true);
+
+  const existing = runMigration({
+    projects: [{ id: 'project-1', name: 'Nom validé', businessManager: { client: 'Client validé', business: { orders: [{ id: 'old-order' }] } } }],
+    businessRecords: [{ id: 'legacy-2', studioProjectId: 'project-1', project: 'Ancien nom', client: 'Ancien client', business: { orders: [{ id: 'new-order' }] } }],
+    businessCatalogue: [], businessDataMigrated: false
+  });
+  assert.equal(existing.ok, true);
+  assert.equal(existing.state.projects.length, 1);
+  assert.equal(existing.state.projects[0].name, 'Nom validé');
+  assert.equal(existing.state.projects[0].businessManager.client, 'Client validé');
+  assert.deepEqual(JSON.parse(JSON.stringify(existing.state.projects[0].businessManager.business.orders.map(x => x.id))).sort(), ['new-order', 'old-order']);
+});
+
+test('Business migration preserves invalid legacy data and does not set its completion flag', () => {
+  const build = fs.readFileSync(path.join(root, 'scripts/build.cjs'), 'utf8');
+  const start = build.indexOf('function migrateBusinessData(){');
+  const end = build.indexOf('\nfunction toBusinessRecord', start);
+  const migration = build.slice(start, end);
+  const state = { projects: [], businessRecords: [], businessCatalogue: [], businessDataMigrated: false };
+  const store = new Map([
+    ['promptforge_v3_state', JSON.stringify(state)],
+    ['appforge_clientbrief_v01', '{invalid-json'],
+    ['appforge_clientbrief_catalogue_v06', '[]']
+  ]);
+  const localStorage = { getItem:key=>store.has(key)?store.get(key):null, setItem:(key,value)=>store.set(key,String(value)), removeItem:key=>store.delete(key) };
+  const window = {};
+  const context = { state, KEY:'promptforge_v3_state', localStorage, window };
+  vm.runInNewContext(migration + '\nresult=migrateBusinessData();', context);
+  assert.equal(context.result, false);
+  assert.equal(state.businessDataMigrated, false);
+  assert.equal(store.get('appforge_clientbrief_v01'), '{invalid-json');
+  assert.match(window.AppForgeBusinessMigrationError, /clés sources sont conservées/);
+});
+
+test('Business migration rolls back when local persistence cannot be confirmed', () => {
+  const build = fs.readFileSync(path.join(root, 'scripts/build.cjs'), 'utf8');
+  const start = build.indexOf('function migrateBusinessData(){');
+  const end = build.indexOf('\nfunction toBusinessRecord', start);
+  const migration = build.slice(start, end);
+  const state = { projects: [], businessRecords: [{ id:'x', project:'À conserver' }], businessCatalogue: [], businessDataMigrated:false };
+  const original = JSON.stringify(state);
+  const store = new Map([
+    ['promptforge_v3_state', original],
+    ['appforge_clientbrief_v01', '[]'],
+    ['appforge_clientbrief_catalogue_v06', '[]']
+  ]);
+  const localStorage = { getItem:key=>store.has(key)?store.get(key):null, setItem:(key,value)=>{if(key==='promptforge_v3_state')throw new Error('quota');store.set(key,String(value));}, removeItem:key=>store.delete(key) };
+  const context = { state, KEY:'promptforge_v3_state', localStorage, window:{} };
+  vm.runInNewContext(migration + '\nresult=migrateBusinessData();', context);
+  assert.equal(context.result, false);
+  assert.equal(JSON.stringify(state), original);
+  assert.equal(state.businessDataMigrated, false);
+  assert.match(context.window.AppForgeBusinessMigrationError, /sauvegarde locale non confirmée/);
+});
+
+test('Cloud merge adds missing records, keeps local conflicts, and combines completed steps', () => {
+  const sourceHtml = fs.readFileSync(path.join(root, 'AppForge_Studio_V15_7_Questionnaire_Client.html'), 'utf8');
+  const start = sourceHtml.indexOf('function cloudCopy(value)');
+  const end = sourceHtml.indexOf('async function restore()', start);
+  assert.ok(start >= 0 && end > start, 'Cloud merge helper exists');
+  const helper = sourceHtml.slice(start, end);
+  const local = {
+    projects: [{ id:'p1', name:'Nom local', localOnly:true }, { id:'p2', name:'Projet local' }],
+    steps: [true, false, false],
+    theme: 'dark'
+  };
+  const cloud = {
+    projects: [{ id:'p1', name:'Nom Cloud', cloudOnly:true }, { id:'p3', name:'Projet Cloud' }],
+    steps: [false, true, false, true],
+    theme: 'light',
+    cloudOnlyRoot: true
+  };
+  const report = { added:0, conflicts:0, paths:[] };
+  const context = { local, cloud, report };
+  vm.runInNewContext(helper + "\nresult=mergeCloudData(local,cloud,'studioState',report);", context);
+  const merged = JSON.parse(JSON.stringify(context.result));
+  assert.deepEqual(merged.projects.map(x=>x.id), ['p1','p2','p3']);
+  assert.equal(merged.projects[0].name, 'Nom local');
+  assert.equal(merged.projects[0].localOnly, true);
+  assert.equal(merged.projects[0].cloudOnly, true);
+  assert.deepEqual(merged.steps, [true, true, false, true]);
+  assert.equal(merged.theme, 'dark');
+  assert.equal(merged.cloudOnlyRoot, true);
+  assert.ok(report.conflicts >= 2);
+  assert.ok(report.paths.includes('studioState.projects[p1].name'));
+  assert.ok(report.paths.includes('studioState.theme'));
+});
+
+test('Only explicitly validated manual payments count as paid', () => {
+  const build = fs.readFileSync(path.join(root, 'scripts/build.cjs'), 'utf8');
+  assert.match(build, /function bizInvoicePaid\(i\)\{return \(i\.payments\|\|\[\]\)\.filter\(p=>p\.status==='Vérifié manuellement'\)/);
+  assert.doesNotMatch(build, /p\.verification==='Déclaration de vérification manuelle'\)\.reduce/);
+  assert.match(build, /invoicePayments=\(data\.business\?\.invoices\|\|\[\]\)\.flatMap\(i=>i\.payments\|\|\[\]\)\.filter\(p=>p\.status==='Vérifié manuellement'\)/);
 });

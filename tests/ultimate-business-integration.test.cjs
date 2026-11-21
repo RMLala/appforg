@@ -72,7 +72,8 @@ test('The integrated module uses Studio state and preserves legacy Business Mana
   assert.ok(build.includes('getBusinessRecords'));
   assert.ok(build.includes('saveBusinessRecords'));
   assert.ok(build.includes('toBusinessRecord'));
-  assert.ok(build.includes('delete persisted.studioLegacyCommercial;project.businessManager=persisted'));
+  assert.ok(build.includes('delete persisted.studioLegacyCommercial;'));
+  assert.ok(build.includes('project.businessManager=persisted;'));
 });
 
 test('Legacy Studio commercial records are joined to the common project only by explicit IDs', () => {

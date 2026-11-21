@@ -2,6 +2,7 @@
 
 ## Corrections fonctionnelles
 - Réactive le chargement initial des dossiers et du tableau de bord après suppression de l’ancien verrou Business Manager.
+- Recharge l’état commun à chaque retour dans Business Manager afin d’éviter d’écraser les projets modifiés depuis les autres rubriques Studio.
 - Après validation de la relecture, le dossier sauvegardé est également rechargé en mémoire avec son identifiant de projet Studio.
 - Corrige la sauvegarde Business Manager : la vérification relit désormais les dossiers depuis le stockage commun AppForge Studio, et non depuis l’ancienne clé locale.
 - Corrige l’affichage des messages de validation et d’erreur dans le composant Business Manager intégré au Shadow DOM.

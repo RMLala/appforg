@@ -331,5 +331,7 @@ test('Release metadata is aligned on AppForge Studio 15.8.13 and API23/API29 bui
   assert.match(gradle, /versionName "15.8.13"/);
   assert.match(workflow, /AppForge-Studio-Ultimate-15\.8\.13-Release-API23\.apk/);
   assert.match(workflow, /AppForge-Studio-Ultimate-15\.8\.13-Release-API29\.apk/);
+  assert.match(workflow, /name: AppForge-Studio-Ultimate-15\.8\.13-Release-API23/);
+  assert.match(workflow, /name: AppForge-Studio-Ultimate-15\.8\.13-Release-API29/);
   assert.match(workflow, /npm run test:worker/);
 });

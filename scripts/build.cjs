@@ -56,8 +56,8 @@ if(!studioHtml.includes(mountAnchor))throw new Error('Studio state anchor missin
 studioHtml=studioHtml.replace(mountAnchor,mountAnchor+`
 window.AppForgeStudioState=state;state.projects=Array.isArray(state.projects)?state.projects:[];state.catalog=Array.isArray(state.catalog)?state.catalog:[];state.sales=Array.isArray(state.sales)?state.sales:[];state.clients=Array.isArray(state.clients)?state.clients:[];state.payments=Array.isArray(state.payments)?state.payments:[];state.businessRecords=Array.isArray(state.businessRecords)?state.businessRecords:[];state.businessCatalogue=Array.isArray(state.businessCatalogue)?state.businessCatalogue:[];state.businessDataMigrated=!!state.businessDataMigrated;
 function migrateBusinessData(){
- const alreadyMigrated=!!state.businessDataMigrated;
- const fail=message=>{window.AppForgeBusinessMigrationError=message;window.AppForgeStudioCloudSync?.markUnlinked?.();return alreadyMigrated;};
+ if(state.businessDataMigrationV2){window.AppForgeBusinessMigrationError='';return true;}
+ const fail=message=>{window.AppForgeBusinessMigrationError=message;window.AppForgeStudioCloudSync?.markUnlinked?.();return false;};
  let legacy=[],catalogue=[];
  try{
   const legacyRaw=localStorage.getItem('appforge_clientbrief_v01'),catalogueRaw=localStorage.getItem('appforge_clientbrief_catalogue_v06');
@@ -132,6 +132,7 @@ function migrateBusinessData(){
  next.businessCatalogue=catalogueRows;
  next.businessRecords=[];
  next.businessDataMigrated=true;
+ next.businessDataMigrationV2=true;
  let serialized,previousRaw;
  try{serialized=JSON.stringify(next);if(serialized===JSON.stringify(state)){window.AppForgeBusinessMigrationError='';return true;}previousRaw=localStorage.getItem(KEY);localStorage.setItem(KEY,serialized);if(localStorage.getItem(KEY)!==serialized)throw new Error('La vérification après écriture a échoué.');}
  catch(error){try{if(previousRaw===null)localStorage.removeItem(KEY);else if(previousRaw!==undefined)localStorage.setItem(KEY,previousRaw);}catch{}return fail('Migration interrompue : sauvegarde locale non confirmée. Les anciennes clés commerciales restent conservées; réessaie après avoir libéré de l’espace de stockage.');}

@@ -875,7 +875,7 @@ async function restore(){
  if((restoreStudio||restoreDelivery)&&(!remote||remote.schema!==1||remote.appId!=='appforge-studio')){msg('La copie D1 est absente ou son format n’est pas reconnu.',true);return}
  if(restoreStudio&&(!remote.studioState||typeof remote.studioState!=='object'||Array.isArray(remote.studioState))){msg('La partie projets et conception est absente ou invalide dans la copie D1.',true);return}
  if(restoreDelivery&&(!remote.deliveryTracker||typeof remote.deliveryTracker!=='object'||Array.isArray(remote.deliveryTracker))){msg('La partie suivi des livraisons est absente ou invalide dans la copie D1.',true);return}
- const selectedMeta=chosen.map(id=>{const meta=cloudFiles.find(item=>item.fileId===id);if(!meta)throw Error('La liste des fichiers a changé; actualise-la puis recommence.');return meta});
+ const selectedMeta=[];for(const id of chosen){const meta=cloudFiles.find(item=>item.fileId===id);if(!meta){msg('La liste des fichiers a changé; actualise-la puis recommence.',true);return}selectedMeta.push(meta)}
  const report={added:0,conflicts:0,paths:[]};
  let oldStudioRaw=null,oldDeliveryRaw=null,mergedStudio=null,mergedDelivery=null;
  try{

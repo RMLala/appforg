@@ -348,6 +348,9 @@ test('Business Manager save, delete, import and restore use the shared Studio pr
   assert.match(build, /state\.projects=nextProjects/);
   assert.ok(build.includes('bmScript += "\\nstorageLoad();render();";'));
   assert.ok(build.includes('refresh(){storageLoad();render();bizCatalogueRender()}'));
+  assert.ok(build.includes('bmStorageReady=false'));
+  assert.ok(build.includes('bmStorageStatus'));
+  assert.ok(build.includes('Lecture du stockage Studio non confirmée. Les modifications sont bloquées.'));
   assert.ok(build.includes("if(id==='business-manager')window.AppForgeBusinessManager?.refresh()"));
 });
 

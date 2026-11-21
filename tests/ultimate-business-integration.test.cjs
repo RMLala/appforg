@@ -340,6 +340,7 @@ test('Release metadata is aligned on AppForge Studio 15.8.14 and API23/API29 bui
 test('Business Manager save, delete, import and restore use the shared Studio project store', () => {
   const build = fs.readFileSync(path.join(root, 'scripts/build.cjs'), 'utf8');
   assert.match(build, /const saved=window\.AppForgeProjectStore\?\.\getBusinessRecords\?\.\(\{persist:false\}\)/);
+  assert.match(build, /records=saved/);
   assert.match(build, /const area=root\.querySelector\('#'\+target\)/);
   assert.match(build, /saveBusinessRecords\(obj\.records,importedCatalogue\)/);
   assert.match(build, /saveBusinessRecords\(newer,nextCatalogue\)/);

@@ -1,6 +1,7 @@
 # AppForge Studio Ultimate 15.8.14
 
 ## Corrections fonctionnelles
+- Réactive le chargement initial des dossiers et du tableau de bord après suppression de l’ancien verrou Business Manager.
 - Corrige la sauvegarde Business Manager : la vérification relit désormais les dossiers depuis le stockage commun AppForge Studio, et non depuis l’ancienne clé locale.
 - Corrige l’affichage des messages de validation et d’erreur dans le composant Business Manager intégré au Shadow DOM.
 - La suppression d’un dossier est répercutée dans la liste de projets Studio ; un dossier supprimé ne doit plus réapparaître après redémarrage.

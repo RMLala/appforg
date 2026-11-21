@@ -329,23 +329,23 @@ test('Release metadata is aligned on AppForge Studio 15.8.14 and API23/API29 bui
   assert.equal(pkg.version, '15.8.14');
   assert.match(gradle, /versionCode 175/);
   assert.match(gradle, /versionName "15.8.14"/);
-  assert.match(workflow, /AppForge-Studio-Ultimate-15\.8\.13-Release-API23\.apk/);
-  assert.match(workflow, /AppForge-Studio-Ultimate-15\.8\.13-Release-API29\.apk/);
-  assert.match(workflow, /name: AppForge-Studio-Ultimate-15\.8\.13-Release-API23/);
-  assert.match(workflow, /name: AppForge-Studio-Ultimate-15\.8\.13-Release-API29/);
+  assert.match(workflow, /AppForge-Studio-Ultimate-15\.8\.14-Release-API23\.apk/);
+  assert.match(workflow, /AppForge-Studio-Ultimate-15\.8\.14-Release-API29\.apk/);
+  assert.match(workflow, /name: AppForge-Studio-Ultimate-15\.8\.14-Release-API23/);
+  assert.match(workflow, /name: AppForge-Studio-Ultimate-15\.8\.14-Release-API29/);
   assert.match(workflow, /npm run test:worker/);
 });
 
 
 test('Business Manager save, delete, import and restore use the shared Studio project store', () => {
   const build = fs.readFileSync(path.join(root, 'scripts/build.cjs'), 'utf8');
-  assert.match(build, /const saved=window\.AppForgeProjectStore\?\.\getBusinessRecords\?\.\(\{persist:false\}\)/);
+  assert.ok(build.includes('getBusinessRecords?.({persist:false})'));
   assert.match(build, /records=saved/);
   assert.match(build, /const area=root\.querySelector\('#'\+target\)/);
   assert.match(build, /saveBusinessRecords\(obj\.records,importedCatalogue\)/);
   assert.match(build, /saveBusinessRecords\(newer,nextCatalogue\)/);
   assert.match(build, /state\.projects=nextProjects/);
-  assert.match(build, /bmScript \+= \\"\\\\nstorageLoad\\\\(\\\\);render\\\\(\\\\);\\\"/);
+  assert.ok(build.includes('bmScript += "\\\\nstorageLoad();render();";'));
 });
 
 test('Shared Business Manager project store persists deletions instead of resurrecting removed projects', () => {

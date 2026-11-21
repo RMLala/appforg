@@ -226,6 +226,9 @@ test('Business migration recreates missing linked projects and merges into exist
   assert.equal(recovered.ok, true);
   assert.equal(recovered.state.projects.length, 1);
   assert.equal(recovered.state.projects[0].name, 'Dossier récupéré après migration précédente');
+  const repeated = runMigration(recovered.state, JSON.stringify([{ id:'legacy-recovered', project:'Dossier récupéré après migration précédente' }]));
+  assert.equal(repeated.ok, true);
+  assert.equal(repeated.state.projects.length, 1, 'the same legacy record is not imported twice');
 });
 
 test('Business migration preserves invalid legacy data and does not set its completion flag', () => {

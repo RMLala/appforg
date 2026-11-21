@@ -868,7 +868,7 @@ function mergeCloudData(local,cloud,path,report){
   const out={};
   for(const key of new Set([...Object.keys(local),...Object.keys(cloud)])){
    if(Object.prototype.hasOwnProperty.call(local,key)&&Object.prototype.hasOwnProperty.call(cloud,key))out[key]=mergeCloudData(local[key],cloud[key],path+'.'+key,report);
-   else out[key]=cloudCopy(Object.prototype.hasOwnProperty.call(local,key)?local[key]:cloud[key]);
+   else{out[key]=cloudCopy(Object.prototype.hasOwnProperty.call(local,key)?local[key]:cloud[key]);if(!Object.prototype.hasOwnProperty.call(local,key))report.added++;}
   }
   return out;
  }

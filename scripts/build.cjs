@@ -50,6 +50,8 @@ bmScript=bmScript.replaceAll("localStorage.setItem(BIZCAT,JSON.stringify(next))"
 bmScript=bmScript.replace("function bizInvoicePaid(i){return (i.payments||[]).reduce((v,p)=>v+Number(p.amount),0);}","function bizInvoicePaid(i){return (i.payments||[]).filter(p=>p.status==='Vérifié manuellement').reduce((v,p)=>v+Number(p.amount||0),0);}");
 bmScript=bmScript.replace("{id:bizId(),amount,reference:ref.trim(),date:bizToday(),method:'MVola',verification:'Déclaration de vérification manuelle'}","{id:bizId(),amount,reference:ref.trim(),date:bizToday(),method:'MVola',status:'Vérifié manuellement',verification:'Déclaration de vérification manuelle'}");
 bmScript=bmScript.replace("localStorage.setItem(DB,encoded);\n if(localStorage.getItem(DB)!==encoded)throw new Error('Le navigateur n’a pas confirmé les données enregistrées.');","if(window.AppForgeProjectStore){if(window.AppForgeProjectStore.saveBusinessRecords(records,bizCatalogue)!==true)throw new Error('AppForge Studio n’a pas confirmé la sauvegarde.');return;}\n localStorage.setItem(DB,encoded);\n if(localStorage.getItem(DB)!==encoded)throw new Error('Le navigateur n’a pas confirmé les données enregistrées.');");
+// PIN UI was removed: initialize shared Studio-backed records after all module handlers are registered.
+bmScript += "\nstorageLoad();render();";
 const bmPage=`<section class="page" id="page-business-manager"><div id="businessManagerMount"></div></section>`;
 const closeMain=studioHtml.indexOf('</main></div><div class="footer"');
 if(closeMain<0)throw new Error('Studio main insertion point missing');

@@ -14,7 +14,7 @@ test('Business Manager is packaged inside the single AppForge Studio shell', () 
   assert.ok(!build.includes('<iframe'));
   assert.ok(!fs.existsSync(path.join(root, 'dist/modules/business-manager/index.html')));
   const studio = fs.readFileSync(distPath, 'utf8');
-  assert.ok(studio.includes('<title>AppForge Studio Ultimate — 15.8.13</title>'));
+  assert.ok(studio.includes('<title>AppForge Studio Ultimate — 15.8.14</title>'));
   assert.ok(studio.includes('id="page-business-manager"'));
   assert.ok(studio.includes('id="appforgeBack"'));
   assert.match(studio, /veil\.id='afNativeLock'/);
@@ -322,16 +322,72 @@ test('Only explicitly validated manual payments count as paid', () => {
   assert.match(build, /invoicePayments=\(data\.business\?\.invoices\|\|\[\]\)\.flatMap\(i=>i\.payments\|\|\[\]\)\.filter\(p=>p\.status==='Vérifié manuellement'\)/);
 });
 
-test('Release metadata is aligned on AppForge Studio 15.8.13 and API23/API29 builds', () => {
+test('Release metadata is aligned on AppForge Studio 15.8.14 and API23/API29 builds', () => {
   const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
   const gradle = fs.readFileSync(path.join(root, 'android/app/build.gradle'), 'utf8');
   const workflow = fs.readFileSync(path.join(root, '.github/workflows/android.yml'), 'utf8');
-  assert.equal(pkg.version, '15.8.13');
-  assert.match(gradle, /versionCode 174/);
-  assert.match(gradle, /versionName "15.8.13"/);
+  assert.equal(pkg.version, '15.8.14');
+  assert.match(gradle, /versionCode 175/);
+  assert.match(gradle, /versionName "15.8.14"/);
   assert.match(workflow, /AppForge-Studio-Ultimate-15\.8\.13-Release-API23\.apk/);
   assert.match(workflow, /AppForge-Studio-Ultimate-15\.8\.13-Release-API29\.apk/);
   assert.match(workflow, /name: AppForge-Studio-Ultimate-15\.8\.13-Release-API23/);
   assert.match(workflow, /name: AppForge-Studio-Ultimate-15\.8\.13-Release-API29/);
   assert.match(workflow, /npm run test:worker/);
+});
+
+
+test('Business Manager save, delete, import and restore use the shared Studio project store', () => {
+  const build = fs.readFileSync(path.join(root, 'scripts/build.cjs'), 'utf8');
+  assert.match(build, /const saved=window\.AppForgeProjectStore\?\.\getBusinessRecords\?\.\(\{persist:false\}\)/);
+  assert.match(build, /const area=root\.querySelector\('#'\+target\)/);
+  assert.match(build, /saveBusinessRecords\(obj\.records,importedCatalogue\)/);
+  assert.match(build, /saveBusinessRecords\(newer,nextCatalogue\)/);
+  assert.match(build, /state\.projects=nextProjects/);
+});
+
+test('Shared Business Manager project store persists deletions instead of resurrecting removed projects', () => {
+  const build = fs.readFileSync(path.join(root, 'scripts/build.cjs'), 'utf8');
+  const start = build.indexOf('window.AppForgeProjectStore={');
+  const end = build.indexOf('};' + String.fromCharCode(96) + ');', start);
+  assert.ok(start >= 0 && end > start, 'Shared project store block exists');
+  const source = build.slice(start, end + 2);
+  const store = new Map();
+  const state = {
+    projects: [
+      { id:'p1', name:'Projet à conserver', idea:'Ancien objectif', status:'À faire', form:{keep:true}, businessManager:{id:'record-1'} },
+      { id:'p2', name:'Projet à supprimer', idea:'Ancien objectif', status:'À faire', businessManager:{id:'record-2'} }
+    ],
+    businessRecords:[], businessCatalogue:[], businessDataMigrationV2:true,
+    catalog:[], sales:[], clients:[], payments:[]
+  };
+  const localStorage = {
+    getItem:key=>store.has(key)?store.get(key):null,
+    setItem:(key,value)=>store.set(key,String(value)),
+    removeItem:key=>store.delete(key)
+  };
+  const window = {};
+  const context = {
+    state, window, localStorage, KEY:'promptforge_v3_state',
+    migrateBusinessData:()=>true,
+    toBusinessRecord:project=>({...project.businessManager,id:project.businessManager?.id||'studio-'+project.id,studioProjectId:String(project.id),project:project.name,problem:project.idea||'',projectKind:project.businessManager?.projectKind||'personal',client:project.businessManager?.client||'',status:project.status||'À démarrer'}),
+    saveStudioState:()=>{localStorage.setItem('promptforge_v3_state',JSON.stringify(state));return JSON.parse(localStorage.getItem('promptforge_v3_state'));}
+  };
+  vm.runInNewContext(source,context);
+  const ok=context.window.AppForgeProjectStore.saveBusinessRecords([
+    {id:'record-1',studioProjectId:'p1',project:'Projet conservé',problem:'Objectif mis à jour',status:'En cours',projectKind:'client'}
+  ],[]);
+  assert.equal(ok,true);
+  assert.equal(state.projects.length,1);
+  assert.equal(state.projects[0].id,'p1');
+  assert.equal(state.projects[0].name,'Projet conservé');
+  assert.equal(state.projects[0].form.keep,true);
+  assert.equal(state.projects.some(project=>project.id==='p2'),false);
+  assert.equal(JSON.parse(localStorage.getItem('promptforge_v3_state')).projects.length,1);
+});
+
+test('Personal Business Manager projects hide the Commercial project tab', () => {
+  const build = fs.readFileSync(path.join(root, 'scripts/build.cjs'), 'utf8');
+  assert.match(build, /commercial\.classList\.toggle\('hidden',!project\|\|isPersonal\(project\)\)/);
+  assert.match(build, /const project=records\.find\(r=>String\(r\.id\)===String\(activeId\)\)/);
 });

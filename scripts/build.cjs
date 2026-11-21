@@ -56,13 +56,13 @@ if(!studioHtml.includes(mountAnchor))throw new Error('Studio state anchor missin
 studioHtml=studioHtml.replace(mountAnchor,mountAnchor+`
 window.AppForgeStudioState=state;state.projects=Array.isArray(state.projects)?state.projects:[];state.catalog=Array.isArray(state.catalog)?state.catalog:[];state.sales=Array.isArray(state.sales)?state.sales:[];state.clients=Array.isArray(state.clients)?state.clients:[];state.payments=Array.isArray(state.payments)?state.payments:[];state.businessRecords=Array.isArray(state.businessRecords)?state.businessRecords:[];state.businessCatalogue=Array.isArray(state.businessCatalogue)?state.businessCatalogue:[];state.businessDataMigrated=!!state.businessDataMigrated;
 function migrateBusinessData(){
- if(state.businessDataMigrated){window.AppForgeBusinessMigrationError='';return true;}
+ const alreadyMigrated=!!state.businessDataMigrated;
  let legacy=[],catalogue=[];
  try{
   const legacyRaw=localStorage.getItem('appforge_clientbrief_v01'),catalogueRaw=localStorage.getItem('appforge_clientbrief_catalogue_v06');
   legacy=legacyRaw?JSON.parse(legacyRaw):[];catalogue=catalogueRaw?JSON.parse(catalogueRaw):[];
   if(!Array.isArray(legacy)||!Array.isArray(catalogue))throw new Error('Les anciennes données commerciales ne sont pas au format attendu.');
- }catch(error){window.AppForgeBusinessMigrationError='Migration interrompue : anciennes données illisibles. Les clés sources sont conservées; aucune donnée n’a été supprimée.';return false;}
+ }catch(error){window.AppForgeBusinessMigrationError='Migration interrompue : anciennes données illisibles. Les clés sources sont conservées; aucune donnée n’a été supprimée.';return alreadyMigrated;}
  let next;
  try{next=JSON.parse(JSON.stringify(state));}catch(error){window.AppForgeBusinessMigrationError='Migration interrompue : l’état Studio ne peut pas être copié sans risque.';return false;}
  next.projects=Array.isArray(next.projects)?next.projects:[];
@@ -74,7 +74,7 @@ function migrateBusinessData(){
  next.payments=Array.isArray(next.payments)?next.payments:[];
  const pending=[],seen=new Set();
  for(const record of [...next.businessRecords,...legacy]){
-  if(!record||typeof record!=='object'||Array.isArray(record)){window.AppForgeBusinessMigrationError='Migration interrompue : un ancien dossier est invalide. Les données sources sont conservées.';return false;}
+  if(!record||typeof record!=='object'||Array.isArray(record)){window.AppForgeBusinessMigrationError='Migration interrompue : un ancien dossier est invalide. Les données sources sont conservées.';return alreadyMigrated;}
   const key='json:'+JSON.stringify(record);
   if(!seen.has(key)){seen.add(key);pending.push(record);}
  }
@@ -97,10 +97,13 @@ function migrateBusinessData(){
   }
   return current===undefined?source:current;
  };
+ const fingerprint=value=>{const copy={...value};delete copy.studioProjectId;return JSON.stringify(copy)};
  let generated=0;
  for(const record of pending){
   const requestedId=record.studioProjectId!=null&&String(record.studioProjectId).trim()?record.studioProjectId:null;
-  let project=requestedId===null?(record.id==null?null:next.projects.find(item=>String(item.businessManager?.id||'')===String(record.id))):next.projects.find(item=>String(item.id)===String(requestedId));
+  let project=requestedId===null?null:next.projects.find(item=>String(item.id)===String(requestedId));
+  if(!project&&record.id!=null)project=next.projects.find(item=>String(item.businessManager?.id||'')===String(record.id));
+  if(!project&&record.id==null){const key=fingerprint(record);project=next.projects.find(item=>item.businessManager&&fingerprint(item.businessManager)===key);}
   if(!project){
    let id=requestedId===null?Date.now()+next.projects.length+generated:requestedId;
    while(next.projects.some(item=>String(item.id)===String(id)))id=Date.now()+next.projects.length+(++generated);
@@ -127,7 +130,7 @@ function migrateBusinessData(){
  next.businessRecords=[];
  next.businessDataMigrated=true;
  let serialized,previousRaw;
- try{serialized=JSON.stringify(next);previousRaw=localStorage.getItem(KEY);localStorage.setItem(KEY,serialized);if(localStorage.getItem(KEY)!==serialized)throw new Error('La vérification après écriture a échoué.');}
+ try{serialized=JSON.stringify(next);if(serialized===JSON.stringify(state)){window.AppForgeBusinessMigrationError='';return true;}previousRaw=localStorage.getItem(KEY);localStorage.setItem(KEY,serialized);if(localStorage.getItem(KEY)!==serialized)throw new Error('La vérification après écriture a échoué.');}
  catch(error){try{if(previousRaw===null)localStorage.removeItem(KEY);else if(previousRaw!==undefined)localStorage.setItem(KEY,previousRaw);}catch{}window.AppForgeBusinessMigrationError='Migration interrompue : sauvegarde locale non confirmée. Les anciennes clés commerciales restent conservées; réessaie après avoir libéré de l’espace de stockage.';return false;}
  for(const key of Object.keys(state))delete state[key];
  Object.assign(state,JSON.parse(serialized));

@@ -14,7 +14,7 @@ test('Business Manager is packaged inside the single AppForge Studio shell', () 
   assert.ok(!build.includes('<iframe'));
   assert.ok(!fs.existsSync(path.join(root, 'dist/modules/business-manager/index.html')));
   const studio = fs.readFileSync(distPath, 'utf8');
-  assert.ok(studio.includes('<title>AppForge Studio Ultimate — 15.8.12</title>'));
+  assert.ok(studio.includes('<title>AppForge Studio Ultimate — 15.8.13</title>'));
   assert.ok(studio.includes('id="page-business-manager"'));
   assert.ok(studio.includes('id="appforgeBack"'));
   assert.match(studio, /veil\.id='afNativeLock'/);
@@ -303,4 +303,16 @@ test('Only explicitly validated manual payments count as paid', () => {
   assert.match(build, /function bizInvoicePaid\(i\)\{return \(i\.payments\|\|\[\]\)\.filter\(p=>p\.status==='Vérifié manuellement'\)/);
   assert.doesNotMatch(build, /p\.verification==='Déclaration de vérification manuelle'\)\.reduce/);
   assert.match(build, /invoicePayments=\(data\.business\?\.invoices\|\|\[\]\)\.flatMap\(i=>i\.payments\|\|\[\]\)\.filter\(p=>p\.status==='Vérifié manuellement'\)/);
+});
+
+test('Release metadata is aligned on AppForge Studio 15.8.13 and API23/API29 builds', () => {
+  const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+  const gradle = fs.readFileSync(path.join(root, 'android/app/build.gradle'), 'utf8');
+  const workflow = fs.readFileSync(path.join(root, '.github/workflows/android.yml'), 'utf8');
+  assert.equal(pkg.version, '15.8.13');
+  assert.match(gradle, /versionCode 174/);
+  assert.match(gradle, /versionName "15.8.13"/);
+  assert.match(workflow, /AppForge-Studio-Ultimate-15\.8\.13-Release-API23\.apk/);
+  assert.match(workflow, /AppForge-Studio-Ultimate-15\.8\.13-Release-API29\.apk/);
+  assert.match(workflow, /npm run test:worker/);
 });

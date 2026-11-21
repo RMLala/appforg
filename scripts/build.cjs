@@ -104,7 +104,7 @@ function migrateBusinessData(){
  for(const record of pending){
   const requestedId=record.studioProjectId!=null&&String(record.studioProjectId).trim()?record.studioProjectId:null;
   let project=requestedId===null?null:next.projects.find(item=>String(item.id)===String(requestedId));
-  if(!project&&record.id!=null)project=next.projects.find(item=>String(item.businessManager?.id||'')===String(record.id));
+  if(!project&&requestedId===null&&record.id!=null)project=next.projects.find(item=>String(item.businessManager?.id||'')===String(record.id));
   if(!project&&record.id==null){const key=migrationFingerprint(record);project=next.projects.find(item=>item._appforgeLegacyMigrationKey===key)||next.projects.find(item=>item.businessManager&&fingerprint(item.businessManager)===fingerprint(record));}
   if(!project){
    let id=requestedId===null?Date.now()+next.projects.length+generated:requestedId;

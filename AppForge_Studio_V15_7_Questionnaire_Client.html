@@ -881,8 +881,8 @@ async function restore(){
  try{
   oldStudioRaw=localStorage.getItem('promptforge_v3_state');
   oldDeliveryRaw=localStorage.getItem('appforge_delivery_tracker_v1');
-  if(restoreStudio){const local=readLocalCloudJson('promptforge_v3_state',{projects:[],steps:Array(8).fill(false),theme:'dark',prompts:0,custom:[],sales:[]});mergedStudio=mergeCloudData(local,remote.studioState,'studioState',report)}
-  if(restoreDelivery){const local=readLocalCloudJson('appforge_delivery_tracker_v1',{apps:[],history:[],cloud:{},reports:[]});mergedDelivery=mergeCloudData(local,remote.deliveryTracker,'deliveryTracker',report)}
+  if(restoreStudio){const local=readLocalCloudJson('promptforge_v3_state',{projects:[],steps:Array(8).fill(false),theme:'dark',prompts:0,custom:[],sales:[]});if(!local||typeof local!=='object'||Array.isArray(local))throw Error('L’état Studio local n’est pas un objet valide; sa valeur brute reste conservée.');mergedStudio=mergeCloudData(local,remote.studioState,'studioState',report)}
+  if(restoreDelivery){const local=readLocalCloudJson('appforge_delivery_tracker_v1',{apps:[],history:[],cloud:{},reports:[]});if(!local||typeof local!=='object'||Array.isArray(local))throw Error('Le suivi des livraisons local n’est pas un objet valide; sa valeur brute reste conservée.');mergedDelivery=mergeCloudData(local,remote.deliveryTracker,'deliveryTracker',report)}
  }catch(error){msg('Fusion préparatoire impossible : '+error.message,true);return}
  if(!confirm('Fusionner les éléments sélectionnés sans écraser les valeurs locales ? Les conflits garderont la valeur locale et une copie de la source Cloud sera conservée avant l’opération.'))return;
  busy=true;buttons();

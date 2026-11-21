@@ -135,6 +135,10 @@ test('Studio Cloud restoration is selective, integrity-checked, and backed up lo
   assert.match(cloudScript, /crypto\.subtle\.digest\('SHA-256'/);
   assert.match(cloudScript, /idbPut\('backups',backup\)/);
   assert.match(cloudScript, /appforge-studio-cloud-restore/);
+  assert.match(cloudScript, /async function readSnapshot\(\)/);
+  assert.match(cloudScript, /let localError=''/);
+  assert.match(cloudScript, /linked=false;localError=error\.message/);
+  assert.match(cloudScript, /La copie distante reste accessible pour une restauration sélective/);
   assert.match(cloudScript, /function mergeCloudData/);
   assert.match(cloudScript, /cloudSnapshot:remote/);
   assert.match(cloudScript, /localRaw:\{studio:oldStudioRaw,delivery:oldDeliveryRaw\}/);

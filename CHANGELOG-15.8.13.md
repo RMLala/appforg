@@ -8,4 +8,4 @@
 - Les déclarations historiques de paiement sans statut explicite « Vérifié manuellement » ne sont plus comptabilisées comme encaissées.
 - Une migration ou fusion locale désactive la synchronisation automatique jusqu’à vérification et sauvegarde volontaire.
 - Ajoute des tests de migration, fusion, conflits, erreurs de stockage et paiement ; le workflow exécute désormais également les tests du Worker R2.
-- Android : versionCode 174, versionName 15.8.13.
+- Android : versionCode 174, versionName 15.8.13. Les APK Release API23 et API29 sont publiés comme deux artefacts GitHub distincts, en plus de l’archive combinée.

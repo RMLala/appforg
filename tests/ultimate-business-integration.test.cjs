@@ -213,6 +213,7 @@ test('Business migration recreates missing linked projects and merges into exist
   assert.equal(orphan.state.projects[0].businessManager.business.orders[0].id, 'order-1');
   assert.equal(orphan.state.businessRecords.length, 0);
   assert.equal(orphan.state.businessDataMigrated, true);
+  assert.equal(orphan.state.businessDataMigrationV2, true);
   assert.equal(orphan.window.unlinked, true);
 
   const existing = runMigration({

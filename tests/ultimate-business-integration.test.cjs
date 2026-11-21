@@ -233,6 +233,10 @@ test('Business migration recreates missing linked projects and merges into exist
   const repeated = runMigration(recovered.state, JSON.stringify([{ id:'legacy-recovered', project:'Dossier récupéré après migration précédente' }]));
   assert.equal(repeated.ok, true);
   assert.equal(repeated.state.projects.length, 1, 'the same legacy record is not imported twice');
+
+  const noId = runMigration({ projects: [], businessRecords: [], businessCatalogue: [], businessDataMigrated: false }, JSON.stringify([{ project:'Dossier sans ID', client:'Client historique' }]));
+  const noIdRepeated = runMigration(noId.state, JSON.stringify([{ project:'Dossier sans ID', client:'Client historique' }]));
+  assert.equal(noIdRepeated.state.projects.length, 1, 'a record without an ID uses a stable migration marker');
 });
 
 test('Business migration preserves invalid legacy data and does not set its completion flag', () => {

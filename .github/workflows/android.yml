@@ -85,6 +85,20 @@ jobs:
           path: release-output/AppForge-Studio-Ultimate-15.8.13-Release-API*.apk
           if-no-files-found: error
           retention-days: 30
+      - name: Upload signed Release API23 separately
+        uses: actions/upload-artifact@v4
+        with:
+          name: AppForge-Studio-Ultimate-15.8.13-Release-API23
+          path: release-output/AppForge-Studio-Ultimate-15.8.13-Release-API23.apk
+          if-no-files-found: error
+          retention-days: 30
+      - name: Upload signed Release API29 separately
+        uses: actions/upload-artifact@v4
+        with:
+          name: AppForge-Studio-Ultimate-15.8.13-Release-API29
+          path: release-output/AppForge-Studio-Ultimate-15.8.13-Release-API29.apk
+          if-no-files-found: error
+          retention-days: 30
   launch-smoke:
     needs: build
     strategy:

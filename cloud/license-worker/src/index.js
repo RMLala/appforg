@@ -1,4 +1,4 @@
-import { r2Files, r2Usage } from './r2-files.js';
+import { r2Files, r2Usage, hasR2 } from './r2-files.js';
 const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
@@ -300,6 +300,36 @@ async function publicKey(env) {
   const jwk = JSON.parse(env.LICENSE_SIGNING_PRIVATE_JWK);
   return { kty: jwk.kty, crv: jwk.crv, x: jwk.x, y: jwk.y, ext: true, key_ops: ["verify"] };
 }
+// Lecture seule des consommations du Worker. Appelée uniquement après auth(req, env).
+async function adminR2Usage(env) {
+  if (!hasR2(env)) return { available: false, reason: 'not_configured' };
+  try {
+    const u = await env.DB.prepare('SELECT COALESCE(SUM(size_bytes),0) AS usedBytes, COUNT(*) AS fileCount FROM cloud_files').first();
+    return { available: true, usedBytes: Number(u?.usedBytes || 0), fileCount: Number(u?.fileCount || 0) };
+  } catch {
+    return { available: false, reason: 'table_unavailable' };
+  }
+}
+async function adminQuotas(env) {
+  const day = new Date().toISOString().slice(0, 10);
+  const api = await dailyUsage(env);
+  const cloud = await env.DB.prepare("SELECT COALESCE(SUM(requests),0) AS n FROM cloud_usage_daily WHERE day=?").bind(day).first();
+  const storage = await env.DB.prepare("SELECT COUNT(*) AS snapshots, COALESCE(SUM(length(CAST(payload AS BLOB))),0) AS bytes FROM cloud_snapshots").first();
+  const licenses = await env.DB.prepare(
+    "SELECT l.id, l.customer_name AS customerName, l.product_id AS productId, l.cloud_requests_day AS requestsDay, l.cloud_quota_bytes AS maxBytes, " +
+    "COALESCE(u.requests,0) AS requestsToday, " +
+    "COALESCE((SELECT SUM(length(CAST(s.payload AS BLOB))) FROM cloud_snapshots s WHERE s.access_id=l.id AND s.product_id=l.product_id),0) AS usedBytes " +
+    "FROM licenses l LEFT JOIN cloud_usage_daily u ON u.access_id=l.id AND u.product_id=l.product_id AND u.day=? " +
+    "WHERE l.status='active' AND l.cloud_enabled=1 ORDER BY l.created_at DESC LIMIT 200"
+  ).bind(day).all();
+  return {
+    ok: true, day, checkedAt: new Date().toISOString(), api,
+    cloud: { requestsToday: Number(cloud?.n || 0) },
+    storage: { snapshots: Number(storage?.snapshots || 0), usedBytes: Number(storage?.bytes || 0) },
+    r2: await adminR2Usage(env),
+    licenses: licenses.results || []
+  };
+}
 async function handle(req, env) {
   const url = new URL(req.url), path = url.pathname.replace(/\/$/, "") || "/";
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
@@ -332,6 +362,7 @@ async function handle(req, env) {
   if (!path.startsWith("/admin/")) return json({ error: "Route inconnue." }, 404);
   if (!(await auth(req, env))) return json({ error: "Accès administrateur refusé." }, 401);
   if (path === "/admin/usage" && req.method === "GET") return json(await dailyUsage(env));
+  if (path === "/admin/quotas" && req.method === "GET") return json(await adminQuotas(env));
   if (path === "/admin/trials" && req.method === "GET") {
     const now = new Date().toISOString();
     const { results = [] } = await env.DB.prepare("SELECT t.product_id AS productId,p.name AS appName,COUNT(*) AS total,SUM(CASE WHEN t.expires_at>? THEN 1 ELSE 0 END) AS active,SUM(CASE WHEN t.expires_at<=? THEN 1 ELSE 0 END) AS expired,MIN(CASE WHEN t.expires_at>? THEN t.expires_at ELSE NULL END) AS nextExpiry FROM trials t JOIN products p ON p.product_id=t.product_id GROUP BY t.product_id,p.name ORDER BY p.name").bind(now, now, now).all();

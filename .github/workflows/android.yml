@@ -48,6 +48,7 @@ jobs:
           if-no-files-found: error
           retention-days: 30
       - name: Check release signing secrets
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
@@ -60,6 +61,7 @@ jobs:
           test -n "$KEY_PASSWORD" || (echo "Secret KEY_PASSWORD absent"; exit 1)
           echo "$KEYSTORE_BASE64" | base64 --decode > "$GITHUB_WORKSPACE/android/app/release-key.jks"
       - name: Build signed API 23 and API 29 APKs
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         env:
           ANDROID_KEYSTORE_PATH: ${{ github.workspace }}/android/app/release-key.jks
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
@@ -72,18 +74,21 @@ jobs:
           cp app/build/outputs/apk/api23/release/app-api23-release.apk ../release-output/AppForge-Studio-Ultimate-15.8.8-Release-API23.apk
           cp app/build/outputs/apk/api29/release/app-api29-release.apk ../release-output/AppForge-Studio-Ultimate-15.8.8-Release-API29.apk
       - name: Verify signed APKs
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         run: |
           test -s release-output/AppForge-Studio-Ultimate-15.8.8-Release-API23.apk
           test -s release-output/AppForge-Studio-Ultimate-15.8.8-Release-API29.apk
           $ANDROID_HOME/build-tools/34.0.0/apksigner verify --print-certs release-output/AppForge-Studio-Ultimate-15.8.8-Release-API23.apk
           $ANDROID_HOME/build-tools/34.0.0/apksigner verify --print-certs release-output/AppForge-Studio-Ultimate-15.8.8-Release-API29.apk
       - uses: actions/upload-artifact@v4
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         with:
           name: AppForge-Studio-Ultimate-15.8.8-Signed-Release-API23-API29
           path: release-output/AppForge-Studio-Ultimate-15.8.8-Release-API*.apk
           if-no-files-found: error
           retention-days: 30
   launch-smoke:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     needs: build
     strategy:
       fail-fast: false

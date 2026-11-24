@@ -1,0 +1,35 @@
+name: Verify AppForge private R2 in production (manual)
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type TEST-R2-PRODUCTION to authorize an isolated temporary trial and R2 round-trip test'
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  r2-live-test:
+    if: ${{ inputs.confirm == 'TEST-R2-PRODUCTION' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: cloud/license-worker
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - name: Install Wrangler
+        run: npm install --no-audit --no-fund
+      - name: Verify authenticated R2 upload, download, isolation and cleanup
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: node scripts/verify-r2-live.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: AppForge-R2-live-production-evidence
+          path: cloud/license-worker/qa/r2-live-production.json

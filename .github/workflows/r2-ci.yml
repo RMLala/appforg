@@ -18,14 +18,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: '22'
       - name: Check Worker and R2 module syntax
         run: |
           node --check cloud/license-worker/src/index.js
           node --check cloud/license-worker/src/r2-files.js
+          node --check cloud/license-worker/scripts/verify-r2-live.mjs
       - name: Test R2 isolation, quotas, conflicts and overwrite safeguards
         run: node --test cloud/license-worker/src/r2-files.test.mjs
       - name: Verify private bucket binding and non-destructive migration

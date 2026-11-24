@@ -832,6 +832,7 @@ async function readSnapshot(){
  try{
   const d=await req('/v1/cloud/snapshot?resource=default',{},token);
   revision=Number(d.revision||0);remote=d.snapshot||null;loaded=true;
+  if(Array.isArray(remote?.attachments)){const localIndex=readLocalCloudJson('appforge_studio_r2_index_v1',[]),report={added:0,conflicts:0,paths:[]},mergedIndex=mergeCloudData(localIndex,remote.attachments,'attachments',report);localStorage.setItem('appforge_studio_r2_index_v1',JSON.stringify(mergedIndex));refreshR2Projects()}
   let localError='';
   try{linked=!!remote&&JSON.stringify(snap())===JSON.stringify(remote)}catch(error){linked=false;localError=error.message}
   $('afSyncSnapshotAuto').checked=linked;

@@ -51,13 +51,13 @@ jobs:
         run: |
           set -euo pipefail
           pending=$(npx wrangler d1 migrations list appforge-licenses --remote)
-          printf '%s\\n' "$pending"
+          printf '%s\n' "$pending"
 
           # Wrangler lists only unapplied migration files. Fail closed if its output
           # cannot be parsed, and never let a future migration slip through.
-          mapfile -t pending_names < <(printf '%s\\n' "$pending" | grep -oE '[0-9]{4}_[A-Za-z0-9_-]+\\.sql' | sort -u || true)
+          mapfile -t pending_names < <(printf '%s\n' "$pending" | grep -oE '[0-9]{4}_[A-Za-z0-9_-]+\.sql' | sort -u || true)
           if [ "${#pending_names[@]}" -eq 0 ]; then
-            if ! printf '%s\\n' "$pending" | grep -qiE 'no migrations to apply|no pending migrations'; then
+            if ! printf '%s\n' "$pending" | grep -qiE 'no migrations to apply|no pending migrations'; then
               echo '::error::Unable to identify pending migrations safely. No production migration/deploy.'
               exit 1
             fi

@@ -328,7 +328,7 @@ test('Release metadata is aligned on AppForge Studio 15.8.15 and API23/API29 bui
   const gradle = fs.readFileSync(path.join(root, 'android/app/build.gradle'), 'utf8');
   const workflow = fs.readFileSync(path.join(root, '.github/workflows/android.yml'), 'utf8');
   assert.equal(pkg.version, '15.8.15');
-  assert.match(gradle, /versionCode 175/);
+  assert.match(gradle, /versionCode 176/);
   assert.match(gradle, /versionName "15.8.15"/);
   assert.match(workflow, /AppForge-Studio-Ultimate-15\.8\.14-Release-API23\.apk/);
   assert.match(workflow, /AppForge-Studio-Ultimate-15\.8\.14-Release-API29\.apk/);

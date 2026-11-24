@@ -42,11 +42,11 @@ jobs:
           cd android
           ./gradlew --no-daemon assembleApi23Debug
           mkdir -p ../release-output
-          cp app/build/outputs/apk/api23/debug/app-api23-debug.apk ../release-output/AppForge-Studio-Ultimate-15.8.14-Debug-API23.apk
+          cp app/build/outputs/apk/api23/debug/app-api23-debug.apk ../release-output/AppForge-Studio-Ultimate-15.8.15-Debug-API23.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: AppForge-Studio-Ultimate-15.8.14-Debug-API23
-          path: release-output/AppForge-Studio-Ultimate-15.8.14-Debug-API23.apk
+          name: AppForge-Studio-Ultimate-15.8.15-Debug-API23
+          path: release-output/AppForge-Studio-Ultimate-15.8.15-Debug-API23.apk
           if-no-files-found: error
           retention-days: 30
       - name: Check release signing secrets
@@ -71,32 +71,32 @@ jobs:
           cd android
           ./gradlew --no-daemon assembleApi23Release assembleApi29Release
           mkdir -p ../release-output
-          cp app/build/outputs/apk/api23/release/app-api23-release.apk ../release-output/AppForge-Studio-Ultimate-15.8.14-Release-API23.apk
-          cp app/build/outputs/apk/api29/release/app-api29-release.apk ../release-output/AppForge-Studio-Ultimate-15.8.14-Release-API29.apk
+          cp app/build/outputs/apk/api23/release/app-api23-release.apk ../release-output/AppForge-Studio-Ultimate-15.8.15-Release-API23.apk
+          cp app/build/outputs/apk/api29/release/app-api29-release.apk ../release-output/AppForge-Studio-Ultimate-15.8.15-Release-API29.apk
       - name: Verify signed APKs
         run: |
-          test -s release-output/AppForge-Studio-Ultimate-15.8.14-Release-API23.apk
-          test -s release-output/AppForge-Studio-Ultimate-15.8.14-Release-API29.apk
-          $ANDROID_HOME/build-tools/34.0.0/apksigner verify --print-certs release-output/AppForge-Studio-Ultimate-15.8.14-Release-API23.apk
-          $ANDROID_HOME/build-tools/34.0.0/apksigner verify --print-certs release-output/AppForge-Studio-Ultimate-15.8.14-Release-API29.apk
+          test -s release-output/AppForge-Studio-Ultimate-15.8.15-Release-API23.apk
+          test -s release-output/AppForge-Studio-Ultimate-15.8.15-Release-API29.apk
+          $ANDROID_HOME/build-tools/34.0.0/apksigner verify --print-certs release-output/AppForge-Studio-Ultimate-15.8.15-Release-API23.apk
+          $ANDROID_HOME/build-tools/34.0.0/apksigner verify --print-certs release-output/AppForge-Studio-Ultimate-15.8.15-Release-API29.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: AppForge-Studio-Ultimate-15.8.14-Signed-Release-API23-API29
-          path: release-output/AppForge-Studio-Ultimate-15.8.14-Release-API*.apk
+          name: AppForge-Studio-Ultimate-15.8.15-Signed-Release-API23-API29
+          path: release-output/AppForge-Studio-Ultimate-15.8.15-Release-API*.apk
           if-no-files-found: error
           retention-days: 30
       - name: Upload signed Release API23 separately
         uses: actions/upload-artifact@v4
         with:
-          name: AppForge-Studio-Ultimate-15.8.14-Release-API23
-          path: release-output/AppForge-Studio-Ultimate-15.8.14-Release-API23.apk
+          name: AppForge-Studio-Ultimate-15.8.15-Release-API23
+          path: release-output/AppForge-Studio-Ultimate-15.8.15-Release-API23.apk
           if-no-files-found: error
           retention-days: 30
       - name: Upload signed Release API29 separately
         uses: actions/upload-artifact@v4
         with:
-          name: AppForge-Studio-Ultimate-15.8.14-Release-API29
-          path: release-output/AppForge-Studio-Ultimate-15.8.14-Release-API29.apk
+          name: AppForge-Studio-Ultimate-15.8.15-Release-API29
+          path: release-output/AppForge-Studio-Ultimate-15.8.15-Release-API29.apk
           if-no-files-found: error
           retention-days: 30
   launch-smoke:
@@ -110,7 +110,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: AppForge-Studio-Ultimate-15.8.14-Signed-Release-API23-API29
+          name: AppForge-Studio-Ultimate-15.8.15-Signed-Release-API23-API29
           path: release-output
       - name: Install screenshot comparison dependency
         run: python3 -m pip install --user --disable-pip-version-check Pillow
@@ -129,7 +129,7 @@ jobs:
           disable-animations: true
           disable-linux-hw-accel: false
           script: |
-            if [ '${{ matrix.api-level }}' = '23' ]; then adb install -r release-output/AppForge-Studio-Ultimate-15.8.14-Release-API23.apk; else adb install -r release-output/AppForge-Studio-Ultimate-15.8.14-Release-API29.apk; fi
+            if [ '${{ matrix.api-level }}' = '23' ]; then adb install -r release-output/AppForge-Studio-Ultimate-15.8.15-Release-API23.apk; else adb install -r release-output/AppForge-Studio-Ultimate-15.8.15-Release-API29.apk; fi
             adb shell am force-stop mg.appforge.studio
             adb shell am start -n mg.appforge.studio/.MainActivity
             sleep 25
@@ -160,7 +160,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: AppForge-Studio-Ultimate-15.8.14-Android-${{ matrix.api-level }}-launch-evidence
+          name: AppForge-Studio-Ultimate-15.8.15-Android-${{ matrix.api-level }}-launch-evidence
           path: |
             appforge-smoke.png
             appforge-precheck.png
